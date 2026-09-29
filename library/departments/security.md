@@ -1,6 +1,6 @@
 # 🛡️ Security & Compliance — Xavfsizlik va muvofiqlik
 
-77 items in this department.
+82 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -14,6 +14,8 @@
 | [cs-quality-regulatory](../agents/claude-skills/cs-quality-regulatory.md) | agent | Claude Skills | Quality & Regulatory agent for ISO 13485 QMS, MDR compliance, FDA submissions, GDPR/DSGVO, and ISMS audits. Orchestrates ra-qm-team skills. Spawn when users ne… |
 | [cs-soc2-auditor](../agents/claude-skills/cs-soc2-auditor.md) | agent | Claude Skills | SOC 2 Type II auditor persona — observation-period discipline + AICPA TSC focused. Coordinates with ISO 27001 (75% overlap, the canonical cross-walk pair) and… |
 | [opensource-sanitizer](../agents/ecc/opensource-sanitizer.md) | agent | ECC | Verify an open-source fork is fully sanitized before release. Scans for leaked secrets, PII, internal references, and dangerous files using 20+ regex patterns.… |
+| [pii-sanitization-agent](../agents/agents-500/pii-sanitization-agent.md) | agent | 500 Agents | Sanitizes PII from text before it reaches LLMs or external APIs, using the TrustBoost API — fail-closed, multilingual, on-chain proof |
+| [security-auditor](../agents/agent-skills/security-auditor.md) | agent | Agent Skills | Security engineer focused on vulnerability detection, threat modeling, and secure coding practices. Use for security-focused code review, threat analysis, or h… |
 | [security-reviewer](../agents/ecc/security-reviewer.md) | agent | ECC | Security vulnerability detection and remediation specialist. Use PROACTIVELY after writing code that handles user input, authentication, API endpoints, or sens… |
 | [1password](../skills/hermes/1password/SKILL.md) | skill | Hermes | Set up op CLI, sign in, and read or inject secrets. |
 | [agent-decision-receipts](../skills/claude-skills/agent-decision-receipts/SKILL.md) | skill | Claude Skills | Mint a tamper-evident, post-quantum-signed receipt for a consequential agent action (deploy, delete, pay, grant-access, model decision) so it can be verified l… |
@@ -27,6 +29,7 @@
 | [customs-trade-compliance](../skills/ecc/customs-trade-compliance/SKILL.md) | skill | ECC | Codified customs and trade compliance expertise — HS/HTS tariff classification with GRI rules, commercial invoices and entry documentation, Incoterms 2020, FTA… |
 | [data-quality-auditor](../skills/claude-skills/data-quality-auditor/SKILL.md) | skill | Claude Skills | Audit datasets for completeness, consistency, accuracy, and validity. Profile data distributions, detect anomalies and outliers, surface structural issues, and… |
 | [defi-amm-security](../skills/ecc/defi-amm-security/SKILL.md) | skill | ECC | Security checklist for Solidity AMM contracts, liquidity pools, and swap flows. Covers reentrancy, CEI ordering, donation or inflation attacks, oracle manipula… |
+| [doubt-driven-development](../skills/agent-skills/doubt-driven-development/SKILL.md) | skill | Agent Skills | Subjects every non-trivial decision to a fresh-context adversarial review before it stands. Use when you want every assumption cross-examined before proceeding… |
 | [env-secrets-manager](../skills/claude-skills/env-secrets-manager/SKILL.md) | skill | Claude Skills | Manage environment-variable hygiene and secrets safety across local development and production. Practical auditing, drift awareness, rotation readiness. Use wh… |
 | [fda-consultant-specialist](../skills/claude-skills/fda-consultant-specialist/SKILL.md) | skill | Claude Skills | FDA regulatory consultant for medical device companies. Provides 510(k)/PMA/De Novo pathway guidance, QMSR (21 CFR 820, which incorporates ISO 13485:2016 by re… |
 | [fda-qsr-audit-prep](../skills/claude-skills/fda-qsr-audit-prep/SKILL.md) | skill | Claude Skills | /cs:fda-qsr-audit-prep — FDA 21 CFR 820 (QSR / QMSR) audit 6-question forcing interrogation. Post-Feb 2026 substantially harmonized with ISO 13485. Use before… |
@@ -60,6 +63,7 @@
 | [repo-scan](../skills/ecc/repo-scan/SKILL.md) | skill | ECC | Bootstrap pointer that installs the external repo-scan skill from a pinned, reviewable commit. Use when repo-scan must be installed before running its cross-st… |
 | [risk-management-specialist](../skills/claude-skills/risk-management-specialist/SKILL.md) | skill | Claude Skills | Medical device risk management specialist implementing ISO 14971 throughout product lifecycle. Provides risk analysis, risk evaluation, risk control, and post-… |
 | [secrets-vault-manager](../skills/claude-skills/secrets-vault-manager/SKILL.md) | skill | Claude Skills | Use when the user asks to set up secret management infrastructure, integrate HashiCorp Vault, configure cloud secret stores (AWS Secrets Manager, Azure Key Vau… |
+| [security-and-hardening](../skills/agent-skills/security-and-hardening/SKILL.md) | skill | Agent Skills | Hardens code against vulnerabilities. Use when auditing an input handler for vulnerabilities, when handling user input, authentication, data storage, or extern… |
 | [security-bounty-hunter](../skills/ecc/security-bounty-hunter/SKILL.md) | skill | ECC | Hunt for exploitable, bounty-worthy security issues in repositories. Focuses on remotely reachable vulnerabilities that qualify for real reports instead of noi… |
 | [security-guidance](../skills/claude-skills/security-guidance/SKILL.md) | skill | Claude Skills | PreToolUse security-anti-pattern hook for Claude Code. Catches 12 common security risks (command injection, XSS, SQL injection, unsafe deserialization, GitHub… |
 | [security-review](../skills/ecc/security-review/SKILL.md) | skill | ECC | Use this skill when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provi… |
@@ -79,5 +83,6 @@
 | [operator-audit](../commands/claude-skills/operator-audit.md) | command | Claude Skills | Run the full Kubernetes Operator audit (CRD + reconcile + capability) on the current repo |
 | [plugin-audit](../commands/claude-skills/plugin-audit.md) | command | Claude Skills | Comprehensive audit pipeline for skills, plugins, agents, and commands. Validates structure, quality, security, marketplace compliance, cross-platform compatib… |
 | [quality-gate](../commands/ecc/quality-gate.md) | command | ECC | Run the ECC formatter quality gate for a single file and report remediation steps. |
+| [sa](../commands/pi/sa.md) | command | Pi | Update a GitHub security advisory for publication |
 | [security-scan](../commands/claude-skills/security-scan.md) | command | Claude Skills | Run the security scan gate before pushing. |
 | [security-scan](../commands/ecc/security-scan.md) | command | ECC | Run AgentShield against agent, hook, MCP, permission, and secret surfaces. |

@@ -1,5 +1,5 @@
 {
-  "$comment": "Upstream repositories gathered into the AI Agent Office library. `npm run sync` clones/updates them into .sources/ and `npm run build:library` regenerates library/ and public/data/.",
+  "$comment": "Upstream repositories gathered into the AI Agent Office library. `npm run sync` clones/updates them into .sources/ (sparse checkouts where `sparse` is set) and `npm run build:library` regenerates library/ and public/data/. `scan` rules replace the default agents/skills/commands walk for repos with their own layout.",
   "sources": [
     {
       "id": "best-practice",
@@ -60,6 +60,129 @@
       "license": "MIT",
       "color": "#ff9f1c",
       "role": "Production agent harness: language reviewers, build resolvers, commands, hooks and hundreds of skills"
+    },
+    {
+      "id": "agents-beginners",
+      "repo": "microsoft/ai-agents-for-beginners",
+      "branch": "main",
+      "label": "AI Agents for Beginners (Microsoft)",
+      "short": "Agents 101",
+      "license": "MIT",
+      "color": "#00a4ef",
+      "role": "Academy course: 19 lessons on building AI agents — design patterns, tool use, agentic RAG, planning, multi-agent, protocols (MCP/A2A), context engineering, memory, security",
+      "scan": [
+        {
+          "match": "^\\d\\d-[^/]+/README\\.md$",
+          "type": "guide",
+          "dept": "academy",
+          "nameFrom": "dir"
+        }
+      ],
+      "sparse": [
+        "/LICENSE",
+        "/README.md",
+        "/[0-9][0-9]-*/README.md"
+      ]
+    },
+    {
+      "id": "agent-book",
+      "repo": "bojieli/ai-agent-book",
+      "branch": "main",
+      "label": "AI Agent Book (Bojie Li)",
+      "short": "Agent Book",
+      "license": "Apache-2.0",
+      "color": "#b5651d",
+      "role": "Academy textbook: Agent = LLM + Context + Tools — context engineering, memory and knowledge, tools, evaluation, post-training, self-evolution, multi-agent collaboration",
+      "scan": [
+        {
+          "match": "^book-en/(introduction|chapter\\d+|afterword)\\.md$",
+          "type": "guide",
+          "dept": "academy",
+          "nameFrom": "file"
+        }
+      ],
+      "sparse": [
+        "/LICENSE",
+        "/README.en.md",
+        "/book-en/*.md"
+      ]
+    },
+    {
+      "id": "agent-skills",
+      "repo": "addyosmani/agent-skills",
+      "branch": "main",
+      "label": "Agent Skills (Addy Osmani)",
+      "short": "Agent Skills",
+      "license": "MIT",
+      "color": "#e44d26",
+      "role": "Production engineering skills for coding agents: interview-me, spec- and test-driven development, frontend UI, performance, security, shipping; plus reviewer/auditor agents and commands"
+    },
+    {
+      "id": "agents-500",
+      "repo": "ashishpatel26/500-AI-Agents-Projects",
+      "branch": "main",
+      "label": "500+ AI Agent Projects",
+      "short": "500 Agents",
+      "license": "MIT",
+      "color": "#6c5ce7",
+      "role": "Runnable agent projects (web research, code review, SQL, email, support…) and 500+ industry use cases grouped by framework",
+      "scan": [
+        {
+          "match": "^agents/\\d\\d-[^/]+/README\\.md$",
+          "type": "agent",
+          "nameFrom": "dir",
+          "meta": "metadata.yaml"
+        },
+        {
+          "match": "^README\\.md$",
+          "type": "guide",
+          "dept": "product",
+          "split": "^#{2,3} +(?:🏭 +)?(Industry Use Cases|CrewAI|AutoGen|Agno|LangGraph)\\s*$"
+        }
+      ],
+      "sparse": [
+        "/LICENSE",
+        "/README.md",
+        "/agents/"
+      ]
+    },
+    {
+      "id": "pi",
+      "repo": "earendil-works/pi",
+      "branch": "main",
+      "label": "Pi Agent Harness (Earendil)",
+      "short": "Pi",
+      "license": "MIT",
+      "color": "#12b886",
+      "role": "Self-extensible coding agent: scout/planner/worker/reviewer subagents, prompt templates, skills and docs on how an agent harness works",
+      "scan": [
+        {
+          "match": "^packages/coding-agent/examples/extensions/subagent/agents/[^/]+\\.md$",
+          "type": "agent"
+        },
+        {
+          "match": "^\\.pi/prompts/[^/]+\\.md$",
+          "type": "command"
+        },
+        {
+          "match": "^\\.pi/skills/[^/]+\\.md$",
+          "type": "skill",
+          "nameFrom": "file"
+        },
+        {
+          "match": "^packages/coding-agent/docs/(how-pi-works|skills|extensions|mcp|sessions|compaction|prompt-templates|sdk|security|containerization)\\.md$",
+          "type": "guide",
+          "dept": "academy",
+          "nameFrom": "file"
+        }
+      ],
+      "sparse": [
+        "/LICENSE",
+        "/README.md",
+        "/.pi/",
+        "/packages/coding-agent/examples/extensions/subagent/",
+        "/packages/coding-agent/docs/"
+      ]
     }
   ]
 }

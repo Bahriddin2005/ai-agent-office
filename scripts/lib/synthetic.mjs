@@ -129,6 +129,9 @@ _Source idea: W17ant/Claude-Office (MIT)._`,
     ['ecc', 'affaan-m/ECC', 'main', 'academy'],
     ['claude-skills', 'alirezarezvani/claude-skills', 'main', 'academy'],
     ['best-practice', 'shanraisshan/claude-code-best-practice', 'main', 'academy'],
+    ['agents-beginners', 'microsoft/ai-agents-for-beginners', 'main', 'academy'],
+    ['agent-skills', 'addyosmani/agent-skills', 'main', 'academy'],
+    ['pi', 'earendil-works/pi', 'main', 'ai'],
   ];
   for (const [id, repo, branch, dept] of readmes) {
     const raw = read(join(sourcesDir, id, 'README.md'));

@@ -26,6 +26,9 @@ export class Fx {
   private glows: Glow[] = [];
   readonly ring: THREE.Mesh;
   readonly hoverRing: THREE.Mesh;
+  /** dashed line on the ground showing where someone is walking */
+  readonly route: THREE.Line;
+  private routeMarker: THREE.Mesh;
 
   constructor() {
     for (let i = 0; i < 24; i++) {
@@ -57,6 +60,32 @@ export class Fx {
     );
     this.hoverRing.visible = false;
     this.group.add(this.ring, this.hoverRing);
+    this.route = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: new THREE.Color('#ffd166').multiplyScalar(1.6), dashSize: 0.5, gapSize: 0.35, transparent: true, depthWrite: false }));
+    this.route.frustumCulled = false;
+    this.route.visible = false;
+    this.routeMarker = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.8, 16).rotateX(Math.PI).translate(0, 0.9, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd166').multiplyScalar(1.4) }));
+    this.routeMarker.visible = false;
+    this.group.add(this.route, this.routeMarker);
+  }
+
+  /** Show a walking route: current position followed by the remaining waypoints. */
+  setRoute(points: [number, number][] | null, time = 0) {
+    if (!points || points.length < 2) {
+      this.route.visible = false;
+      this.routeMarker.visible = false;
+      return;
+    }
+    const pos = new Float32Array(points.length * 3);
+    points.forEach(([x, z], i) => pos.set([x, 0.08, z], i * 3));
+    this.route.geometry.dispose();
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    this.route.geometry = g;
+    this.route.computeLineDistances();
+    this.route.visible = true;
+    const [lx, lz] = points[points.length - 1];
+    this.routeMarker.position.set(lx, Math.sin(time * 4) * 0.12, lz);
+    this.routeMarker.visible = true;
   }
 
   arc(from: THREE.Vector3, to: THREE.Vector3, color: THREE.ColorRepresentation, seconds = 3) {

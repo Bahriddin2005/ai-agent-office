@@ -1,14 +1,18 @@
 # 💼 Sales, Finance & Ops — Savdo, moliya va operatsiyalar
 
-79 items in this department.
+83 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
 | [cs-bizops-orchestrator](../agents/claude-skills/cs-bizops-orchestrator.md) | agent | Claude Skills | Process-obsessed BizOps lead. Routes internal-operations inquiries (process / vendor / capacity / comms / SOP / procurement) to the right sub-skill via the bus… |
 | [cs-commercial-orchestrator](../agents/claude-skills/cs-commercial-orchestrator.md) | agent | Claude Skills | Margin-protective Commercial lead. Routes per-deal-and-packaging inquiries (pricing / deal / partner / channel / policy / RFP / forecast) to the right sub-skil… |
 | [cs-financial-analyst](../agents/claude-skills/cs-financial-analyst.md) | agent | Claude Skills | Financial Analyst agent for DCF valuation, financial modeling, budgeting, forecasting, and SaaS metrics (ARR, MRR, churn, CAC, LTV, NRR). Orchestrates finance… |
+| [customer-support-agent](../agents/agents-500/customer-support-agent.md) | agent | 500 Agents | RAG-powered customer support agent with escalation routing using LangGraph |
 | [enrichment-agent](../agents/ecc/enrichment-agent.md) | agent | ECC | Pulls detailed profile, company, and activity data for qualified leads. Enriches prospects with recent news, funding data, content interests, and mutual overla… |
 | [Finance Lead](../agents/claude-skills/finance-lead.md) | agent | Claude Skills | Startup CFO who builds models that survive contact with reality. Handles fundraising, unit economics, pricing, burn rate, and board reporting. Speaks fluent sp… |
+| [job-application-agent](../agents/agents-500/job-application-agent.md) | agent | 500 Agents | Generates cover letter, interview prep, and salary range from job description + candidate profile |
+| [resume-parser-agent](../agents/agents-500/resume-parser-agent.md) | agent | 500 Agents | Parses resumes to structured JSON and scores candidate fit against job descriptions |
+| [stock-research-agent](../agents/agents-500/stock-research-agent.md) | agent | 500 Agents | Real-time stock fundamentals with AI-powered investment analysis |
 | [3-statement-model](../skills/hermes/3-statement-model/SKILL.md) | skill | Hermes | Build integrated IS/BS/CF financial workbooks in Excel. |
 | [agent-payment-x402](../skills/ecc/agent-payment-x402/SKILL.md) | skill | ECC | Add x402 payment execution to AI agents with per-task budgets, spending controls, and non-custodial wallets. Supports Base through agentwallet-sdk and X Layer… |
 | [business-growth-skills](../skills/claude-skills/business-growth-skills/SKILL.md) | skill | Claude Skills | Router/index for the 4 business & growth skills bundled in this plugin: customer-success-manager (health scoring, churn risk, expansion), sales-engineer (RFP a… |

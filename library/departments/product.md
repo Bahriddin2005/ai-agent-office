@@ -1,6 +1,6 @@
 # 🗺️ Product & Projects — Mahsulot va loyihalar
 
-72 items in this department.
+81 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -26,11 +26,14 @@
 | [delivery-gate](../skills/ecc/delivery-gate/SKILL.md) | skill | ECC | Stop hook that blocks Claude from finishing until quality checks pass. Detects rationalization patterns (surface text heuristics), stale learning logs (filesys… |
 | [dev-team](../skills/ecc/dev-team/SKILL.md) | skill | ECC | Simulate a collaborative dev team session where multiple role-based personas (PM, Architect, Developer, QA) respond to the same problem together in one session… |
 | [experiment-designer](../skills/claude-skills/experiment-designer/SKILL.md) | skill | Claude Skills | Use when planning product experiments, writing testable hypotheses, estimating sample size, prioritizing tests, or interpreting A/B outcomes with practical sta… |
+| [idea-refine](../skills/agent-skills/idea-refine/SKILL.md) | skill | Agent Skills | Refines raw ideas into sharp, actionable concepts through structured divergent and convergent thinking. Use when an idea is still vague, when you need to stres… |
+| [interview-me](../skills/agent-skills/interview-me/SKILL.md) | skill | Agent Skills | Extracts what the user actually wants instead of what they think they should want. Achieves this through one-question-at-a-time interview until ~95% confidence… |
 | [ios-icon-gen](../skills/ecc/ios-icon-gen/SKILL.md) | skill | ECC | Generate iOS app icons as PNG imagesets for Xcode asset catalogs from SF Symbols (5000+ Apple-native) or Iconify API (275k+ open source icons from 200+ collect… |
 | [jira-expert](../skills/claude-skills/jira-expert/SKILL.md) | skill | Claude Skills | Atlassian Jira expert for creating and managing projects, planning, product discovery, JQL queries, workflows, custom fields, automation, reporting, and all Ji… |
 | [jira-integration](../skills/ecc/jira-integration/SKILL.md) | skill | ECC | Use this skill when retrieving Jira tickets, analyzing requirements, updating ticket status, adding comments, or transitioning issues. Provides Jira API patter… |
 | [logistics-exception-management](../skills/ecc/logistics-exception-management/SKILL.md) | skill | ECC | Codified freight-exception handling expertise for shipment delays, damages, losses, shortages, and carrier disputes, with escalation protocols, carrier-specifi… |
 | [opensource-pipeline](../skills/ecc/opensource-pipeline/SKILL.md) | skill | ECC | Open-source pipeline: fork, sanitize, and package private projects for safe public release. Chains 3 agents (forker, sanitizer, packager). Triggers: '/opensour… |
+| [planning-and-task-breakdown](../skills/agent-skills/planning-and-task-breakdown/SKILL.md) | skill | Agent Skills | Breaks work into ordered tasks. Use when you have a spec or clear requirements and need to break work into implementable tasks. Use when a task feels too large… |
 | [pm-skills](../skills/claude-skills/pm-skills/SKILL.md) | skill | Claude Skills | Use when coordinating project-delivery work across the 8 project-management sub-skills — sprint/velocity analytics, portfolio health, Jira/JQL, Confluence, Atl… |
 | [product-analytics](../skills/claude-skills/product-analytics/SKILL.md) | skill | Claude Skills | Use when defining product KPIs, building metric dashboards, running cohort or retention analysis, or interpreting feature adoption trends across product stages. |
 | [product-capability](../skills/ecc/product-capability/SKILL.md) | skill | ECC | Translate PRD intent, roadmap asks, or product discussions into an implementation-ready capability plan that exposes constraints, invariants, interfaces, and u… |
@@ -46,6 +49,7 @@
 | [saas-scaffolder](../skills/claude-skills/saas-scaffolder/SKILL.md) | skill | Claude Skills | Generates complete, production-ready SaaS project boilerplate including authentication, database schemas, billing integration, API routes, and a working dashbo… |
 | [scrum-master](../skills/claude-skills/scrum-master/SKILL.md) | skill | Claude Skills | Advanced Scrum Master skill for data-driven agile team analysis and coaching. Use when the user asks about sprint planning, velocity tracking, retrospectives,… |
 | [senior-pm](../skills/claude-skills/senior-pm/SKILL.md) | skill | Claude Skills | Senior Project Manager for enterprise software, SaaS, and digital transformation projects. Specializes in portfolio management, quantitative risk analysis, res… |
+| [shipping-and-launch](../skills/agent-skills/shipping-and-launch/SKILL.md) | skill | Agent Skills | Prepares production launches. Use when preparing to deploy to production, or when asking what needs to be in place before shipping. Use when you need a pre-lau… |
 | [spec-to-repo](../skills/claude-skills/spec-to-repo/SKILL.md) | skill | Claude Skills | Use when the user says 'build me an app', 'create a project from this spec', 'scaffold a new repo', 'generate a starter', 'turn this idea into code', 'bootstra… |
 | [stage-launch](../skills/claude-skills/stage-launch/SKILL.md) | skill | Claude Skills | Phase 2 of building a Claude Managed Agent — turn a validated build sheet into exact API payloads and a resumable BYOK curl launch script, then launch (environ… |
 | [team-communications](../skills/claude-skills/team-communications/SKILL.md) | skill | Claude Skills | Write internal company communications — 3P updates (Progress/Plans/Problems), company-wide newsletters, FAQ roundups, incident reports, leadership updates, sta… |
@@ -76,3 +80,8 @@
 | [sprint-health](../commands/claude-skills/sprint-health.md) | command | Claude Skills | Sprint health scoring and velocity analysis for agile teams. Usage: /sprint-health [options] |
 | [sprint-plan](../commands/claude-skills/sprint-plan.md) | command | Claude Skills | Capacity-gated sprint planning — runs capacity math, carry-over check, and a definition-of-ready gate before committing scope. Usage: /sprint-plan [capacity] |
 | [user-story](../commands/claude-skills/user-story.md) | command | Claude Skills | Generate user stories with acceptance criteria and sprint planning. Usage: /user-story [options] |
+| [agno-use-cases](../guides/agents-500/agno-use-cases.md) | guide | 500 Agents | Lightweight, fast agent framework. Best for single-agent tools and rapid prototyping. |
+| [autogen-use-cases](../guides/agents-500/autogen-use-cases.md) | guide | 500 Agents | Microsoft's framework for code generation, execution, and multi-agent research. |
+| [crewai-use-cases](../guides/agents-500/crewai-use-cases.md) | guide | 500 Agents | Role-based multi-agent framework. Great for business automation. |
+| [industry-use-cases](../guides/agents-500/industry-use-cases.md) | guide | 500 Agents | industry-use-cases |
+| [langgraph-use-cases](../guides/agents-500/langgraph-use-cases.md) | guide | 500 Agents | State-machine framework for complex, stateful agent workflows and RAG pipelines. |

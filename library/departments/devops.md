@@ -1,10 +1,11 @@
 # ☁️ DevOps & Cloud — DevOps va bulut
 
-45 items in this department.
+51 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
 | [DevOps Engineer](../agents/claude-skills/devops-engineer.md) | agent | Claude Skills | Builds infrastructure that scales without babysitting. Automates everything worth automating. Monitors before it breaks. Treats clicking in consoles as a produ… |
+| [github-issue-triager](../agents/agents-500/github-issue-triager.md) | agent | 500 Agents | Automatically triages GitHub issues with severity, category, and routing recommendations |
 | [homelab-architect](../agents/ecc/homelab-architect.md) | agent | ECC | Designs home and small-lab network plans from hardware inventory, goals, and operator experience level, with safe staged changes and rollback guidance. |
 | [network-architect](../agents/ecc/network-architect.md) | agent | ECC | Designs enterprise or multi-site network architecture from requirements, using existing network skills for focused routing, validation, automation, and trouble… |
 | [network-config-reviewer](../agents/ecc/network-config-reviewer.md) | agent | ECC | Reviews router and switch configurations for security, correctness, stale references, risky change-window commands, and missing operational guardrails. |
@@ -12,6 +13,7 @@
 | [opensource-forker](../agents/ecc/opensource-forker.md) | agent | ECC | Fork any project for open-sourcing. Copies files, strips secrets and credentials (20+ patterns), replaces internal references with placeholders, generates .env… |
 | [opensource-packager](../agents/ecc/opensource-packager.md) | agent | ECC | Generate complete open-source packaging for a sanitized project. Produces CLAUDE.md, setup.sh, README.md, LICENSE, CONTRIBUTING.md, and GitHub issue templates.… |
 | [azure-cloud-architect](../skills/claude-skills/azure-cloud-architect/SKILL.md) | skill | Claude Skills | Design Azure architectures for startups and enterprises. Use when asked to design Azure infrastructure, create Bicep/ARM templates, optimize Azure costs, set u… |
+| [ci-cd-and-automation](../skills/agent-skills/ci-cd-and-automation/SKILL.md) | skill | Agent Skills | Automates CI/CD pipeline setup. Use when setting up or modifying build and deployment pipelines. Use when you need to automate quality gates, configure test ru… |
 | [ci-cd-pipeline-builder](../skills/claude-skills/ci-cd-pipeline-builder/SKILL.md) | skill | Claude Skills | Generate pragmatic CI/CD pipelines from detected project stack signals — fast baseline generation, repeatable checks, environment-aware deployment stages. Use… |
 | [cloud-security](../skills/claude-skills/cloud-security/SKILL.md) | skill | Claude Skills | Use when assessing cloud infrastructure for security misconfigurations, IAM privilege escalation paths, S3 public exposure, open security group rules, or IaC s… |
 | [cloudflare-temporary-deploy](../skills/hermes/cloudflare-temporary-deploy/SKILL.md) | skill | Hermes | Deploy a Worker live, no account, via wrangler --temporary. |
@@ -41,11 +43,15 @@
 | [network-bgp-diagnostics](../skills/ecc/network-bgp-diagnostics/SKILL.md) | skill | ECC | Diagnostics-only BGP troubleshooting patterns for neighbor state, route exchange, prefix policy, AS path inspection, and safe evidence collection. Use when a B… |
 | [network-config-validation](../skills/ecc/network-config-validation/SKILL.md) | skill | ECC | Pre-deployment checks for router and switch configuration, including dangerous commands, duplicate addresses, subnet overlaps, stale references, management-pla… |
 | [network-interface-health](../skills/ecc/network-interface-health/SKILL.md) | skill | ECC | Diagnose interface errors, drops, CRCs, duplex mismatches, flapping, speed negotiation issues, and counter trends on routers, switches, and Linux hosts. Use wh… |
+| [observability-and-instrumentation](../skills/agent-skills/observability-and-instrumentation/SKILL.md) | skill | Agent Skills | Instruments code so production behavior is visible and diagnosable. Use when adding logging, metrics, tracing, or alerting. Use when shipping any feature that… |
 | [pinggy-tunnel](../skills/hermes/pinggy-tunnel/SKILL.md) | skill | Hermes | Zero-install localhost tunnels over SSH via Pinggy. |
 | [recursive-decision-ledger](../skills/ecc/recursive-decision-ledger/SKILL.md) | skill | ECC | Run repeated rollouts ("Prime Gauss" style recursive prompting) while keeping an append-only decision ledger of trials, marks, coherence checks, and promotion… |
+| [release](../skills/pi/release/SKILL.md) | skill | Pi | Prepare, publish, verify, and recover pi releases. Use for release preparation, local release smoke tests, publishing, and failed release CI or announcements. |
 | [runbook-generator](../skills/claude-skills/runbook-generator/SKILL.md) | skill | Claude Skills | Generate operational runbooks from a service name — deployment, incident response, maintenance, and rollback workflows. Templated structure customizable per en… |
 | [slo-architect](../skills/claude-skills/slo-architect/SKILL.md) | skill | Claude Skills | Use when defining, reviewing, or operating SLOs/SLIs/error budgets. Triggers on "define an SLO", "what should our SLO be", "error budget", "burn rate", "SLI",… |
 | [terraform-patterns](../skills/claude-skills/terraform-patterns/SKILL.md) | skill | Claude Skills | Terraform infrastructure-as-code agent skill and plugin for Claude Code, Codex, Gemini CLI, Cursor, OpenClaw. Covers module design patterns, state management s… |
 | [tinystruct-patterns](../skills/ecc/tinystruct-patterns/SKILL.md) | skill | ECC | Expert guidance for developing with the tinystruct Java framework. Use when working on the tinystruct codebase or any project built on tinystruct — including c… |
 | [watchers](../skills/hermes/watchers/SKILL.md) | skill | Hermes | Poll RSS, JSON APIs, and GitHub with watermark dedup. |
+| [cl](../commands/pi/cl.md) | command | Pi | Audit changelog entries before release |
 | [pipeline](../commands/claude-skills/pipeline.md) | command | Claude Skills | Detect stack and generate CI/CD pipeline configs. Usage: /pipeline [options] |
+| [ship](../commands/agent-skills/ship.md) | command | Agent Skills | Run the pre-launch checklist via parallel fan-out to specialist personas, then synthesize a go/no-go decision |

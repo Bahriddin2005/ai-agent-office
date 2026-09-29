@@ -27,7 +27,7 @@ export type Prop = (typeof PROPS)[number];
 export const LOWERS = ['trousers', 'skirt', 'long'] as const;
 export type Lower = (typeof LOWERS)[number];
 
-export const ROLES = ['director', 'assistant', 'operations', 'strategist', 'sales', 'marketer', 'creator', 'designer', 'analyst', 'developer', 'accountant', 'cleaner', 'guard', 'coordinator'] as const;
+export const ROLES = ['director', 'assistant', 'operations', 'strategist', 'sales', 'marketer', 'creator', 'designer', 'analyst', 'developer', 'accountant', 'cleaner', 'guard', 'coordinator', 'teacher'] as const;
 export type Role = (typeof ROLES)[number];
 
 export const ROLE_TITLE: Record<Role, { uz: string; en: string; emoji: string }> = {
@@ -45,6 +45,7 @@ export const ROLE_TITLE: Record<Role, { uz: string; en: string; emoji: string }>
   cleaner: { uz: 'Farrosh', en: 'Cleaner', emoji: '🧹' },
   guard: { uz: 'Qo‘riqchi', en: 'Security guard', emoji: '🛡️' },
   coordinator: { uz: 'Bosh koordinator', en: 'Lead coordinator', emoji: '✳️' },
+  teacher: { uz: 'O‘qituvchi', en: 'Teacher', emoji: '🎓' },
 };
 
 export interface Look {
@@ -851,7 +852,7 @@ const DARK = ['#23262d', '#2b2f38', '#1f232b', '#33363f'];
 
 const FEMALE: Record<Role, number> = {
   director: 0.3, assistant: 0.7, operations: 0.45, strategist: 0.4, sales: 0.35, marketer: 0.6, creator: 0.5,
-  designer: 0.5, analyst: 0.45, developer: 0.3, accountant: 0.55, cleaner: 0.5, guard: 0.05, coordinator: 0.5,
+  designer: 0.5, analyst: 0.45, developer: 0.3, accountant: 0.55, cleaner: 0.5, guard: 0.05, coordinator: 0.5, teacher: 0.55,
 };
 
 function rng(seed: number) {
@@ -999,6 +1000,15 @@ export function lookFor(role: Role, seed: number, badge: string, tint = '#3d7bf2
       L.hairStyle = 'cap';
       L.lower = 'trousers';
       L.shoe = '#101114';
+      break;
+    case 'teacher':
+      L.outfit = female ? pick(['blazer', 'sweater'] as const) : pick(['shirtTie', 'sweater', 'blazer'] as const);
+      L.top = L.outfit === 'shirtTie' ? pick(['#f2f2ef', '#e6eef2']) : pick(['#7b5e57', '#556b2f', '#3c4a63', '#8c6d4f']);
+      L.under = L.outfit === 'shirtTie' ? L.top : '#f5f3ee';
+      L.accent = pick(['#d97757', '#7a1f2b', '#2f4b7c']);
+      if (chance(0.6)) L.eyewear = 'glasses';
+      if (chance(0.5)) L.prop = pick(['folder', 'tablet'] as const);
+      if (!female && chance(0.3)) L.hair = pick(GREY);
       break;
     case 'coordinator':
       L.outfit = 'blazer';

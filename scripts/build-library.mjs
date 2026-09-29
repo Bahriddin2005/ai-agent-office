@@ -75,9 +75,22 @@ const list = (v) => {
   if (typeof v === 'object') return Object.keys(v);
   return String(v).split(/[,\s]+/).map((x) => x.trim()).filter(Boolean);
 };
+const readMeta = (file) => {
+  try {
+    const v = parseYaml(readFileSync(file, 'utf8'));
+    return v && typeof v === 'object' ? v : {};
+  } catch {
+    return {};
+  }
+};
 const firstHeading = (body) => /^#\s+(.+)$/m.exec(body)?.[1]?.trim();
-const firstParagraph = (body) =>
-  body.split(/\r?\n\r?\n/).map((p) => p.trim()).find((p) => p && !p.startsWith('#') && !p.startsWith('```') && !p.startsWith('|') && !p.startsWith('<')) || '';
+const firstParagraph = (body) => {
+  const paras = body.split(/\r?\n\r?\n/).map((p) => p.trim());
+  const i = paras.findIndex((p) => p && !/^(#|```|\||<|!\[|\[!\[|> _\(|---|\*\*\*)/.test(p) && !/^\{[^}]*\}$/.test(p));
+  if (i < 0) return '';
+  // "This lesson will cover:" says little on its own — keep the list that follows.
+  return /:\s*$/.test(paras[i]) && paras[i + 1] ? `${paras[i]} ${paras[i + 1].replace(/^[-*]\s+/gm, '').replace(/\r?\n/g, '; ')}` : paras[i];
+};
 
 function kindOf(rel, sourceId) {
   const parts = rel.split('/');
@@ -88,6 +101,43 @@ function kindOf(rel, sourceId) {
   if (parts.slice(0, -1).includes('commands')) return 'command';
   if (sourceId === 'best-practice' && /^(best-practice|tips|orchestration-workflow)\//.test(rel)) return 'guide';
   return null;
+}
+
+// Repos with their own layout list `scan` rules in sources.json instead: every
+// Markdown file (outside heavy asset/translation folders) is matched against
+// them, first match wins.
+const SCAN_SKIP = new Set(['node_modules', '.git', 'translations', 'translated_images', 'images', 'assets', 'dist', 'build', 'venv', '.venv']);
+function* walkAll(dir, base = dir, depth = 0) {
+  if (depth > 8) return;
+  let entries;
+  try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+  for (const e of entries) {
+    const full = join(dir, e.name);
+    if (e.isDirectory()) {
+      if (!SCAN_SKIP.has(e.name)) yield* walkAll(full, base, depth + 1);
+    } else if (e.isFile() && e.name.toLowerCase().endsWith('.md')) {
+      yield relative(base, full).split(sep).join('/');
+    }
+  }
+}
+const ruleFor = (src, rel) => src.scan?.find((r) => new RegExp(r.match, 'u').test(rel));
+
+/** Split one Markdown file into sections whose heading matches `re` (used for catalogue READMEs). */
+function splitSections(text, re) {
+  const lines = text.split(/\r?\n/);
+  const out = [];
+  let cur = null;
+  for (const line of lines) {
+    const h = /^(#{1,3})\s/.exec(line);
+    if (h) {
+      const m = re.exec(line);
+      if (cur && (m || h[1].length <= cur.level)) { out.push(cur); cur = null; }
+      if (m) { cur = { title: m[1], level: h[1].length, lines: [line] }; continue; }
+    }
+    if (cur) cur.lines.push(line);
+  }
+  if (cur) out.push(cur);
+  return out.map((c) => ({ title: c.title, text: c.lines.join('\n').trim() + '\n' }));
 }
 
 // Paths inside dot-dirs (.claude) or deeper trees lose ties against canonical ones.
@@ -105,27 +155,45 @@ for (const src of sources) {
     continue;
   }
   const ref = lock[src.id]?.commit || src.branch;
-  const files = [...walk(dir)].sort((a, b) => pathRank(a) - pathRank(b) || a.localeCompare(b));
+  const files = [...(src.scan ? walkAll(dir) : walk(dir))].sort((a, b) => pathRank(a) - pathRank(b) || a.localeCompare(b));
   let count = 0;
+  const docs = [];
   for (const rel of files) {
-    const type = kindOf(rel, src.id);
+    const rule = src.scan ? ruleFor(src, rel) : undefined;
+    const type = src.scan ? rule?.type : kindOf(rel, src.id);
     if (!type) continue;
     const text = readFileSync(join(dir, rel), 'utf8');
+    if (rule?.split) {
+      for (const sec of splitSections(text, new RegExp(rule.split, 'u'))) {
+        const anchor = slug(sec.title);
+        docs.push({ rel: `${rel}#${anchor}`, type, rule, text: sec.text, name: anchor.endsWith('use-cases') ? anchor : `${anchor}-use-cases`, heading: sec.title });
+      }
+      continue;
+    }
+    docs.push({ rel, type, rule, text });
+  }
+  for (const doc of docs) {
+    const { rel, type, rule, text } = doc;
     const { data, body } = splitFrontmatter(text);
     const parts = rel.split('/');
+    const meta = rule?.meta ? readMeta(join(dir, dirname(rel), rule.meta)) : {};
     let name;
-    if (type === 'skill') name = data.name || parts.at(-2);
+    if (doc.name) name = doc.name;
+    else if (rule?.nameFrom === 'dir') name = type === 'agent' ? parts.at(-2).replace(/^\d+-/, '') : parts.at(-2);
+    else if (rule?.nameFrom === 'file') name = parts.at(-1).replace(/\.md$/i, '');
+    else if (type === 'skill') name = data.name || parts.at(-2);
     else if (type === 'command') {
       const at = parts.lastIndexOf('commands');
-      name = data.name || parts.slice(at + 1).join(':').replace(/\.md$/i, '');
+      name = data.name || (at >= 0 ? parts.slice(at + 1).join(':') : parts.at(-1)).replace(/\.md$/i, '');
     } else name = data.name || parts.at(-1).replace(/\.md$/i, '');
     name = String(name).trim();
-    const description = clean(data.description || firstParagraph(body) || firstHeading(body) || name);
-    if (type === 'agent' && !data.description) continue; // not an agent definition
+    const description = clean(data.description || meta.description || firstParagraph(body) || firstHeading(body) || name);
+    if (type === 'agent' && !data.description && !rule) continue; // not an agent definition
     if (type === 'command' && !data.description && !firstHeading(body)) continue;
     const id = `${type}:${src.id}:${slug(name)}`;
+    if (!body.trim()) continue;
     if (seen.has(id)) continue; // duplicate mirror (e.g. .claude/ copy) — keep the canonical one
-    const dupKey = `${type}|${src.id}|${description}`;
+    const dupKey = `${type}|${src.id}|${type === 'guide' ? name : description}`;
     if (seen.has(dupKey)) continue; // same definition shipped twice under different names
     seen.set(dupKey, true);
     const hermes = data.metadata?.hermes || {};
@@ -133,15 +201,16 @@ for (const src of sources) {
       id,
       type,
       name,
-      title: type === 'guide' ? firstHeading(body) || name : undefined,
+      title: type === 'guide' ? doc.heading || firstHeading(body)?.replace(/\s*\{[^}]*\}\s*$/, '') || name : undefined,
       source: src.id,
+      dept: rule?.dept,
       description,
       path: rel,
-      url: `https://github.com/${src.repo}/blob/${ref}/${rel.split('/').map(encodeURIComponent).join('/')}`,
+      url: `https://github.com/${src.repo}/blob/${ref}/${rel.split('#')[0].split('/').map(encodeURIComponent).join('/')}${rel.includes('#') ? '#' + rel.split('#')[1] : ''}`,
       tools: list(data.tools || data.allowedTools || data['allowed-tools']).slice(0, 20),
       model: typeof data.model === 'string' ? data.model : undefined,
-      tags: [...list(hermes.tags), ...list(data.tags)].slice(0, 12),
-      domain: typeof data.domain === 'string' ? data.domain : undefined,
+      tags: [...list(hermes.tags), ...list(data.tags), ...list(meta.tags)].slice(0, 12),
+      domain: typeof data.domain === 'string' ? data.domain : typeof meta.industry === 'string' ? meta.industry : undefined,
       skillRefs: list(data.skills).map((s) => s.split('/').at(-1)),
       relatedRefs: list(hermes.related_skills),
       body,

@@ -1,6 +1,6 @@
 # 🎨 Frontend & Design — Frontend va dizayn
 
-90 items in this department.
+95 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -11,12 +11,14 @@
 | [type-design-analyzer](../agents/ecc/type-design-analyzer.md) | agent | ECC | Analyze type design for encapsulation, invariant expression, usefulness, and enforcement. |
 | [ux-designer](../agents/best-practice/ux-designer.md) | agent | Best Practice | Produces a concise, accessible UX brief with flows, states, and annotations. |
 | [vue-reviewer](../agents/ecc/vue-reviewer.md) | agent | ECC | Expert Vue.js code reviewer specializing in Composition API correctness, reactivity pitfalls, component architecture, template security, and Vue-specific perfo… |
+| [web-performance-auditor](../agents/agent-skills/web-performance-auditor.md) | agent | Agent Skills | Web performance engineer focused on Core Web Vitals, loading, rendering, and network optimization. Use for performance-focused audits, CWV analysis, and identi… |
 | [a11y-audit](../skills/claude-skills/a11y-audit/SKILL.md) | skill | Claude Skills | Accessibility audit skill for scanning, fixing, and verifying WCAG 2.2 Level A and AA compliance across React, Next.js, Vue, Angular, Svelte, and plain HTML co… |
 | [accessibility](../skills/ecc/accessibility/SKILL.md) | skill | ECC | Design, implement, and audit accessible UI to WCAG 2.2 Level AA across Web, iOS, and Android — semantic ARIA roles and labels, accessibility traits and hints,… |
 | [adversarial-ux-test](../skills/hermes/adversarial-ux-test/SKILL.md) | skill | Hermes | Roleplay a hostile user to find and triage UX pain points. |
 | [agent-browser](../skills/best-practice/agent-browser/SKILL.md) | skill | Best Practice | Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking sc… |
 | [agent-designer](../skills/claude-skills/agent-designer/SKILL.md) | skill | Claude Skills | Use when the user asks to design a multi-agent system, pick an orchestration pattern (supervisor/swarm/pipeline), generate tool schemas for agents, or evaluate… |
 | [angular-developer](../skills/ecc/angular-developer/SKILL.md) | skill | ECC | Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signa… |
+| [api-and-interface-design](../skills/agent-skills/api-and-interface-design/SKILL.md) | skill | Agent Skills | Guides stable API and interface design. Use when designing APIs, module boundaries, or any public interface. Use when creating REST or GraphQL endpoints, defin… |
 | [archify](../skills/hermes/archify/SKILL.md) | skill | Hermes | Validated interactive HTML diagrams, upstream-maintained. |
 | [auteur](../skills/hermes/auteur/SKILL.md) | skill | Hermes | Design and build cinematic, award-level web pages. |
 | [blender-motion-state-inspection](../skills/ecc/blender-motion-state-inspection/SKILL.md) | skill | ECC | Use this skill when inspecting Blender characters, rigs, poses, animation retargeting, ground contact, facing direction, or model-vs-motion alignment where scr… |
@@ -36,6 +38,7 @@
 | [frontend-design-direction](../skills/ecc/frontend-design-direction/SKILL.md) | skill | ECC | Set an ECC-specific frontend design direction for production UI work. Use when building or improving websites, dashboards, applications, components, landing pa… |
 | [frontend-patterns](../skills/ecc/frontend-patterns/SKILL.md) | skill | ECC | Frontend development patterns for React, Next.js, state management, performance optimization, and UI best practices. Use when building or reviewing React or Ne… |
 | [frontend-slides](../skills/ecc/frontend-slides/SKILL.md) | skill | ECC | Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files. Use when the user wants to build a presentation, convert a P… |
+| [frontend-ui-engineering](../skills/agent-skills/frontend-ui-engineering/SKILL.md) | skill | Agent Skills | Builds production-quality, accessible, responsive user-facing UIs. Use when building or modifying interfaces and pages, creating components, implementing layou… |
 | [healthcare-emr-patterns](../skills/ecc/healthcare-emr-patterns/SKILL.md) | skill | ECC | EMR/EHR development patterns for healthcare applications. Clinical safety, encounter workflows, prescription generation, clinical decision support integration,… |
 | [impeccable](../skills/hermes/impeccable/SKILL.md) | skill | Hermes | Frontend design guidance, upstream-maintained (impeccable). |
 | [inspecting-hermes-desktop-dom](../skills/hermes/inspecting-hermes-desktop-dom/SKILL.md) | skill | Hermes | Read the live Hermes desktop DOM/CSS over CDP. |
@@ -57,6 +60,7 @@
 | [observability-designer](../skills/claude-skills/observability-designer/SKILL.md) | skill | Claude Skills | Design production-ready observability strategies combining metrics, logs, and traces. Includes SLI/SLO design, golden-signals monitoring, alert optimization. U… |
 | [orch-build-mvp](../skills/ecc/orch-build-mvp/SKILL.md) | skill | ECC | Orchestrate bootstrapping a working MVP from a design or spec document — ingest the SDD/PRD, plan thin vertical slices, scaffold the first end-to-end slice, th… |
 | [page-agent](../skills/hermes/page-agent/SKILL.md) | skill | Hermes | Embed an in-page natural-language GUI copilot in web apps. |
+| [performance-optimization](../skills/agent-skills/performance-optimization/SKILL.md) | skill | Agent Skills | Optimizes application performance across frontend, backend, queries, and databases. Use when performance requirements exist, when you suspect performance regre… |
 | [popular-web-designs](../skills/hermes/popular-web-designs/SKILL.md) | skill | Hermes | 54 real design systems (Stripe, Linear, Vercel) as HTML/CSS. |
 | [publish-site](../skills/hermes/publish-site/SKILL.md) | skill | Hermes | Versioned site deploys to GitHub/Cloudflare/Netlify Pages. |
 | [react-native-patterns](../skills/ecc/react-native-patterns/SKILL.md) | skill | ECC | React Native and Expo app patterns — Expo Router navigation, state separation (server/client/route/form), TanStack Query data fetching with Zod, performant lis… |
@@ -94,3 +98,4 @@
 | [react-test](../commands/ecc/react-test.md) | command | ECC | Enforce TDD workflow for React. Write React Testing Library tests first (behavior-focused, accessibility-first), then implement components. Detects Vitest or J… |
 | [slo-design](../commands/claude-skills/slo-design.md) | command | Claude Skills | Interactive wizard to design an SLO with SLI, target, error budget, and burn-rate alerts |
 | [vue-review](../commands/ecc/vue-review.md) | command | ECC | Comprehensive Vue.js code review for Composition API correctness, reactivity, composable patterns, template security, accessibility, and Vue-specific performan… |
+| [webperf](../commands/agent-skills/webperf.md) | command | Agent Skills | Run a web performance audit via the web-performance-auditor persona |

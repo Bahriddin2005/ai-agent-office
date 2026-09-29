@@ -34,6 +34,8 @@ export class Office {
   readonly hemi: THREE.HemisphereLight;
   readonly sun: THREE.DirectionalLight;
   readonly campus: Campus;
+  /** Claude Academy's lecture screen */
+  readonly lecture: { set(title: string, lines: string[], sub?: string): void } | null;
   private coreLight: THREE.PointLight;
 
   constructor(
@@ -57,6 +59,7 @@ export class Office {
     this.books = this.buildShelves();
     this.buildAmenities();
     this.buildReception();
+    this.lecture = this.buildAcademy();
     this.core = new Core(data);
     this.group.add(this.core.group);
   }
@@ -302,6 +305,64 @@ export class Office {
     sign.scale.set(6, 6 / sign.userData.aspect, 1);
     sign.position.set(desk.x, 4.3, desk.z + 0.6);
     this.group.add(sign);
+  }
+
+  // -------------------------------------------------------------- academy --
+  private buildAcademy() {
+    const a = this.layout.academy;
+    if (!a) return null;
+    const W = 1280;
+    const H = Math.round((W * a.screen.h) / a.screen.w);
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const g = canvas.getContext('2d')!;
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(a.screen.w, a.screen.h), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));
+    screen.position.set(a.screen.x, a.screen.y, a.screen.z);
+    screen.rotation.y = a.screen.heading;
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(a.screen.w + 0.3, a.screen.h + 0.3, 0.12), new THREE.MeshLambertMaterial({ color: '#2a2d36' }));
+    frame.position.copy(screen.position);
+    frame.rotation.y = a.screen.heading;
+    frame.translateZ(-0.08);
+    // Lectern in front of the teacher's place.
+    const lectern = new THREE.Mesh(
+      merge([box(0.8, 1.05, 0.5, { at: [0, 0.525, 0], color: '#8b5e3c' }), box(0.9, 0.06, 0.6, { at: [0, 1.08, -0.02], rot: [-0.25, 0, 0], color: '#6d4c41' }), box(0.5, 0.35, 0.02, { at: [0, 0.6, 0.26], color: '#d97757' })]),
+      new THREE.MeshLambertMaterial({ vertexColors: true }),
+    );
+    const p = a.podium;
+    lectern.position.set(p.x + Math.sin(p.heading) * 0.75, 0, p.z + Math.cos(p.heading) * 0.75);
+    lectern.rotation.y = p.heading + Math.PI;
+    this.group.add(frame, screen, lectern);
+    const draw = (title: string, lines: string[], sub = '') => {
+      const grd = g.createLinearGradient(0, 0, W, H);
+      grd.addColorStop(0, '#231612');
+      grd.addColorStop(1, '#5a2c1e');
+      g.fillStyle = grd;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = '#d97757';
+      g.fillRect(0, 0, W, 12);
+      g.textBaseline = 'top';
+      g.fillStyle = '#f4c7ae';
+      g.font = `700 34px ${FONT}`;
+      g.fillText('🎓 Claude Akademiyasi', 48, 40);
+      if (sub) {
+        g.textAlign = 'right';
+        g.fillText(sub, W - 48, 40);
+        g.textAlign = 'left';
+      }
+      g.fillStyle = '#ffffff';
+      g.font = `800 60px ${FONT}`;
+      g.fillText(title, 48, 100, W - 96);
+      g.font = `500 34px ${FONT}`;
+      g.fillStyle = '#f7e9e1';
+      lines.slice(0, Math.max(1, Math.floor((H - 220) / 48))).forEach((l, i) => g.fillText(`• ${l}`, 60, 196 + i * 48, W - 120));
+      tex.needsUpdate = true;
+    };
+    draw('Dars jadvali', ['Har bir bo‘lim navbat bilan o‘qiydi', 'Boss tanlagan agentlar birinchi keladi', 'O‘rganilgan skillar agentning ishiga qo‘shiladi']);
+    return { set: draw };
   }
 
   // ------------------------------------------------------------ day/night --

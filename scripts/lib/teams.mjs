@@ -24,12 +24,13 @@ export const TEAMS = [
       ['agent:ecc:tdd-guide', { uz: 'Test (QA)', en: 'Tests (QA)' }],
       ['agent:ecc:code-reviewer', { uz: 'Kod sharhi', en: 'Code review' }],
       ['agent:ecc:security-reviewer', { uz: 'Xavfsizlik', en: 'Security' }],
+      ['agent:agent-skills:test-engineer', { uz: 'Test muhandisi', en: 'Test engineer' }],
+      ['agent:agent-skills:web-performance-auditor', { uz: 'Tezlik auditi', en: 'Web performance' }],
     ],
     skills: [
       'skill:claude-skills:senior-fullstack', 'skill:claude-skills:senior-frontend', 'skill:claude-skills:senior-backend',
       'skill:claude-skills:database-schema-designer', 'skill:ecc:api-design', 'skill:ecc:frontend-patterns', 'skill:ecc:backend-patterns',
-      'skill:claude-skills:saas-scaffolder', 'skill:claude-skills:landing-page-generator', 'skill:ecc:tdd-workflow', 'skill:ecc:e2e-testing', 'skill:ecc:security-review',
-    ],
+      'skill:claude-skills:saas-scaffolder', 'skill:claude-skills:landing-page-generator', 'skill:ecc:tdd-workflow', 'skill:ecc:e2e-testing', 'skill:ecc:security-review', 'skill:agent-skills:spec-driven-development', 'skill:agent-skills:frontend-ui-engineering', 'skill:agent-skills:test-driven-development', 'skill:agent-skills:incremental-implementation'],
     test: 'O‘quvchilardan test oladigan kichik veb-sayt uchun qisqa texnik reja tuz: sahifalar, maʼlumotlar bazasi jadvallari va API endpointlar.',
   },
   {
@@ -49,6 +50,7 @@ export const TEAMS = [
       ['agent:ecc:marketing-agent', { uz: 'Marketolog', en: 'Marketer' }],
       ['agent:claude-skills:cs-linkedin-editor', { uz: 'Muharrir', en: 'Editor' }],
       ['agent:ecc:seo-specialist', { uz: 'SEO', en: 'SEO' }],
+      ['agent:agents-500:social-media-agent', { uz: 'SMM generator', en: 'Social posts' }],
     ],
     skills: [
       'skill:claude-skills:social-media-analyzer', 'skill:claude-skills:social-media-manager', 'skill:claude-skills:social-content',
@@ -118,6 +120,9 @@ export const TEAMS = [
       ['agent:claude-skills:cs-product-analyst', { uz: 'Mahsulot tahlilchisi', en: 'Product analyst' }],
       ['agent:claude-skills:cs-dossier', { uz: 'Dossye', en: 'Dossier' }],
       ['agent:graphify:graphify-librarian', { uz: 'Bilim grafi', en: 'Knowledge graph' }],
+      ['agent:agents-500:web-research-agent', { uz: 'Veb tadqiqotchi', en: 'Web researcher' }],
+      ['agent:agents-500:competitive-analysis-agent', { uz: 'Raqobat tahlili', en: 'Competitor analysis' }],
+      ['agent:agents-500:data-analysis-agent', { uz: 'Data tahlilchi', en: 'Data analyst' }],
     ],
     skills: [
       'skill:claude-skills:deep-research', 'skill:claude-skills:market-research', 'skill:claude-skills:competitive-teardown',
@@ -141,6 +146,8 @@ export const TEAMS = [
       ['agent:claude-skills:cs-financial-analyst', { uz: 'Moliyaviy tahlilchi', en: 'Financial analyst' }],
       ['agent:claude-skills:solo-founder', { uz: 'Asoschi', en: 'Founder' }],
       ['agent:claude-skills:cs-bizops-orchestrator', { uz: 'Biznes operatsiyalar', en: 'BizOps' }],
+      ['agent:agents-500:customer-support-agent', { uz: 'Mijozlar xizmati', en: 'Customer support' }],
+      ['agent:agents-500:resume-parser-agent', { uz: 'HR / rezyume', en: 'HR / resumes' }],
     ],
     skills: [
       'skill:claude-skills:financial-analyst', 'skill:claude-skills:saas-metrics-coach', 'skill:claude-skills:pricing-strategist',
@@ -181,8 +188,9 @@ export const TEAMS = [
       ['agent:claude-skills:cs-ciso-advisor', { uz: 'CISO', en: 'CISO' }],
       ['agent:claude-skills:cs-compliance-officer', { uz: 'Muvofiqlik', en: 'Compliance' }],
       ['agent:claude-skills:cs-dpo-gdpr', { uz: 'Maxfiylik (GDPR)', en: 'Privacy (GDPR)' }],
+      ['agent:agent-skills:security-auditor', { uz: 'Xavfsizlik auditori', en: 'Security auditor' }],
     ],
-    skills: ['skill:ecc:security-review', 'skill:claude-skills:senior-security', 'skill:claude-skills:security-pen-testing', 'skill:claude-skills:gdpr-dsgvo-expert', 'skill:claude-skills:cloud-security'],
+    skills: ['skill:ecc:security-review', 'skill:claude-skills:senior-security', 'skill:claude-skills:security-pen-testing', 'skill:claude-skills:gdpr-dsgvo-expert', 'skill:claude-skills:cloud-security', 'skill:agent-skills:security-and-hardening'],
     test: 'Oddiy login formasi uchun eng muhim 5 ta xavfsizlik tekshiruvini qisqa sanab ber.',
   },
   {
@@ -220,7 +228,7 @@ export const TEAMS = [
       ['agent:claude-skills:cs-agile-product-owner', { uz: 'Product owner', en: 'Product owner' }],
       ['agent:claude-skills:cs-project-manager', { uz: 'Loyiha menejeri', en: 'Project manager' }],
     ],
-    skills: ['skill:claude-skills:agile-product-owner', 'skill:claude-skills:code-to-prd', 'skill:claude-skills:roadmap-communicator', 'skill:claude-skills:product-research', 'skill:claude-skills:ux-researcher-designer'],
+    skills: ['skill:claude-skills:agile-product-owner', 'skill:claude-skills:code-to-prd', 'skill:claude-skills:roadmap-communicator', 'skill:claude-skills:product-research', 'skill:claude-skills:ux-researcher-designer', 'skill:agent-skills:interview-me', 'skill:agent-skills:idea-refine', 'skill:agent-skills:planning-and-task-breakdown'],
     test: 'O‘quvchilar uchun onlayn test platformasining MVP funksiyalari va ularning prioritetlarini tuz.',
   },
   {
@@ -237,6 +245,8 @@ export const TEAMS = [
       ['agent:claude-office:office-manager', { uz: 'Ofis menejeri', en: 'Office manager' }],
       ['agent:hermes:hermes', { uz: 'Universal yordamchi', en: 'Generalist' }],
       ['agent:claude-skills:cs-chief-of-staff', { uz: 'Shtab boshlig‘i', en: 'Chief of staff' }],
+      ['agent:agents-500:meeting-notes-agent', { uz: 'Majlis bayonnomasi', en: 'Meeting notes' }],
+      ['agent:agents-500:email-drafting-agent', { uz: 'Xat yozuvchi', en: 'Email drafts' }],
     ],
     skills: ['skill:claude-skills:research-summarizer', 'skill:graphify:graphify'],
     test: 'Salom hammaga, ahvollar qalay? O‘zingni qisqa tanishtir va menga qanday ishlarda eng yaxshi yordam bera olishingni ayt.',

@@ -1,14 +1,16 @@
 # 🛠️ Engineering Core — Muhandislik markazi
 
-217 items in this department.
+250 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
 | [architect](../agents/ecc/architect.md) | agent | ECC | Software architecture specialist for system design, scalability, and technical decision-making. Use PROACTIVELY when planning new features, refactoring large s… |
 | [code-architect](../agents/ecc/code-architect.md) | agent | ECC | Designs feature architectures by analyzing existing codebase patterns and conventions, then providing implementation blueprints with concrete files, interfaces… |
 | [code-explorer](../agents/ecc/code-explorer.md) | agent | ECC | Deeply analyzes existing codebase features by tracing execution paths, mapping architecture layers, and documenting dependencies to inform new development. |
+| [code-review-agent](../agents/agents-500/code-review-agent.md) | agent | 500 Agents | Reviews code for bugs, security issues, performance, and style violations |
 | [code-reviewer](../agents/best-practice/code-reviewer.md) | agent | Best Practice | Meticulous, constructive reviewer for correctness, clarity, security, and maintainability. |
 | [code-reviewer](../agents/ecc/code-reviewer.md) | agent | ECC | Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately after writing or modifying code. MUST BE US… |
+| [code-reviewer](../agents/agent-skills/code-reviewer.md) | agent | Agent Skills | Senior code reviewer that evaluates changes across five dimensions — correctness, readability, architecture, security, and performance. Use for thorough code r… |
 | [code-simplifier](../agents/ecc/code-simplifier.md) | agent | ECC | Simplifies and refines code for clarity, consistency, and maintainability while preserving behavior. Focus on recently modified code unless instructed otherwis… |
 | [comment-analyzer](../agents/ecc/comment-analyzer.md) | agent | ECC | Analyze code comments for accuracy, completeness, maintainability, and comment rot risk. |
 | [cs-backend-engineer](../agents/claude-skills/cs-backend-engineer.md) | agent | Claude Skills | Backend-engineering orchestrator. Walks the 7 Matt Pocock forcing questions (read/write ratio + QPS, tenancy, sync vs async, data sensitivity, pattern, RPO/RTO… |
@@ -24,20 +26,27 @@
 | [cs-wiki-linter](../agents/claude-skills/cs-wiki-linter.md) | agent | Claude Skills | Dispatched sub-agent that runs a periodic health check on an LLM Wiki vault. Runs mechanical checks via scripts (orphans, broken links, stale pages, missing fr… |
 | [cs-workflow-architect](../agents/claude-skills/cs-workflow-architect.md) | agent | Claude Skills | Workflow-architect persona. Opens every workflow-creation session with the intake question set, infers-and-proposes when the user is vague (never interrogates… |
 | [cs-workspace-admin](../agents/claude-skills/cs-workspace-admin.md) | agent | Claude Skills | Google Workspace administration agent using the gws CLI. Orchestrates workspace setup, Gmail/Drive/Sheets/Calendar automation, security audits, and recipe exec… |
+| [documentation-writer](../agents/agents-500/documentation-writer.md) | agent | 500 Agents | Generates README and docstrings for Python modules |
 | [e2e-runner](../agents/ecc/e2e-runner.md) | agent | ECC | End-to-end testing specialist using Vercel Agent Browser (preferred) with Playwright fallback. Use PROACTIVELY for generating, maintaining, and running E2E tes… |
 | [healthcare-reviewer](../agents/ecc/healthcare-reviewer.md) | agent | ECC | Reviews healthcare application code for clinical safety, CDSS accuracy, PHI compliance, and medical data integrity. Specialized for EMR/EHR, clinical decision… |
 | [hub-coordinator](../agents/claude-skills/hub-coordinator.md) | agent | Claude Skills | Coordinator for AgentHub multi-agent collaboration sessions. Dispatches N parallel subagents in isolated git worktrees via the Agent tool, monitors progress vi… |
 | [migration-planner](../agents/claude-skills/migration-planner.md) | agent | Claude Skills | Analyzes Cypress or Selenium test suites and creates a file-by-file migration plan. Invoked by /pw:migrate before conversion starts. |
 | [performance-optimizer](../agents/ecc/performance-optimizer.md) | agent | ECC | Performance analysis and optimization specialist. Use PROACTIVELY for identifying bottlenecks, optimizing slow code, reducing bundle sizes, and improving runti… |
 | [planner](../agents/ecc/planner.md) | agent | ECC | Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementation, architectural changes, or complex r… |
+| [planner](../agents/pi/planner.md) | agent | Pi | Creates implementation plans from context and requirements |
 | [pr-test-analyzer](../agents/ecc/pr-test-analyzer.md) | agent | ECC | Review pull request test coverage quality and completeness, with emphasis on behavioral coverage and real bug prevention. |
 | [refactor-cleaner](../agents/ecc/refactor-cleaner.md) | agent | ECC | Dead code cleanup and consolidation specialist. Use PROACTIVELY for removing unused code, duplicates, and refactoring. Runs analysis tools (knip, depcheck, ts-… |
+| [reviewer](../agents/pi/reviewer.md) | agent | Pi | Code review specialist for quality and security analysis |
+| [scout](../agents/pi/scout.md) | agent | Pi | Fast codebase recon that returns compressed context for handoff to other agents |
 | [senior-software-engineer](../agents/best-practice/senior-software-engineer.md) | agent | Best Practice | Pragmatic IC who plans sanely, ships small reversible slices with tests, and writes clear PRs. |
 | [silent-failure-hunter](../agents/ecc/silent-failure-hunter.md) | agent | ECC | Review code for silent failures, swallowed errors, bad fallbacks, and missing error propagation. |
 | [spec-miner](../agents/ecc/spec-miner.md) | agent | ECC | Extracts behavioral specs from existing codebases for OpenSpec. Produces flat Requirement and Invariant blocks with structured metadata (entities, enforced, id… |
 | [tdd-guide](../agents/ecc/tdd-guide.md) | agent | ECC | Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensure… |
 | [test-architect](../agents/claude-skills/test-architect.md) | agent | Claude Skills | Plans test strategy for complex applications. Invoked by /pw:generate and /pw:coverage when the app has multiple routes, complex state, or requires a structure… |
 | [test-debugger](../agents/claude-skills/test-debugger.md) | agent | Claude Skills | Diagnoses flaky or failing Playwright tests using systematic taxonomy. Invoked by /pw:fix when a test needs deep analysis including running tests, reading trac… |
+| [test-engineer](../agents/agent-skills/test-engineer.md) | agent | Agent Skills | QA engineer specialized in test strategy, test writing, and coverage analysis. Use for designing test suites, writing tests for existing code, or evaluating te… |
+| [unit-test-generator](../agents/agents-500/unit-test-generator.md) | agent | 500 Agents | Generates comprehensive pytest test suites from Python code |
+| [worker](../agents/pi/worker.md) | agent | Pi | General-purpose subagent with full capabilities, isolated context |
 | [adversarial-reviewer](../skills/claude-skills/adversarial-reviewer/SKILL.md) | skill | Claude Skills | Adversarial code review that breaks the self-review monoculture. Use when you want a genuinely critical review of recent changes, before merging a PR, or when… |
 | [agent-architecture-audit](../skills/ecc/agent-architecture-audit/SKILL.md) | skill | ECC | Full-stack diagnostic for agent and LLM applications. Audits the 12-layer agent stack for wrapper regression, memory pollution, tool discipline failures, hidde… |
 | [agenthub](../skills/claude-skills/agenthub/SKILL.md) | skill | Claude Skills | Multi-agent collaboration plugin that spawns N parallel subagents competing on the same task via git worktree isolation. Agents work independently, results are… |
@@ -58,6 +67,7 @@
 | [benchmark](../skills/ecc/benchmark/SKILL.md) | skill | ECC | Measure performance baselines and detect regressions across browser Core Web Vitals (LCP, INP, CLS, page weight), API endpoint latency percentiles, and build/t… |
 | [boost-asio-pro](../skills/claude-skills/boost-asio-pro/SKILL.md) | skill | Claude Skills | Use when writing or reviewing asynchronous C++ networking code with Boost.Asio or standalone Asio — TCP/UDP servers and clients, SSL/TLS, timers, strands, io_c… |
 | [browser-automation](../skills/claude-skills/browser-automation/SKILL.md) | skill | Claude Skills | Use when the user asks to automate browser tasks, scrape websites, fill forms, capture screenshots, extract structured data from web pages, or build web automa… |
+| [browser-testing-with-devtools](../skills/agent-skills/browser-testing-with-devtools/SKILL.md) | skill | Agent Skills | Tests in real browsers via Chrome DevTools MCP. Use when building or debugging anything that runs in a browser. Use when you need to inspect the DOM, capture c… |
 | [browserstack](../skills/claude-skills/browserstack/SKILL.md) | skill | Claude Skills | Run tests on BrowserStack. Use when user mentions "browserstack", "cross-browser", "cloud testing", "browser matrix", "test on safari", "test on firefox", or "… |
 | [caio-review](../skills/claude-skills/caio-review/SKILL.md) | skill | Claude Skills | /cs:caio-review — Eval-demanding Chief AI Officer interrogation of any plan that involves AI: model selection, risk classification, cost economics, or AI hirin… |
 | [canary-watch](../skills/ecc/canary-watch/SKILL.md) | skill | ECC | Use this skill to monitor and verify a deployed URL after releases — checks HTTP endpoints, SSE streams, static assets, console errors, and performance regress… |
@@ -67,7 +77,9 @@
 | [chaos-engineering](../skills/claude-skills/chaos-engineering/SKILL.md) | skill | Claude Skills | Use when planning, running, or learning from chaos engineering experiments. Triggers on "chaos experiment", "fault injection", "gameday", "resilience test", "b… |
 | [cisco-ios-patterns](../skills/ecc/cisco-ios-patterns/SKILL.md) | skill | ECC | Cisco IOS and IOS-XE review patterns for show commands, config hierarchy, wildcard masks, ACL placement, interface hygiene, and safe change-window verification… |
 | [claude-code](../skills/hermes/claude-code/SKILL.md) | skill | Hermes | Delegate coding to Claude Code CLI (features, PRs). |
+| [code-review-and-quality](../skills/agent-skills/code-review-and-quality/SKILL.md) | skill | Agent Skills | Conducts multi-axis code review. Use before merging any change. Use when reviewing code written by yourself, another agent, or a human. Use when you need to as… |
 | [code-reviewer](../skills/claude-skills/code-reviewer/SKILL.md) | skill | Claude Skills | Code review automation for TypeScript, JavaScript, Python, Go, Swift, Kotlin, C#, .NET, Java, C, C++, Rust, Ruby, PHP, and Dart/Flutter. Analyzes PRs for compl… |
+| [code-simplification](../skills/agent-skills/code-simplification/SKILL.md) | skill | Agent Skills | Simplifies code for clarity. Use when refactoring code for clarity without changing behavior. Use when code works but is harder to read, maintain, or extend th… |
 | [code-tour](../skills/claude-skills/code-tour/SKILL.md) | skill | Claude Skills | Use when the user asks to create a CodeTour .tour file — persona-targeted, step-by-step walkthroughs that link to real files and line numbers. Trigger for: cre… |
 | [code-tour](../skills/ecc/code-tour/SKILL.md) | skill | ECC | Create CodeTour `.tour` files — persona-targeted, step-by-step walkthroughs with real file and line anchors. Use for onboarding tours, architecture walkthrough… |
 | [code-wiki](../skills/hermes/code-wiki/SKILL.md) | skill | Hermes | Generate wiki docs + Mermaid diagrams for any codebase. |
@@ -75,9 +87,13 @@
 | [codebase-onboarding](../skills/claude-skills/codebase-onboarding/SKILL.md) | skill | Claude Skills | Analyze a codebase and generate onboarding documentation for engineers, tech leads, and contractors. Fast fact-gathering and repeatable onboarding outputs. Use… |
 | [collab-proof](../skills/claude-skills/collab-proof/SKILL.md) | skill | Claude Skills | Use when you want to understand what Claude contributed vs what you drove in a session. Triggers on: /collab-proof, session retrospective, ai contribution anal… |
 | [config-gc](../skills/ecc/config-gc/SKILL.md) | skill | ECC | Garbage collection for your Claude Code configuration. Periodically scans ~/.claude (skills, memory, hooks, permissions, MCP servers, caches) for redundant, st… |
+| [constraint-driven-development](../skills/agent-skills/constraint-driven-development/SKILL.md) | skill | Agent Skills | Establishes a project's quality bar as a written contract and stops agents quietly lowering it. Interviews the user on which dimensions matter, supplies sane d… |
 | [coverage](../skills/claude-skills/coverage/SKILL.md) | skill | Claude Skills | Analyze test coverage gaps. Use when user says "test coverage", "what's not tested", "coverage gaps", "missing tests", "coverage report", or "what needs testin… |
 | [culture-architect](../skills/claude-skills/culture-architect/SKILL.md) | skill | Claude Skills | Build, measure, and evolve company culture as operational behavior — not wall posters. Covers mission/vision/values workshops, values-to-behaviors translation,… |
+| [debugging-and-error-recovery](../skills/agent-skills/debugging-and-error-recovery/SKILL.md) | skill | Agent Skills | Guides systematic root-cause debugging. Use when tests fail, builds break, something that worked yesterday broke, behavior doesn't match expectations, or you e… |
 | [dependency-auditor](../skills/claude-skills/dependency-auditor/SKILL.md) | skill | Claude Skills | Audit and manage dependencies across multi-language projects. Identifies vulnerabilities, license conflicts, transitive dependency risks, and safe-upgrade path… |
+| [deprecation-and-migration](../skills/agent-skills/deprecation-and-migration/SKILL.md) | skill | Agent Skills | Manages deprecation and migration. Use when removing old systems, APIs, or features. Use when migrating users from one implementation to another. Use when migr… |
+| [documentation-and-adrs](../skills/agent-skills/documentation-and-adrs/SKILL.md) | skill | Agent Skills | Records decisions and documentation. Use when you need to document an architecture decision (ADR) or the reasoning behind a design choice, when changing public… |
 | [e2e-testing](../skills/ecc/e2e-testing/SKILL.md) | skill | ECC | Playwright E2E testing patterns, Page Object Model, configuration, CI/CD integration, artifact management, and flaky test strategies. Use when writing Playwrig… |
 | [embedded-iot-mentor](../skills/claude-skills/embedded-iot-mentor/SKILL.md) | skill | Claude Skills | Mentor for embedded and IoT hardware projects. Helps select MCUs, dev boards, and toolchains, decides where sensor readings end up (phone, PC, dashboard, or al… |
 | [engineering-advanced-skills](../skills/claude-skills/engineering-advanced-skills/SKILL.md) | skill | Claude Skills | Index of 37 advanced engineering agent skills for Claude Code, Codex, Gemini CLI, Cursor, OpenClaw. Use when browsing or choosing among the POWERFUL-tier engin… |
@@ -89,6 +105,7 @@
 | [gc-review](../skills/claude-skills/gc-review/SKILL.md) | skill | Claude Skills | /cs:gc-review — General Counsel interrogation of contracts, IP, regulatory, term sheets, and employment-law surface. Use when reviewing a term sheet before sig… |
 | [generate](../skills/claude-skills/generate/SKILL.md) | skill | Claude Skills | Generate Playwright tests. Use when user says "write tests", "generate tests", "add tests for", "test this component", "e2e test", "create test for", "test thi… |
 | [git-workflow](../skills/ecc/git-workflow/SKILL.md) | skill | ECC | Git workflow patterns including branching strategies, commit conventions, keeping history clean and readable, tidying local commits before merging, merge vs re… |
+| [git-workflow-and-versioning](../skills/agent-skills/git-workflow-and-versioning/SKILL.md) | skill | Agent Skills | Structures git workflow practices. Use when making any code change. Use when committing, branching, resolving conflicts, splitting uncommitted work in a messy… |
 | [git-worktree-manager](../skills/claude-skills/git-worktree-manager/SKILL.md) | skill | Claude Skills | Run parallel feature work safely with Git worktrees. Standardizes branch isolation, port allocation, environment sync, and cleanup so each worktree behaves lik… |
 | [github](../skills/hermes/github/SKILL.md) | skill | Hermes | GitHub via gh CLI: PRs, issues, reviews, repos, auth. |
 | [grill-me](../skills/claude-skills/grill-me/SKILL.md) | skill | Claude Skills | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to… |
@@ -101,6 +118,8 @@
 | [hivemind](../skills/claude-skills/hivemind/SKILL.md) | skill | Claude Skills | Orchestrate free opencode workers from Claude Code to cut token costs. Use when delegating grunt work to a single worker or a parallel swarm (scout/coder/teste… |
 | [hub-status](../skills/claude-skills/hub-status/SKILL.md) | skill | Claude Skills | Show DAG state, agent progress, and branch status for an AgentHub session. Use when the user runs /hub:hub-status or asks how the AgentHub agents are doing. |
 | [human-gate](../skills/claude-skills/human-gate/SKILL.md) | skill | Claude Skills | Runs the human-verification lane of an agent loop, and proves review happened before work is called done. Builds a single-file HTML review page, collects batch… |
+| [incremental-implementation](../skills/agent-skills/incremental-implementation/SKILL.md) | skill | Agent Skills | Delivers changes incrementally in thin, verifiable slices. Use when implementing any feature or change that touches more than one file, or when picking up the… |
+| [interactive-testing](../skills/pi/interactive-testing/SKILL.md) | skill | Pi | Test and debug pi's interactive mode in a controlled tmux terminal. Use for TUI behavior checks and interactive release smoke tests. |
 | [karpathy-coder](../skills/claude-skills/karpathy-coder/SKILL.md) | skill | Claude Skills | Use when writing, reviewing, or committing code to enforce Karpathy's 4 coding principles — surface assumptions before coding, keep it simple, make surgical ch… |
 | [literature-review](../skills/ecc/literature-review/SKILL.md) | skill | ECC | Systematic literature-review workflow for academic, biomedical, technical, and scientific topics, including search planning, source screening, synthesis, citat… |
 | [master-agreement-generator](../skills/ecc/master-agreement-generator/SKILL.md) | skill | ECC | Generate review drafts of counterparty master agreements from one template plus a JSON spec, with role-selected clauses and a Schedule A workflow limited to th… |
@@ -160,7 +179,9 @@
 | [skill-doctor](../skills/claude-skills/skill-doctor/SKILL.md) | skill | Claude Skills | Use when the user wants their agent setup graded from real conversation history, asks which installed skills are actually working, or wants evidence-backed ski… |
 | [skill-tester](../skills/claude-skills/skill-tester/SKILL.md) | skill | Claude Skills | Validate, test, and score the quality of skills within the claude-skills ecosystem. Comprehensive meta-skill: structure validation, Python script testing (synt… |
 | [skillopt-sleep](../skills/claude-skills/skillopt-sleep/SKILL.md) | skill | Claude Skills | Use when the user wants their Claude agent to self-improve from past usage, asks about a nightly/offline 'sleep' or 'dream' cycle, memory/skill consolidation,… |
+| [source-driven-development](../skills/agent-skills/source-driven-development/SKILL.md) | skill | Agent Skills | Grounds every implementation decision in official documentation. Use when you want to verify an approach against the official docs before implementing it, or w… |
 | [spawn](../skills/claude-skills/spawn/SKILL.md) | skill | Claude Skills | Launch N parallel subagents in isolated git worktrees to compete on the session task. Use when the user runs /hub:spawn or asks to start the competing agents f… |
+| [spec-driven-development](../skills/agent-skills/spec-driven-development/SKILL.md) | skill | Agent Skills | Creates specs before coding. Use when starting a new project, feature, or significant change and no specification exists yet. Use when drafting a PRD or requir… |
 | [spec-driven-workflow](../skills/claude-skills/spec-driven-workflow/SKILL.md) | skill | Claude Skills | Use when the user asks to write specs before code, define acceptance criteria, plan features before implementation, generate tests from specifications, or foll… |
 | [spinning-up-deep-rl](../skills/claude-skills/spinning-up-deep-rl/SKILL.md) | skill | Claude Skills | Knowledge base from "Spinning Up in Deep RL" by Joshua Achiam (OpenAI, MIT-licensed). Use when applying Achiam's frameworks for RL fundamentals and MDPs, the m… |
 | [springboot-tdd](../skills/ecc/springboot-tdd/SKILL.md) | skill | ECC | Test-driven development for Spring Boot using JUnit 5, Mockito, MockMvc, Testcontainers, and JaCoCo. Use when adding features, fixing bugs, or refactoring. |
@@ -173,6 +194,7 @@
 | [tech-debt-tracker](../skills/claude-skills/tech-debt-tracker/SKILL.md) | skill | Claude Skills | Scan codebases for technical debt, score severity, track trends, and generate prioritized remediation plans. Use when users mention tech debt, code quality, re… |
 | [tech-stack-evaluator](../skills/claude-skills/tech-stack-evaluator/SKILL.md) | skill | Claude Skills | Technology stack evaluation and comparison with TCO analysis, security assessment, and ecosystem health scoring. Use when comparing frameworks, evaluating tech… |
 | [test-driven-development](../skills/hermes/test-driven-development/SKILL.md) | skill | Hermes | TDD: enforce RED-GREEN-REFACTOR, tests before code. |
+| [test-driven-development](../skills/agent-skills/test-driven-development/SKILL.md) | skill | Agent Skills | Drives development with tests using the red-green-refactor loop. Use when implementing any logic, fixing any bug, or changing any behavior. Use when you need t… |
 | [testrail](../skills/claude-skills/testrail/SKILL.md) | skill | Claude Skills | Sync tests with TestRail. Use when user mentions "testrail", "test management", "test cases", "test run", "sync test cases", "push results to testrail", or "im… |
 | [uncloud](../skills/ecc/uncloud/SKILL.md) | skill | ECC | Use when managing an Uncloud cluster — deploying services, configuring Caddy ingress, adding static proxy routes for non-cluster devices, publishing ports, sca… |
 | [universal-scraping-architect](../skills/claude-skills/universal-scraping-architect/SKILL.md) | skill | Claude Skills | Use for web scraping, crawling, document extraction, API parsing, or building validation-heavy data pipelines using Firecrawl or local Python scripts. |
@@ -180,7 +202,10 @@
 | [windows-desktop-e2e](../skills/ecc/windows-desktop-e2e/SKILL.md) | skill | ECC | E2E testing for Windows native desktop apps (WPF, WinForms, Win32/MFC, Qt) using pywinauto and Windows UI Automation. Use when writing E2E tests for a Windows… |
 | [write-a-skill](../skills/claude-skills/write-a-skill/SKILL.md) | skill | Claude Skills | Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, build, or author a new skil… |
 | [zero-hallucination-coder](../skills/claude-skills/zero-hallucination-coder/SKILL.md) | skill | Claude Skills | Runs a disciplined Discuss -> Map -> Decompose -> Execute -> Verify loop that grounds code in verified structure — no invented APIs, no assumed imports, no pla… |
+| [build](../commands/agent-skills/build.md) | command | Agent Skills | Implement tasks incrementally — build, test, verify, commit. Add "auto" to run the whole plan in one approved pass. |
 | [code-review](../commands/ecc/code-review.md) | command | ECC | Code review — local uncommitted changes or GitHub PR (pass PR number/URL for PR mode) |
+| [code-simplify](../commands/agent-skills/code-simplify.md) | command | Agent Skills | Simplify code for clarity and maintainability — reduce complexity without changing behavior |
+| [constraints](../commands/agent-skills/constraints.md) | command | Agent Skills | Define and enforce this project's quality bar — interview, sane defaults, CONSTRAINTS.md |
 | [cpp-test](../commands/ecc/cpp-test.md) | command | ECC | Enforce TDD workflow for C++. Write GoogleTest tests first, then implement. Verify coverage with gcov/lcov. |
 | [cs-backend-review](../commands/claude-skills/cs-backend-review.md) | command | Claude Skills | Backend engineering review — walks the 7 Matt Pocock forcing questions (read/write ratio + QPS, tenancy, sync vs async, data sensitivity, pattern, RPO/RTO, SLO… |
 | [cs-book-to-plugin](../commands/claude-skills/cs-book-to-plugin.md) | command | Claude Skills | /cs:book-to-plugin [--domain ] — wrap a compiled book skill in a claude-skills plugin package (manifest + cs-* agent + /cs:* command + README) so the rest of t… |
@@ -192,12 +217,14 @@
 | [cs-human-gate](../commands/claude-skills/cs-human-gate.md) | command | Claude Skills | /cs:human-gate — Get real human review on an artifact and prove it happened. Builds a single-file review page, collects batched feedback as structured data, an… |
 | [cs-write-a-skill](../commands/claude-skills/cs-write-a-skill.md) | command | Claude Skills | /cs:write-a-skill — Author a new agent skill with Matt Pocock's 3-phase workflow (Gather → Draft → Review). Runs 6 review-checklist items + 3 validator tools a… |
 | [database-migration](../commands/ecc/database-migration.md) | command | ECC | Workflow command scaffold for database-migration in everything-claude-code. |
+| [deslop](../commands/pi/deslop.md) | command | Pi | simplify a completed workpackage |
 | [epic-review](../commands/ecc/epic-review.md) | command | ECC | Mark epic review requested, approved, or changes requested. |
 | [feature-dev](../commands/ecc/feature-dev.md) | command | ECC | Guided feature development with codebase understanding and architecture focus |
 | [git:clean](../commands/claude-skills/git-clean.md) | command | Claude Skills | Clean up merged branches locally and on remote, keeping only main, dev, and gh-pages. |
 | [git:cm](../commands/claude-skills/git-cm.md) | command | Claude Skills | Stage working tree changes and create a Conventional Commit (no push). |
 | [git:cp](../commands/claude-skills/git-cp.md) | command | Claude Skills | Stage, commit, and push the current branch following git governance rules. |
 | [git:pr](../commands/claude-skills/git-pr.md) | command | Claude Skills | Create a pull request from the current branch. |
+| [is](../commands/pi/is.md) | command | Pi | Analyze GitHub issues (bugs or feature requests) |
 | [karpathy-check](../commands/claude-skills/karpathy-check.md) | command | Claude Skills | Run Karpathy's 4-principle review on staged changes or the last commit. Checks complexity, diff noise, hidden assumptions, and goal verification. Usage /karpat… |
 | [kotlin-test](../commands/ecc/kotlin-test.md) | command | ECC | Enforce TDD workflow for Kotlin. Write Kotest tests first, then implement. Verify 80%+ coverage with Kover. |
 | [multi-backend](../commands/ecc/multi-backend.md) | command | ECC | Run a backend-focused multi-model workflow for APIs, algorithms, data, and business logic. |
@@ -209,15 +236,21 @@
 | [orch-refine-code](../commands/ecc/orch-refine-code.md) | command | ECC | Orchestrate a behavior-preserving refactor — confirm tests green, restructure without changing behavior, keep green, review, gated commit. Wrapper for the orch… |
 | [orch-review](../commands/ecc/orch-review.md) | command | ECC | Run the orch-review native Workflow over a diff (local changes or a GitHub PR) and report blocking vs advisory findings. Surface for the orch-review workflow. |
 | [plan](../commands/ecc/plan.md) | command | ECC | Restate requirements, assess risks, and create step-by-step implementation plan. WAIT for user CONFIRM before touching any code. |
+| [plan](../commands/agent-skills/plan.md) | command | Agent Skills | Break work into small verifiable tasks with acceptance criteria and dependency ordering |
 | [plan-canvas](../commands/ecc/plan-canvas.md) | command | ECC | Open a plan or HTML artifact in the browser Plan Canvas for annotate-and-approve review |
 | [pr](../commands/ecc/pr.md) | command | ECC | Create a GitHub PR from current branch with unpushed commits — discovers templates, analyzes changes, pushes |
+| [pr](../commands/pi/pr.md) | command | Pi | Review PRs from URLs with structured issue and code analysis |
 | [prp-commit](../commands/ecc/prp-commit.md) | command | ECC | Quick commit with natural language file targeting — describe what to commit in plain English |
 | [prp-plan](../commands/ecc/prp-plan.md) | command | ECC | Create comprehensive feature implementation plan with codebase analysis and pattern extraction |
 | [refactor-clean](../commands/ecc/refactor-clean.md) | command | ECC | Safely identify and remove dead code with verification after each change. |
 | [review](../commands/claude-skills/review.md) | command | Claude Skills | Run the local review gate before pushing. |
+| [review](../commands/agent-skills/review.md) | command | Agent Skills | Conduct a five-axis code review — correctness, readability, architecture, security, performance |
 | [review-pr](../commands/ecc/review-pr.md) | command | ECC | Comprehensive PR review using specialized agents |
 | [sessions](../commands/ecc/sessions.md) | command | ECC | Manage Claude Code session history, aliases, and session metadata. |
 | [skill-create](../commands/ecc/skill-create.md) | command | ECC | Analyze local git history to extract coding patterns and generate SKILL.md files. Local version of the Skill Creator GitHub App. |
 | [skillopt-sleep](../commands/claude-skills/skillopt-sleep.md) | command | Claude Skills | Run or manage the SkillOpt-Sleep self-evolution cycle (review past sessions, replay tasks offline, consolidate validated memory + skills; can also schedule nig… |
+| [spec](../commands/agent-skills/spec.md) | command | Agent Skills | Start spec-driven development — write a structured specification before writing code |
 | [tdd](../commands/claude-skills/tdd.md) | command | Claude Skills | Run a red-green-refactor TDD workflow — generate failing tests first, implement to green, then check coverage gaps. Usage: /tdd [target] |
+| [test](../commands/agent-skills/test.md) | command | Agent Skills | Run TDD workflow — write failing tests, implement, verify. For bugs, use the Prove-It pattern. |
 | [test-coverage](../commands/ecc/test-coverage.md) | command | ECC | Analyze coverage, identify gaps, and generate missing tests toward the target threshold. |
+| [wr](../commands/pi/wr.md) | command | Pi | Finish the current task end-to-end with changelog, commit, and push |

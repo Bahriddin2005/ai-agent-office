@@ -28,5 +28,30 @@
     "repo": "affaan-m/ECC",
     "branch": "main",
     "commit": "d3b8a3e908904e242ed2dbe66af62cca71131419"
+  },
+  "agents-beginners": {
+    "repo": "microsoft/ai-agents-for-beginners",
+    "branch": "main",
+    "commit": "25b7985f3b2dc37a84f4a7387ccd3c9f0e5b1595"
+  },
+  "agent-book": {
+    "repo": "bojieli/ai-agent-book",
+    "branch": "main",
+    "commit": "b789c97a8f3de5b405a6f6dfa8289208d679d0b8"
+  },
+  "agent-skills": {
+    "repo": "addyosmani/agent-skills",
+    "branch": "main",
+    "commit": "2686b620fc1fed2e8f60c704839c766b8594c6b6"
+  },
+  "agents-500": {
+    "repo": "ashishpatel26/500-AI-Agents-Projects",
+    "branch": "main",
+    "commit": "9beeb721c2af551bacaab827a76bddaecaa0ca5e"
+  },
+  "pi": {
+    "repo": "earendil-works/pi",
+    "branch": "main",
+    "commit": "5257d0d5f3ab7d42550804f32c67a77b49f485d4"
   }
 }

@@ -1,6 +1,6 @@
 # 📣 Marketing & Growth — Marketing va o‘sish
 
-93 items in this department.
+94 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -19,6 +19,7 @@
 | [outreach-drafter](../agents/ecc/outreach-drafter.md) | agent | ECC | Generates personalized outreach messages for qualified leads. Creates warm intro requests, cold emails, X DMs, and follow-up sequences using enriched profile d… |
 | [seo-specialist](../agents/ecc/seo-specialist.md) | agent | ECC | SEO specialist for technical SEO audits, on-page optimization, structured data, Core Web Vitals, and content/keyword mapping. Use for site audits, meta tag rev… |
 | [signal-scorer](../agents/ecc/signal-scorer.md) | agent | ECC | Searches and ranks prospects by relevance signals across X, Exa, and LinkedIn. Assigns weighted scores based on role, industry, activity, influence, and locati… |
+| [social-media-agent](../agents/agents-500/social-media-agent.md) | agent | 500 Agents | Generates platform-optimized content for Twitter, LinkedIn, and Instagram |
 | [ab-test-setup](../skills/claude-skills/ab-test-setup/SKILL.md) | skill | Claude Skills | When the user wants to plan, design, or implement an A/B test or experiment. Also use when the user mentions "A/B test," "split test," "experiment," "test this… |
 | [ad-creative](../skills/claude-skills/ad-creative/SKILL.md) | skill | Claude Skills | When the user needs to generate, iterate, or scale ad creative for paid advertising. Use when they say 'write ad copy,' 'generate headlines,' 'create ad variat… |
 | [aeo](../skills/claude-skills/aeo/SKILL.md) | skill | Claude Skills | Answer Engine Optimization (AEO) skill — optimize content to be cited by AI language models (ChatGPT, Perplexity, Claude, Gemini, Mistral) as authoritative sou… |

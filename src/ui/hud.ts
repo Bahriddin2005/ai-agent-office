@@ -7,13 +7,15 @@ import { currentLang, t, toggleLang } from '../i18n';
 import type { Connection, Status } from '../live/connection';
 import type { Actor, Cast } from '../sim/actors';
 import type { Director, FeedEntry } from '../sim/director';
-import type { CrewKind, CrewRun, Crews } from '../ai/crews';
+import type { CrewKind, CrewRun, Crews, Pending, Question } from '../ai/crews';
 import type { Engine } from '../ai/engine';
 import { compact, h } from './dom';
 import type { GraphView } from './graphView';
 import { renderMarkdown } from './markdown';
 import { Portrait } from './portrait';
 import { ROLE_TITLE } from '../world/human';
+import type { BossAI } from '../sim/boss';
+import { XP_PER_LEVEL, type Academy } from '../sim/academy';
 import { BUILDINGS, buildingOf } from '../world/layout';
 
 export interface HudApi {
@@ -33,13 +35,18 @@ export interface HudApi {
   openRun(run: CrewRun): void;
   highlight(ids: string[], color: string): void;
   engine(): Engine | null;
+  boss(): BossAI;
+  academy(): Academy;
+  setBossControl(on: boolean): void;
+  /** send the Boss to check an agent (real = AI exam) */
+  inspect(agentId: string, real: boolean): void;
 }
 
-type Tab = ItemType | 'dept' | 'source' | 'team';
+type Tab = ItemType | 'dept' | 'source' | 'team' | 'academy';
 type Panel = 'chat' | 'runs' | 'feed';
 
 const TYPE_ICON: Record<string, string> = { agent: '🧑‍💻', skill: '📘', command: '⌨️', guide: '📜', dept: '🏢', source: '📦' };
-const KIND_ICON: Record<CrewKind, string> = { chat: '💬', website: '🌐', content: '✍️', task: '⚡' };
+const KIND_ICON: Record<CrewKind, string> = { chat: '💬', website: '🌐', project: '🏗️', content: '✍️', task: '⚡' };
 const T = (uz: string, en: string) => (currentLang() === 'uz' ? uz : en);
 
 export class Hud {
@@ -99,6 +106,7 @@ export class Hud {
     this.el.graphBtn = h('button', { className: 'tb-btn', onclick: () => this.api.toggleGraph() });
     this.el.ambientBtn = h('button', { className: 'tb-btn', onclick: () => { this.director.ambient = !this.director.ambient; this.renderTopButtons(); } });
     this.el.xrayBtn = h('button', { className: 'tb-btn', onclick: () => { this.api.toggleXray(); this.renderTopButtons(); } });
+    this.el.bossBtn = h('button', { className: 'tb-btn', onclick: () => { const on = !this.api.boss().control; this.api.setBossControl(on); if (on) this.api.selectActor(this.cast.boss); } });
     const top = h(
       'header',
       { className: 'topbar' },
@@ -119,6 +127,7 @@ export class Hud {
         this.el.graphBtn,
         this.el.nightBtn,
         this.el.xrayBtn,
+        this.el.bossBtn,
         this.el.ambientBtn,
         h('button', { className: 'tb-btn', title: s.zoomOut, onclick: () => this.api.overview() }, '🎯'),
         h('button', { className: 'tb-btn', onclick: () => { toggleLang(); this.build(); } }, s.lang),
@@ -254,6 +263,9 @@ export class Hud {
     this.el.xrayBtn.textContent = this.api.isXray() ? '🏢' : '🏗️';
     this.el.xrayBtn.title = this.api.isXray() ? T('Binolarni to‘liq ko‘rsatish', 'Show whole buildings') : T('Binolar ichini ko‘rish (tomlarsiz)', 'Look inside the buildings (no roofs)');
     this.el.xrayBtn.classList.toggle('on', this.api.isXray());
+    this.el.bossBtn.textContent = '🎮';
+    this.el.bossBtn.title = this.api.boss().control ? T('Boss boshqaruvini o‘chirish', 'Stop controlling the Boss') : T('Bossni boshqarish (WASD / strelkalar, yerga bosing — o‘sha joyga boradi)', 'Control the Boss (WASD / arrows, click the ground to walk there)');
+    this.el.bossBtn.classList.toggle('on', this.api.boss().control);
     this.el.ambientBtn.textContent = this.director.ambient ? '🤖' : '⏸️';
     this.el.ambientBtn.title = s.ambient;
     this.el.ambientBtn.classList.toggle('off', !this.director.ambient);
@@ -276,6 +288,7 @@ export class Hud {
     const s = t();
     const tabs: [Tab, string][] = [
       ['team', `👥 ${T('Jamoalar', 'Teams')}`],
+      ['academy', `🎓 ${T('Akademiya', 'Academy')}`],
       ['agent', `🧑‍💻 ${s.agents}`],
       ['skill', `📘 ${s.skills}`],
       ['command', `⌨️ ${s.commands}`],
@@ -300,6 +313,7 @@ export class Hud {
     this.el.filters.hidden = !['agent', 'skill', 'command', 'guide'].includes(this.tab);
 
     if (this.tab === 'team') return this.renderTeams();
+    if (this.tab === 'academy') return this.renderAcademy();
     if (this.tab === 'dept') {
       const perBuilding = new Map<string, { agent: number; skill: number }>();
       for (const it of this.data.registry.items) {
@@ -468,14 +482,25 @@ export class Hud {
     const a = actor || (item ? this.cast.byItem.get(item.id) || null : null);
     const portraitBlock = a ? this.portraitBlock(a) : null;
 
+    if (!item && actor && actor.kind === 'boss') {
+      box.replaceChildren(
+        h('div', { className: 'insp-head' }, h('h2', {}, s.you), h('button', { className: 'x', onclick: () => this.api.selectActor(null), 'aria-label': s.close }, '✕')),
+        portraitBlock!,
+        (this.el.bossPanel = h('div', { className: 'boss-panel' })),
+      );
+      this.refreshBoss();
+      return;
+    }
     if (!item && actor) {
       const role = ROLE_TITLE[actor.look.role];
-      const title = actor.kind === 'lead' ? s.lead : actor.kind === 'boss' ? s.you : actor.kind === 'staff' ? `${role.emoji} ${role[currentLang()]}` : `${s.visitor}: ${actor.name}`;
+      const title = actor.kind === 'lead' ? s.lead : actor.kind === 'boss' ? s.you : actor.kind === 'teacher' ? `🎓 ${actor.name}` : actor.kind === 'staff' ? `${role.emoji} ${role[currentLang()]}` : `${s.visitor}: ${actor.name}`;
       const desc =
         actor.kind === 'lead'
           ? T('Claude — qabulxonadagi bosh agent. Claude Code’dagi haqiqiy ishlar (asboblar, skillar, subagentlar) shu yerda ko‘rinadi.', 'Claude Code — the lead agent at reception. Live hook events (tools, skills, subagents) show up here.')
           : actor.kind === 'boss'
             ? T('Siz — ofis direktori. Claude Code’ga yozgan so‘rovlaringiz shu odamning ustida chiqadi.', 'You — the office director. Prompts you type into Claude Code appear here.')
+            : actor.kind === 'teacher'
+              ? T('Claude — Claude Akademiyasi o‘qituvchisi. Har bir bo‘limga o‘z sohasi bo‘yicha dars beradi; o‘rganilgan skillar agentlarning ishiga qo‘shiladi. “🎓 Akademiya” bo‘limida dars jadvali va konspektlar bor.', 'Claude — the Claude Academy teacher. Teaches every department its own field; what agents learn is added to their work. See the “🎓 Academy” tab for classes and notes.')
             : actor.kind === 'staff'
               ? actor.look.role === 'guard'
                 ? T('Kampus qo‘riqchisi: darvoza oldida turadi va vaqti-vaqti bilan hududni aylanib chiqadi.', 'Campus security: stands at the gate and patrols the grounds now and then.')
@@ -526,6 +551,7 @@ export class Hud {
         ),
         h('p', { className: 'desc' }, it.description),
         statusLine,
+        it.type === 'agent' && a ? this.academyBlock(it.id) : null,
         ...benches.map((b) =>
           h(
             'details',
@@ -676,6 +702,7 @@ export class Hud {
       ['auto', `🤖 ${T('Avto', 'Auto')}`],
       ['chat', `💬 ${T('Suhbat', 'Chat')}`],
       ['website', `🌐 ${T('Veb-sayt', 'Website')}`],
+      ['project', `🏗️ ${T('Katta loyiha', 'Big project')}`],
       ['content', `✍️ ${T('Kontent', 'Content')}`],
       ['task', `⚡ ${T('Vazifa', 'Task')}`],
     ];
@@ -689,7 +716,7 @@ export class Hud {
     if (this.pinnedAgent) {
       kids.push(h('span', { className: 'chip route active' }, `📌 ${this.pinnedAgent.name}`, h('button', { className: 'x small', 'aria-label': 'unpin', onclick: () => { this.pinnedAgent = null; this.renderRoutes(); } }, '✕')));
     } else if (kind) {
-      const team = kind === 'website' ? this.crews.team('coder') : kind === 'content' ? this.crews.team('content') : kind === 'chat' ? this.crews.team('office') : this.crews.teamFor(text);
+      const team = kind === 'website' || kind === 'project' ? this.crews.team('coder') : kind === 'content' ? this.crews.team('content') : kind === 'chat' ? this.crews.team('office') : this.crews.teamFor(text);
       kids.push(h('span', { className: 'chip route active', style: { '--c': team.color } }, `${KIND_ICON[kind]} → ${team.emoji} ${team.name[currentLang()]}`));
     }
     this.el.routes.replaceChildren(...kids);
@@ -728,7 +755,7 @@ export class Hud {
   }
 
   private renderTabLabels() {
-    const running = this.crews.runs.filter((r) => r.status === 'running').length;
+    const running = this.crews.runs.filter((r) => r.status === 'running' || r.status === 'waiting').length;
     this.el.tabChat.textContent = `💬 Chat${this.unseenChat ? ` (${this.unseenChat})` : ''}`;
     this.el.tabRuns.textContent = `📨 ${T('Vazifalar', 'Tasks')}${this.crews.runs.length ? ` (${running ? `⏳${running}` : this.crews.runs.length})` : ''}`;
   }
@@ -758,10 +785,13 @@ export class Hud {
   private chatRow(m: Crews['chat'][number]) {
     if (m.from === 'user')
       return h('div', { className: 'msg me' }, h('div', { className: 'bubble' }, ...m.images?.map((u) => h('img', { src: u, alt: 'screenshot' })) || [], m.text && m.text !== '🖼️' ? h('p', {}, m.text) : null));
-    if (m.from === 'system') return h('div', { className: 'msg system' }, m.text);
+    const run = m.runId ? this.crews.runs.find((r) => r.id === m.runId) : undefined;
+    const action = m.action && run
+      ? h('button', { className: 'btn primary small', disabled: !!m.action.retry && (run.status === 'running' || run.status === 'waiting'), onclick: () => (m.action!.retry ? this.crews.retry(run.id) : this.api.openRun(run)) }, m.action.label)
+      : null;
+    if (m.from === 'system') return h('div', { className: 'msg system' }, h('span', {}, m.text), action);
     const it = this.data.byId.get(m.from);
     const d = it ? this.data.dept.get(it.dept) : undefined;
-    const run = m.runId ? this.crews.runs.find((r) => r.id === m.runId) : undefined;
     return h(
       'div',
       { className: 'msg agent', style: { '--c': d?.color || '#d97757' } },
@@ -771,9 +801,245 @@ export class Hud {
         { className: 'bubble' },
         h('small', {}, it?.name || m.from, d ? ` · ${d.emoji}` : ''),
         h('div', { className: 'md', html: renderMarkdown(m.text) }),
-        m.action && run ? h('button', { className: 'btn primary small', onclick: () => this.api.openRun(run) }, m.action.label) : null,
+        m.ask && run ? this.askCard(run) : null,
+        action,
       ),
     );
+  }
+
+  // ------------------------------------------- questions & approval ----
+  private askCards = new Map<string, { pending: Pending; el: HTMLElement }>();
+
+  /** The card where you answer the crew's questions or approve its plan (kept alive across re-renders). */
+  private askCard(run: CrewRun): HTMLElement {
+    const p = run.pending;
+    if (!p) {
+      // Already answered: a short record of what was decided.
+      const answered = run.answers && Object.keys(run.answers).length;
+      return h('div', { className: 'ask-card done' }, run.approved ? `✅ ${T('Reja tasdiqlandi', 'Plan approved')}` : answered ? `✅ ${T('Javoblar yuborildi', 'Answers sent')}: ${Object.values(run.answers!).filter(Boolean).map((a) => `“${a.slice(0, 40)}”`).join(', ')}` : `✅ ${T('Qabul qilindi', 'Received')}`);
+    }
+    const cached = this.askCards.get(run.id);
+    if (cached && cached.pending === p) return cached.el;
+    const el = p.kind === 'questions' ? this.questionsCard(run, p) : this.approvalCard(run, p);
+    this.askCards.set(run.id, { pending: p, el });
+    return el;
+  }
+
+  private questionsCard(run: CrewRun, p: Extract<Pending, { kind: 'questions' }>) {
+    const picked = new Map<string, Set<string>>();
+    const other = new Map<string, string>();
+    const q = (x: Question) => {
+      const set = new Set<string>();
+      picked.set(x.id, set);
+      // Start from the agent's guess (for several-choice questions the guess may list a few options).
+      for (const o of x.options) if (x.guess && (x.guess === o || (x.multi && x.guess.includes(o)))) set.add(o);
+      const opts = x.options.map((o) => {
+        const b = h('button', { className: `chip opt${set.has(o) ? ' on' : ''}`, onclick: () => {
+          if (set.has(o)) set.delete(o);
+          else {
+            if (!x.multi) {
+              set.clear();
+              opts.forEach((ob) => ob.classList.remove('on'));
+            }
+            set.add(o);
+          }
+          b.classList.toggle('on', set.has(o));
+        } }, o);
+        return b;
+      });
+      return h(
+        'div',
+        { className: 'ask-q' },
+        h('b', {}, x.question),
+        x.multi ? h('small', { className: 'muted' }, T(' (bir nechtasini tanlash mumkin)', ' (pick several)')) : null,
+        h('div', { className: 'ask-opts' }, ...opts),
+        h('input', { className: 'ask-other', placeholder: x.guess && !x.options.includes(x.guess) ? `${T('Taxminim', 'My guess')}: ${x.guess}` : T('Yoki o‘zingiz yozing…', 'Or type your own…'), oninput: (e: Event) => other.set(x.id, (e.target as HTMLInputElement).value) }),
+      );
+    };
+    const collect = (useGuess: boolean) => {
+      const out: Record<string, string> = {};
+      for (const x of p.questions) {
+        const parts = [...(picked.get(x.id) || [])];
+        const typed = (other.get(x.id) || '').trim();
+        if (typed) parts.push(typed);
+        out[x.id] = parts.join(', ') || (useGuess ? x.guess || T('siz hal qiling', 'you decide') : '');
+      }
+      return out;
+    };
+    return h(
+      'div',
+      { className: 'ask-card' },
+      p.understanding ? h('p', { className: 'ask-understanding' }, `💡 ${p.understanding}${p.confidence !== undefined ? ` (${T('ishonch', 'confidence')} ${p.confidence}%)` : ''}`) : null,
+      ...p.questions.map(q),
+      h(
+        'div',
+        { className: 'ask-actions' },
+        h('button', { className: 'btn primary small', onclick: () => this.crews.answer(run.id, collect(true)) }, T('✅ Javoblarni yuborish', '✅ Send answers')),
+        h('button', { className: 'btn small', onclick: () => this.crews.answer(run.id, Object.fromEntries(p.questions.map((x) => [x.id, x.guess || T('siz hal qiling', 'you decide')]))) }, T('🤝 O‘zingiz hal qiling', '🤝 You decide')),
+      ),
+    );
+  }
+
+  private approvalCard(run: CrewRun, p: Extract<Pending, { kind: 'approval' }>) {
+    const plan = p.plan;
+    const arr = (x: unknown) => (Array.isArray(x) ? x : []);
+    const txt = (x: unknown) => (typeof x === 'string' ? x : x && typeof x === 'object' ? Object.values(x as Record<string, unknown>).filter((v) => typeof v === 'string').join(' — ') : String(x ?? ''));
+    const box = h('div', { className: 'ask-change', hidden: true });
+    const ta = h('textarea', { rows: 3, placeholder: T('Nimani o‘zgartiraylik? Masalan: “ota-onalar uchun kabinet qo‘sh, to‘lovlarni keyinga qoldir”', 'What should change? E.g. “add a parents’ portal, move payments to later”') }) as HTMLTextAreaElement;
+    box.append(ta, h('button', { className: 'btn primary small', onclick: () => { if (ta.value.trim()) this.crews.answer(run.id, { ok: false, note: ta.value.trim() }); } }, T('📨 O‘zgarishlarni yuborish', '📨 Send changes')));
+    const deliv: Record<string, string> = { web: '🌐 Veb-ilova', api: '⚙️ API', mcp: '🔌 MCP server', bot: '🤖 Telegram bot' };
+    return h(
+      'div',
+      { className: 'ask-card plan' },
+      h('b', {}, String(plan.title || run.title)),
+      h('p', {}, String(plan.summary || '')),
+      arr(plan.deliverables).length ? h('div', { className: 'ask-opts' }, ...arr(plan.deliverables).map((d) => h('span', { className: 'chip on' }, deliv[String(d)] || String(d)))) : null,
+      h('small', { className: 'muted' }, 'MVP:'),
+      h('ul', {}, ...arr(plan.mvp || plan.features).slice(0, 10).map((m) => h('li', {}, txt(m)))),
+      arr(plan.later).length ? h('small', { className: 'muted' }, `${T('Keyinroq', 'Later')}: ${arr(plan.later).slice(0, 5).map(txt).join('; ')}`) : null,
+      h('small', { className: 'muted' }, `${arr(plan.pages).length} ${T('sahifa', 'pages')} · ${arr(plan.entities).length} ${T('jadval', 'tables')} · ${arr(plan.api).length} API`),
+      h(
+        'div',
+        { className: 'ask-actions' },
+        h('button', { className: 'btn primary small', onclick: () => this.crews.answer(run.id, { ok: true }) }, T('✅ Tasdiqlash — qurishni boshlang', '✅ Approve — start building')),
+        h('button', { className: 'btn small', onclick: () => { box.hidden = !box.hidden; if (!box.hidden) ta.focus(); } }, T('✏️ O‘zgartirish', '✏️ Change')),
+      ),
+      box,
+    );
+  }
+
+  // ------------------------------------------------------ boss & academy ----
+  /** Boss panel in the inspector: control, patrol, what the Boss is doing, findings. */
+  refreshBoss() {
+    this.renderTopButtons();
+    const el = this.el.bossPanel;
+    if (!el?.isConnected) return;
+    const boss = this.api.boss();
+    const academy = this.api.academy();
+    const findings = boss.findings.slice(0, 12);
+    el.replaceChildren(
+      ...compact([
+      h('p', { className: 'desc' }, T('Siz — ofis direktori. Bossni o‘zingiz yurgizing yoki avto-tekshiruvga qo‘ying: u agentlar oldiga borib ishini tekshiradi, kamchiligi borlarni Claude Akademiyasiga yuboradi.', 'You are the office director. Walk the Boss yourself or put it on patrol: it visits agents, checks their work and sends those who need it to Claude Academy.')),
+      h('p', { className: 'current' }, `📍 ${boss.status || '—'}`),
+      h(
+        'div',
+        { className: 'actions' },
+        h('button', { className: `btn${boss.control ? ' on' : ''}`, onclick: () => this.api.setBossControl(!boss.control) }, boss.control ? T('🎮 Boshqaruv yoqilgan', '🎮 Control on') : T('🎮 Bossni boshqarish', '🎮 Control the Boss')),
+        h('button', { className: `btn${boss.patrol ? ' on' : ''}`, onclick: () => { if (boss.control) this.api.setBossControl(false); boss.setPatrol(!boss.patrol); } }, boss.patrol ? T('🕵️ Avto-tekshiruv yoqilgan', '🕵️ Patrol on') : T('🕵️ Avto-tekshiruv', '🕵️ Patrol')),
+        h('button', { className: 'btn', onclick: () => { this.tab = 'academy'; this.showPanel('dir'); this.renderDirectory(); } }, `🎓 ${T('Akademiya', 'Academy')}`),
+      ),
+      boss.control ? h('p', { className: 'hint' }, T('⌨️ WASD yoki strelkalar — yurish, Shift — tez. Yerga bosing — o‘sha joyga boradi. Agentni bossangiz — oldiga borib tekshiradi.', '⌨️ WASD or arrows to walk, Shift to run. Click the ground to walk there. Click an agent to go and check their work.')) : null,
+      h('div', { className: 'links' }, h('small', {}, `${T('Tekshiruvlar', 'Checks')} (${boss.findings.length}) · 🎓 ${T('navbatda', 'queued')}: ${academy.queue.length}`)),
+      findings.length
+        ? h(
+            'div',
+            { className: 'findings' },
+            ...findings.map((f) => {
+              const it = this.data.byId.get(f.agentId);
+              return h(
+                'button',
+                { className: `finding ${f.decision}`, onclick: () => this.api.selectItem(f.agentId, true) },
+                h('b', {}, `${f.decision === 'ok' ? '👍' : '🎓'} ${it?.name || f.agentId} · ${f.score}/100${f.exam ? ' · 🧪' : ''}`),
+                f.issues.length ? h('small', {}, `− ${f.issues.slice(0, 2).join('; ')}`) : null,
+                f.strengths.length ? h('small', { className: 'ok' }, `+ ${f.strengths.slice(0, 2).join('; ')}`) : null,
+              );
+            }),
+          )
+        : h('p', { className: 'muted' }, T('Hali tekshiruv yo‘q. “Avto-tekshiruv”ni yoqing yoki agentni tanlab “Boss tekshirsin” deng.', 'No checks yet. Turn on Patrol or pick an agent and press “Boss, check”.')),
+      ]),
+    );
+  }
+
+  refreshAcademy() {
+    if (this.tab === 'academy' && this.el.list?.isConnected) this.renderAcademy();
+    if (this.el.academyBlock?.isConnected && this.selected) this.el.academyBlock.replaceWith(this.academyBlock(this.selected.id));
+    if (this.el.bossPanel?.isConnected) this.refreshBoss();
+  }
+
+  /** Academy level, learned skills and the Boss's buttons for one agent. */
+  private academyBlock(id: string) {
+    const ac = this.api.academy();
+    const p = ac.of(id);
+    const queued = ac.queue.some((q) => q.id === id);
+    const inClass = ac.session?.students.some((a) => a.item?.id === id);
+    const finding = this.api.boss().findings.find((f) => f.agentId === id);
+    const el = h(
+      'div',
+      { className: 'academy-block' },
+      h('small', {}, `🎓 ${T('Claude Akademiyasi', 'Claude Academy')}: ${T('daraja', 'level')} ${p.level} · ${p.xp % XP_PER_LEVEL}/${XP_PER_LEVEL} XP · ${p.lessons} ${T('dars', 'lessons')}${inClass ? ` · ${T('hozir darsda', 'in class now')}` : queued ? ` · ${T('navbatda', 'queued')}` : ''}`),
+      p.learned.length
+        ? h('div', { className: 'chips' }, ...p.learned.slice(-10).map((sid) => { const sk = this.data.byId.get(sid); return sk ? h('button', { className: 'chip small', onclick: () => this.api.selectItem(sid, true) }, `📘 ${sk.name}`) : null; }).filter(Boolean) as HTMLElement[])
+        : null,
+      finding
+        ? h('p', { className: `finding-line ${finding.decision}` }, `${finding.decision === 'ok' ? '👍' : '🧐'} ${T('Boss bahosi', 'Boss score')}: ${finding.score}/100${finding.exam ? ` — 🧪 “${finding.exam.question.slice(0, 90)}” → ${finding.exam.score}/10` : ''}${finding.issues.length ? ` · ${finding.issues[0]}` : ''}`)
+        : null,
+      finding?.exam ? h('details', {}, h('summary', {}, T('Imtihon javobi', 'Exam answer')), h('p', {}, finding.exam.answer), finding.exam.verdict ? h('p', { className: 'muted' }, finding.exam.verdict) : null) : null,
+      h(
+        'div',
+        { className: 'actions' },
+        h('button', { className: 'btn small', disabled: queued || inClass, onclick: () => { ac.enroll(id, T('siz yubordingiz', 'sent by you'), 'user'); } }, `🎓 ${T('Akademiyaga yuborish', 'Send to academy')}`),
+        h('button', { className: 'btn small', onclick: () => this.api.inspect(id, false) }, `🧐 ${T('Boss tekshirsin', 'Boss, check')}`),
+        h('button', { className: 'btn small', title: T('Boss savol beradi, agent javob beradi, hakam baholaydi (AI orqali)', 'The Boss asks, the agent answers, a grader scores (uses the AI)'), onclick: () => this.api.inspect(id, true) }, `🧪 ${T('Haqiqiy imtihon', 'Real exam')}`),
+      ),
+    );
+    this.el.academyBlock = el;
+    return el;
+  }
+
+  /** The Academy tab: the class now, who is queued, lesson notes and the best students. */
+  private renderAcademy() {
+    const ac = this.api.academy();
+    const total = this.cast.actors.filter((a) => a.kind === 'agent').length;
+    const s = ac.session;
+    const phase = s ? { gather: T('o‘quvchilar yig‘ilmoqda', 'students arriving'), lecture: T('dars ketmoqda', 'lecture'), exam: T('imtihon', 'exam'), graduate: T('tabriklash', 'graduation') }[s.phase] : '';
+    const d = s ? this.data.dept.get(s.dept) : undefined;
+    const top = Object.entries(ac.progress)
+      .sort((a, b) => b[1].xp - a[1].xp)
+      .slice(0, 12);
+    const notes = Object.entries(ac.notes).sort((a, b) => b[1].at - a[1].at);
+    this.el.list.replaceChildren(
+      h(
+        'div',
+        { className: 'academy-panel' },
+        h('p', { className: 'desc' }, T('Claude har bir bo‘limga o‘z sohasi bo‘yicha dars beradi. Boss tanlagan agentlar birinchi keladi, keyin kam o‘qiganlar — shu tarzda barcha agentlar o‘qiydi. O‘rganilgan skillar va dars konspekti agentning har bir keyingi vazifasiga qo‘shiladi.', 'Claude teaches every department its own field. Agents the Boss picked come first, then those who studied least — so every agent studies. Learned skills and lesson notes are added to the agent’s instructions for every future task.')),
+        h('div', { className: 'stat-row' }, h('b', {}, `${ac.trained}/${total}`), h('span', {}, T(' agent kamida bitta darsda qatnashgan', ' agents attended at least one class')), h('span', { className: 'muted' }, ` · ${ac.sessions} ${T('dars', 'classes')}`)),
+        h('div', { className: 'progress-bar' }, h('span', { style: { '--w': `${Math.round((100 * ac.trained) / Math.max(1, total))}%` } })),
+        h('h4', {}, T('📚 Hozirgi dars', '📚 Class now')),
+        s
+          ? h(
+              'div',
+              { className: 'class-now' },
+              h('b', {}, `${d?.emoji || ''} ${d ? (currentLang() === 'uz' ? d.uz : d.name) : s.dept} — ${phase}`),
+              h('small', {}, s.topics.map((t2) => t2.name).join(' · ')),
+              h('div', { className: 'chips' }, ...s.students.map((a) => h('button', { className: 'chip small', onclick: () => a.item && this.api.selectItem(a.item.id, true) }, a.name))),
+              h('button', { className: 'btn small', onclick: () => { const tch = this.cast.teacher; if (tch) { this.api.selectActor(tch); this.api.focusActor(tch); } } }, T('👀 Darsni ko‘rish', '👀 Watch the class')),
+            )
+          : h('p', { className: 'muted' }, T('Tanaffus — keyingi dars tez orada.', 'Break — next class soon.')),
+        h('h4', {}, `⏳ ${T('Navbat', 'Queue')} (${ac.queue.length})`),
+        ac.queue.length
+          ? h('div', { className: 'chips' }, ...ac.queue.slice(0, 30).map((q) => h('button', { className: 'chip small', title: q.reason, onclick: () => this.api.selectItem(q.id, true) }, `${q.by === 'boss' ? '🧐' : '👤'} ${this.data.byId.get(q.id)?.name || q.id}`)))
+          : h('p', { className: 'muted' }, T('Navbat bo‘sh. Boss tekshiruvidan keyin yoki agent sahifasidagi “🎓 Akademiyaga yuborish” tugmasi bilan qo‘shiladi.', 'Empty. Agents join after a Boss check or with “🎓 Send to academy” on their page.')),
+        h('label', { className: 'toggle' }, h('input', { type: 'checkbox', checked: ac.realLessons, onchange: (e: Event) => { ac.realLessons = (e.target as HTMLInputElement).checked; } }), T(' Claude dars konspektini haqiqatan yozsin (AI ulangan bo‘lsa)', ' Claude writes real lesson notes (when an AI is connected)')),
+        h('h4', {}, `🏆 ${T('Eng yaxshi o‘quvchilar', 'Top students')}`),
+        top.length
+          ? h('ol', { className: 'top-students' }, ...top.map(([id, p]) => h('li', {}, h('button', { className: 'linkish', onclick: () => this.api.selectItem(id, true) }, this.data.byId.get(id)?.name || id), h('small', {}, ` — ${T('daraja', 'level')} ${p.level} · ${p.learned.length} skill`))))
+          : h('p', { className: 'muted' }, T('Hali hech kim dars tugatmagan.', 'Nobody has finished a class yet.')),
+        h('h4', {}, `📝 ${T('Dars konspektlari', 'Lesson notes')} (${notes.length})`),
+        ...notes.slice(0, 6).map(([dept, n]) => {
+          const dd = this.data.dept.get(dept);
+          return h('details', {}, h('summary', {}, `${dd?.emoji || ''} ${dd ? (currentLang() === 'uz' ? dd.uz : dd.name) : dept}`), h('div', { className: 'md', html: renderMarkdown(n.text) }));
+        }),
+        h('h4', {}, `📖 ${T('Kurslar va kitoblar (kutubxonada)', 'Courses and books (in the library)')}`),
+        h('div', { className: 'chips' }, ...this.data.registry.items.filter((i) => i.type === 'guide' && (i.source === 'agents-beginners' || i.source === 'agent-book')).slice(0, 40).map((g) => h('button', { className: 'chip small', title: g.description, onclick: () => this.api.selectItem(g.id, true) }, `📜 ${g.title || g.name}`))),
+      ),
+    );
+  }
+
+  /** Bring the chat into view (e.g. when the agents ask a question). */
+  focusChat() {
+    this.showPanel('feed');
+    this.showPanelTab('chat');
+    this.renderChat();
   }
 
   onMessage() {
@@ -817,8 +1083,10 @@ export class Hud {
                 return h('li', { className: s.status }, h('span', {}, `${icon} ${s.label[currentLang()]}`), h('small', {}, ` ${it?.name || ''}${s.seconds ? ` · ${s.seconds}s` : ''}`), s.status === 'run' && s.live ? h('div', { className: 'live-text' }, s.live) : null);
               }),
           ),
-          run.status === 'done' && run.result ? h('button', { className: 'btn primary small', onclick: () => this.api.openRun(run) }, T('Natijani ochish', 'Open result')) : null,
+          run.status === 'waiting' ? h('button', { className: 'btn primary small', onclick: () => this.showPanelTab('chat') }, T('❓ Savolga javob bering', '❓ Answer the question')) : null,
+          run.result || run.status === 'running' ? h('button', { className: `btn small${run.status === 'done' ? ' primary' : ''}`, onclick: () => this.api.openRun(run) }, run.status === 'done' ? T('Natijani ochish', 'Open result') : T('👀 Jarayonni ko‘rish', '👀 Watch progress')) : null,
           run.status === 'error' ? h('p', { className: 'note' }, `⚠️ ${run.error || ''}`) : null,
+          run.status === 'error' ? h('button', { className: 'btn primary small', onclick: () => this.crews.retry(run.id) }, T('🔁 Qayta urinish', '🔁 Retry')) : null,
         );
       }),
     );

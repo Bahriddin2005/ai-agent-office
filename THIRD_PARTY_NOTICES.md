@@ -14,6 +14,11 @@ and every entry in `public/data/registry.json` links back to its source file.
 | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) | © 2026 Safi Shamsi and the Graphify contributors | Apache-2.0 (earlier portions MIT; see `library/LICENSES/graphify-NOTICE`) |
 | [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) | © 2025 Nous Research | MIT |
 | [affaan-m/ECC](https://github.com/affaan-m/ECC) | © 2026 Affaan Mustafa | MIT |
+| [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) | © Microsoft Corporation | MIT |
+| [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) | © Bojie Li | Apache-2.0 |
+| [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | © 2025 Addy Osmani | MIT |
+| [ashishpatel26/500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) | © 2025 ashishpatel26 | MIT |
+| [earendil-works/pi](https://github.com/earendil-works/pi) | © 2025 Mario Zechner | MIT |
 
 ## Files written by this project
 

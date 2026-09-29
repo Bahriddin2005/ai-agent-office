@@ -1,6 +1,6 @@
 # 🧠 AI & ML Lab — Sunʼiy intellekt laboratoriyasi
 
-105 items in this department.
+108 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -14,9 +14,11 @@
 | [hermes](../agents/hermes/hermes.md) | agent | Hermes | Hermes Agent by Nous Research: a direct, self-improving generalist. Learns from each task, turns repeated work into reusable skills and keeps knowledge persist… |
 | [memory-analyst](../agents/claude-skills/memory-analyst.md) | agent | Claude Skills | Read-only analyst for `~/.claude/projects/ /memory/`. Identifies promotion candidates (entries proven enough for CLAUDE.md), stale references, consolidation op… |
 | [mle-reviewer](../agents/ecc/mle-reviewer.md) | agent | ECC | Production machine-learning engineering reviewer for data contracts, feature pipelines, training reproducibility, offline/online evaluation, model serving, mon… |
+| [multi-agent-debate](../agents/agents-500/multi-agent-debate.md) | agent | 500 Agents | Two AI agents debate any topic with an AI judge scoring the outcome |
 | [rag-pipeline-reviewer](../agents/ecc/rag-pipeline-reviewer.md) | agent | ECC | Reviews RAG (Retrieval-Augmented Generation) pipelines for retrieval quality, chunking strategy, embedding choices, and evaluation coverage. Invoke when the us… |
 | [accelerate](../skills/hermes/accelerate/SKILL.md) | skill | Hermes | Run PyTorch training across GPUs with minimal changes. |
 | [actual-setup](../skills/hermes/actual-setup/SKILL.md) | skill | Hermes | Set up Actual Computer (actual.inc) inference in Hermes. |
+| [add-llm-provider](../skills/pi/add-llm-provider/SKILL.md) | skill | Pi | Checklist for adding a new LLM provider to packages/ai. Covers core types, provider implementation, lazy registration, model generation, the full test matrix,… |
 | [agent-eval](../skills/ecc/agent-eval/SKILL.md) | skill | ECC | Head-to-head comparison of coding agents (Claude Code, Aider, Codex, etc.) on custom tasks with pass rate, cost, time, and consistency metrics. Use when choosi… |
 | [agent-introspection-debugging](../skills/ecc/agent-introspection-debugging/SKILL.md) | skill | ECC | Structured self-debugging workflow for AI agent failures using capture, diagnosis, contained recovery, and introspection reports. Use when an agent run fails a… |
 | [agent-merge-conflict-arbiter](../skills/hermes/agent-merge-conflict-arbiter/SKILL.md) | skill | Hermes | Neutral arbiter for merge conflicts between two agents. |
@@ -107,5 +109,6 @@
 | [learn-eval](../commands/ecc/learn-eval.md) | command | ECC | Extract reusable patterns from the session, self-evaluate quality before saving, and determine the right save location (Global vs Project). |
 | [model-route](../commands/ecc/model-route.md) | command | ECC | Recommend the best model tier for the current task based on complexity, risk, and budget. |
 | [multi-execute](../commands/ecc/multi-execute.md) | command | ECC | Execute a multi-model implementation plan while preserving Claude as the only filesystem writer. |
-| [claude-mcp](../guides/best-practice/claude-mcp.md) | guide | Best Practice | ![Last Updated](https://img.shields.io/badge/Last_Updated-Mar%2002%2C%202026%2012%3A30%20PM%20PKT-white?style=flat&labelColor=555) [![Implemented](https://img.… |
+| [claude-mcp](../guides/best-practice/claude-mcp.md) | guide | Best Practice | MCP (Model Context Protocol) servers extend Claude Code with connections to external tools, databases, and APIs. This guide covers recommended servers for dail… |
 | [hermes-readme](../guides/hermes/hermes-readme.md) | guide | Hermes | Overview of NousResearch/hermes-agent: what it contains and how to install and use it. |
+| [pi-readme](../guides/pi/pi-readme.md) | guide | Pi | Overview of earendil-works/pi: what it contains and how to install and use it. |

@@ -13,6 +13,9 @@ import { Connection } from './live/connection';
 import { Router } from './router';
 import { Cast, type Actor } from './sim/actors';
 import { Director } from './sim/director';
+import { Academy } from './sim/academy';
+import { BossAI } from './sim/boss';
+import { makeExam, makeTeacher } from './ai/exam';
 import { Crews, type Bench, type Step, type Team } from './ai/crews';
 import { pickEngine, type Engine } from './ai/engine';
 import { GraphView } from './ui/graphView';
@@ -100,6 +103,8 @@ async function main() {
     return picking && !engine ? picking : refreshEngine();
   };
   const stepControls = new Map<Step, ReturnType<Director['beginTask']>>();
+  const pendingState = new Map<string, string>();
+  let resultsTick = 0;
   const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
   const crews: Crews = new Crews(data, teamsFile.teams, benchFile.results, prompts, router, getEngine, {
     stepStart(run, step) {
@@ -128,16 +133,35 @@ async function main() {
       if (msg.from === 'user') cast.boss.say(`🗣️ ${clip(msg.text, 60)}`, 7);
       else if (msg.from !== 'system') cast.byItem.get(msg.from)?.say(`💬 ${clip(msg.text, 90)}`, 10);
     },
-    changed() {
+    changed(run) {
       hud.renderRunsSoon();
+      if (!run) return;
+      if (!resultsTick) resultsTick = requestAnimationFrame(() => {
+        resultsTick = 0;
+        results.refresh(run);
+      });
+      const pendingNow = run.pending?.kind || '';
+      if ((pendingState.get(run.id) || '') !== pendingNow) {
+        pendingState.set(run.id, pendingNow);
+        hud.renderChat();
+      }
+    },
+    preview(run) {
+      results.open(run, 'preview');
+      hud.toast(currentLang() === 'uz' ? '👀 Birinchi versiya tayyor — ochildi. Test davom etmoqda.' : '👀 First version ready and open. Testing continues.', 6000);
+    },
+    ask(run) {
+      hud.focusChat();
+      hud.toast(run.pending?.kind === 'approval' ? (currentLang() === 'uz' ? '📋 Reja tayyor — chatda tasdiqlang' : '📋 Plan ready — approve it in the chat') : currentLang() === 'uz' ? '❓ Agentlar sizga savol berdi — chatda javob bering' : '❓ The agents have questions — answer in the chat', 7000);
     },
     done(run) {
       hud.renderRuns();
       if (run.status === 'done' && run.result) {
-        results.open(run);
+        if (results.openRun === run) results.refresh(run);
+        else results.open(run);
         hud.toast(`✅ ${currentLang() === 'uz' ? 'Tayyor' : 'Ready'}: ${run.title}`, 8000, { label: currentLang() === 'uz' ? 'Ochish' : 'Open', fn: () => results.open(run) });
       } else if (run.status === 'error') {
-        hud.toast(`⚠️ ${run.error || 'error'}`, 8000);
+        hud.toast(`⚠️ ${run.error || 'error'}`, 9000, { label: currentLang() === 'uz' ? '🔁 Qayta urinish' : '🔁 Retry', fn: () => crews.retry(run.id) });
       }
     },
     async saveWorkspace(id, files) {
@@ -169,6 +193,36 @@ async function main() {
     return true;
   };
   const results = new ResultsView(data, crews, save, (id) => selectItem(id, true));
+
+  // Claude Academy and the Boss's inspections.
+  const deptName = (id: string) => {
+    const d = data.dept.get(id);
+    return d ? `${d.name} (${d.uz})` : id;
+  };
+  const academy = new Academy(data, layout, cast, office, director, fx, now, makeTeacher(crews, getEngine, deptName));
+  crews.knowledge = (id) => academy.knowledge(id);
+  const boss = new BossAI(data, layout, cast, academy, director, crews, now, makeExam(crews, getEngine));
+  const keys = new Set<string>();
+  const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'shift']);
+  const typing = () => {
+    const el = document.activeElement as HTMLElement | null;
+    return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+  };
+  addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if (!boss.control || typing() || !MOVE_KEYS.has(k)) return;
+    keys.add(k);
+    if (k.startsWith('arrow')) e.preventDefault();
+  });
+  addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+  addEventListener('blur', () => keys.clear());
+  const setBossControl = (on: boolean) => {
+    boss.setControl(on);
+    following = on ? cast.boss : following === cast.boss ? null : following;
+    if (on) flyTo(new THREE.Vector3(cast.boss.body.x, 1, cast.boss.body.z), 16, 1.0, 0.7);
+    hud.renderTopButtons();
+    hud.refreshBoss();
+  };
   document.getElementById('hud')!.after(results.el);
 
   const composer = new EffectComposer(renderer);
@@ -310,8 +364,25 @@ async function main() {
       overview();
     },
     engine: () => engine,
+    boss: () => boss,
+    academy: () => academy,
+    setBossControl,
+    inspect: (id, real) => {
+      const a = cast.byItem.get(id);
+      if (!a) return;
+      boss.inspect(a, real);
+      following = cast.boss;
+    },
   });
   graph.onSelect = (id) => selectItem(id, false);
+  boss.onChange(() => hud.refreshBoss());
+  academy.onChange(() => hud.refreshAcademy());
+  // Earlier runs and chat from this browser (a reload loses nothing).
+  crews.load();
+  if (crews.runs.length) {
+    hud.renderRuns();
+    hud.renderChat();
+  }
 
   conn.onEvent((e) => director.handleLive(e));
   conn.onStatus((s) => {
@@ -342,6 +413,23 @@ async function main() {
     if (graphMode) return graph.click(ev);
     setRay(ev);
     const i = cast.crowd.pick(ray);
+    if (boss.control) {
+      // You are the Boss: click an agent to check their work, or the ground to walk there.
+      if (i >= 0 && cast.actors[i].item) {
+        const a = cast.actors[i];
+        boss.inspect(a, false);
+        selectItem(a.item!.id, false);
+        return;
+      }
+      const p = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), new THREE.Vector3());
+      if (p) {
+        cast.walkTo(cast.boss, p.x, p.z);
+        boss.status = currentLang() === 'uz' ? 'Siz ko‘rsatgan joyga ketmoqda' : 'Walking where you clicked';
+        fx.glow(new THREE.Vector3(p.x, 0.3, p.z), '#ffd166', 1.2, 0.8);
+        hud.refreshBoss();
+      }
+      return;
+    }
     if (i >= 0) {
       const a = cast.actors[i];
       if (a.item) selectItem(a.item.id, false);
@@ -416,7 +504,38 @@ async function main() {
     }
 
     director.update(dt);
+    academy.update(dt);
+    boss.update();
+    // Keyboard walking for the Boss (camera-relative, Shift to run).
+    const b = cast.boss;
+    b.manual = false;
+    if (boss.control && keys.size) {
+      let fx2 = 0, fz2 = 0;
+      if (keys.has('w') || keys.has('arrowup')) fz2 -= 1;
+      if (keys.has('s') || keys.has('arrowdown')) fz2 += 1;
+      if (keys.has('a') || keys.has('arrowleft')) fx2 -= 1;
+      if (keys.has('d') || keys.has('arrowright')) fx2 += 1;
+      if (fx2 || fz2) {
+        const yaw = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z);
+        const c = Math.cos(yaw), s2 = Math.sin(yaw);
+        const wx = fx2 * c + fz2 * s2;
+        const wz = -fx2 * s2 + fz2 * c;
+        const len = Math.hypot(wx, wz);
+        const sp = (keys.has('shift') ? 6 : 3.2) * dt;
+        if (b.path.length || b.current) b.plan([], true);
+        b.body.x += (wx / len) * sp;
+        b.body.z += (wz / len) * sp;
+        b.targetHeading = Math.atan2(wx, wz);
+        b.body.pose = 'stand';
+        b.manual = true;
+        b.activity = 'idle';
+        b.at = cast.here(b);
+      }
+    }
     cast.update(dt, time);
+    // Where the Boss is heading.
+    const showRoute = b.path.length > 0 && (boss.control || boss.patrol || selectedActor === b);
+    fx.setRoute(showRoute ? [[b.body.x, b.body.z], ...b.path] : null, time);
     office.update(dt, time, camera, controls.target);
     fx.update(dt, time);
 
@@ -450,7 +569,7 @@ async function main() {
       const dept = a.item ? data.dept.get(a.item.dept) : undefined;
       if (isSel) reqs.push({ key: a.idx, x: a.body.x, y, z: a.body.z, text: a.item?.name || (a.kind === 'lead' ? 'Claude' : a.kind === 'boss' ? t().you : a.name), sub: a.bubble || (dept ? `${dept.emoji} ${dept.name}` : undefined), kind: 'selected', color: a.color });
       else if (a.bubble) reqs.push({ key: a.idx, x: a.body.x, y, z: a.body.z, text: a.bubble, sub: a.item?.name || a.name, kind: a.live ? 'live' : 'bubble', color: a.color });
-      else if (a === hoveredActor || a.kind === 'lead' || a.kind === 'boss' || a.kind === 'visitor') reqs.push({ key: a.idx, x: a.body.x, y, z: a.body.z, text: a.item?.name || (a.kind === 'lead' ? 'Claude' : a.kind === 'boss' ? t().you : a.name), kind: 'name', color: a.color });
+      else if (a === hoveredActor || a.kind === 'lead' || a.kind === 'boss' || a.kind === 'visitor' || a.kind === 'teacher') reqs.push({ key: a.idx, x: a.body.x, y, z: a.body.z, text: a.item?.name || (a.kind === 'lead' ? 'Claude' : a.kind === 'boss' ? t().you : a.name), kind: 'name', color: a.color });
     }
     labels.update(reqs, camera);
 
@@ -467,7 +586,7 @@ async function main() {
 
   // Handy for debugging from the console.
   Object.assign(window, {
-    office: { data, layout, cast, director, crews, results, conn, camera, controls, renderer, selectItem, focusDept, focusBuilding, setGraph, overview, campus: office.campus, engine: () => engine, lookAt: (x: number, z: number, d = 30) => flyTo(new THREE.Vector3(x, 0, z), d, 0.05),
+    office: { data, layout, cast, director, crews, results, conn, camera, controls, renderer, academy, boss, selectItem, focusDept, focusBuilding, setGraph, overview, campus: office.campus, engine: () => engine, lookAt: (x: number, z: number, d = 30) => flyTo(new THREE.Vector3(x, 0, z), d, 0.05),
       view: (p: [number, number, number], at: [number, number, number]) => {
         tween = null;
         following = null;

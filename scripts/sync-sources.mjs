@@ -26,8 +26,15 @@ for (const s of sources) {
     git(dest, 'fetch', '--depth', '1', 'origin', s.branch);
     git(dest, 'reset', '--hard', 'FETCH_HEAD');
   } else {
-    console.log(`⤓ ${s.id}: cloning ${url}`);
-    git(sourcesDir, 'clone', '--depth', '1', '--branch', s.branch, url, s.id);
+    console.log(`⤓ ${s.id}: cloning ${url}${s.sparse ? ' (sparse)' : ''}`);
+    if (s.sparse) {
+      // Big course/book repos: fetch only the Markdown the library uses.
+      git(sourcesDir, 'clone', '--depth', '1', '--filter=blob:none', '--no-checkout', '--branch', s.branch, url, s.id);
+      git(dest, 'sparse-checkout', 'set', '--no-cone', ...s.sparse);
+      git(dest, 'checkout', s.branch);
+    } else {
+      git(sourcesDir, 'clone', '--depth', '1', '--branch', s.branch, url, s.id);
+    }
   }
   lock[s.id] = { repo: s.repo, branch: s.branch, commit: git(dest, 'rev-parse', 'HEAD') };
 }

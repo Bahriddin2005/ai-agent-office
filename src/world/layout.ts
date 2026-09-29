@@ -41,7 +41,7 @@ export interface Shelf {
   spot: Spot;
 }
 
-export type BuildingStyle = 'executive' | 'tech' | 'sales' | 'media' | 'finance' | 'services';
+export type BuildingStyle = 'executive' | 'tech' | 'sales' | 'media' | 'finance' | 'services' | 'academy';
 
 export interface BuildingDef {
   id: string;
@@ -53,6 +53,10 @@ export interface BuildingDef {
   /** storeys drawn on the outside (the office itself is the ground floor) */
   floors: number;
   quad: [1 | -1, 1 | -1];
+  /** centred north of the plaza, facing it (the academy) */
+  center?: boolean;
+  /** free classroom seats for visiting students */
+  studentSeats?: number;
 }
 
 export const BUILDINGS: BuildingDef[] = [
@@ -62,6 +66,7 @@ export const BUILDINGS: BuildingDef[] = [
   { id: 'savdo', name: { uz: 'Savdo', en: 'Sales' }, emoji: '🤝', color: '#f08c2e', accent: '#2a2f38', style: 'sales', floors: 2, quad: [1, 1] },
   { id: 'media', name: { uz: 'Marketing va media', en: 'Marketing & Media' }, emoji: '📣', color: '#d45ad4', accent: '#231a2e', style: 'media', floors: 2, quad: [1, 1] },
   { id: 'xizmat', name: { uz: 'Ofis xizmatlari', en: 'Office Services' }, emoji: '☕', color: '#1fa7a0', accent: '#f1e6d2', style: 'services', floors: 2, quad: [-1, 1] },
+  { id: 'akademiya', name: { uz: 'Claude Akademiyasi', en: 'Claude Academy' }, emoji: '🎓', color: '#d97757', accent: '#2b1d18', style: 'academy', floors: 3, quad: [1, -1], center: true, studentSeats: 24 },
 ];
 
 const BY_DEPT: Record<string, string> = {
@@ -69,7 +74,7 @@ const BY_DEPT: Record<string, string> = {
   engineering: 'tech', languages: 'tech', frontend: 'tech', devops: 'tech', security: 'tech', ai: 'tech', data: 'tech',
   marketing: 'media', creative: 'media',
   business: 'savdo',
-  productivity: 'xizmat', academy: 'xizmat',
+  productivity: 'xizmat', academy: 'akademiya',
 };
 const FINANCE = /(cfo|financ|account|invoice|billing|tax|budget|cash|unit-econ|saas-metric|payment|bank|trading|ledger|payroll|finance)/i;
 const SALES = /(sales|revenue|commercial|crm|prospect|outreach|lead-?gen|pipeline|deal|signal-scor|enrichment|mutual|demand-gen|cro-advisor|customer-success|pricing)/i;
@@ -83,6 +88,8 @@ export function buildingOf(it: Pick<Item, 'name' | 'dept'>): string {
 
 export interface Zone {
   building: BuildingDef;
+  /** desks without an agent: classroom seats for visiting students */
+  studentSeats: DeskSlot[];
   /** departments working in this building, in desk order */
   depts: string[];
   agents: Item[];
@@ -106,6 +113,8 @@ export interface Zone {
 
 export interface Layout {
   zones: Zone[];
+  /** Claude Academy: the lecturer's place, the screen and the free student seats */
+  academy: { zone: Zone; podium: Spot; screen: { x: number; y: number; z: number; heading: number; w: number; h: number }; seats: DeskSlot[] } | null;
   zoneByDept: Map<string, Zone>;
   zoneByBuilding: Map<string, Zone>;
   atriumRadius: number;
@@ -131,24 +140,26 @@ export const Z0 = 7;
 const X0 = 19;
 const LANE = 4;
 const GAP = 7;
+/** distance from the boulevard to the academy's front (beyond the plaza) */
+const ZA = 20;
 
 export const headingOf = (dx: number, dz: number) => Math.atan2(dx, dz);
 const colsFor = (n: number) => Math.min(14, Math.max(3, Math.ceil(Math.sqrt(n * 1.6))));
 
-function makeZone(building: BuildingDef, agents: Item[], x0: number): Zone {
-  const [sx, sz] = building.quad;
-  const n = agents.length;
+function makeZone(building: BuildingDef, agents: Item[], x0: number, z0 = Z0): Zone {
+  const [sx, sz]: [1 | -1, 1 | -1] = building.center ? [1, -1] : building.quad;
+  const n = agents.length + (building.studentSeats || 0);
   const cols = colsFor(n);
   const rows = Math.max(2, Math.ceil(n / cols));
   const W = cols * COL_PITCH + 2.3;
   const vBack = ROW0 + (rows - 1) * ROW_PITCH + 1.6;
   const D = vBack + 1.4;
-  const toWorld = (u: number, v: number): [number, number] => [sx * (x0 + u), sz * (Z0 + v)];
+  const toWorld = (u: number, v: number): [number, number] => [sx * (x0 + u), sz * (z0 + v)];
   const face = (du: number, dv: number) => headingOf(sx * du, sz * dv);
   const lane = sz * LANE;
   const depts = [...new Set(agents.map((a) => a.dept))];
   const zone: Zone = {
-    building, depts, agents, sx, sz, x0, W, D, cols, rows, desks: [], shelves: [], lane, toWorld, face,
+    building, depts, agents, sx, sz, x0, W, D, cols, rows, desks: [], studentSeats: [], shelves: [], lane, toWorld, face,
     coffee: null as unknown as Spot,
     coffeeMachine: null as unknown as Zone['coffeeMachine'],
     door: { x: 0, z: 0 },
@@ -171,6 +182,7 @@ function makeZone(building: BuildingDef, agents: Item[], x0: number): Zone {
       });
     }
   }
+  zone.studentSeats = zone.desks.slice(agents.length);
   const units = Math.max(2, Math.floor((W - 2.4) / 1.9));
   for (let k = 0; k < units; k++) {
     const u = 1.9 + k * 1.9 + 0.9;
@@ -191,9 +203,15 @@ export function buildLayout(agentsByBuilding: Map<string, Item[]>, deptOrder: st
   const zones: Zone[] = [];
   const nextX = new Map<string, number>();
   for (const b of BUILDINGS) {
+    const agents = [...(agentsByBuilding.get(b.id) || [])].sort((a, c) => deptOrder.indexOf(a.dept) - deptOrder.indexOf(c.dept));
+    if (b.center) {
+      // Centred behind the plaza: measure first, then place so it straddles x = 0.
+      const probe = makeZone(b, agents, 0, ZA);
+      zones.push(makeZone(b, agents, -probe.W / 2, ZA));
+      continue;
+    }
     const key = b.quad.join(',');
     const x0 = nextX.get(key) ?? X0;
-    const agents = [...(agentsByBuilding.get(b.id) || [])].sort((a, c) => deptOrder.indexOf(a.dept) - deptOrder.indexOf(c.dept));
     const z = makeZone(b, agents, x0);
     zones.push(z);
     nextX.set(key, x0 + z.W + GAP);
@@ -243,8 +261,23 @@ export function buildLayout(agentsByBuilding: Map<string, Item[]>, deptOrder: st
     if (Math.abs(z) > 5.5) outdoor.push(plazaSpot(x, z, headingOf(-x, -z), 'stand'));
   }
 
+  const az = zones.find((z) => z.building.center) || null;
+  let academy: Layout['academy'] = null;
+  if (az) {
+    const vBack = ROW0 + (az.rows - 1) * ROW_PITCH + 1.6;
+    const [px, pz] = az.toWorld(az.W / 2, vBack);
+    const [sx2, sz2] = az.toWorld(az.W / 2, az.D - 0.16);
+    academy = {
+      zone: az,
+      podium: { x: px, z: pz, heading: az.face(0, -1), pose: 'stand', zone: az, u: az.W / 2, v: vBack, lineV: vBack, lane: az.lane },
+      screen: { x: sx2, y: 3.35, z: sz2, heading: az.face(0, -1), w: Math.min(9, az.W - 4), h: 2.1 },
+      seats: az.studentSeats,
+    };
+  }
+
   return {
     zones,
+    academy,
     zoneByDept,
     zoneByBuilding: new Map(zones.map((z) => [z.building.id, z])),
     atriumRadius: 16,

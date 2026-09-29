@@ -1,6 +1,6 @@
 # ⚡ Productivity Hub — Samaradorlik markazi
 
-100 items in this department.
+104 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -16,6 +16,10 @@
 | [cs-reflect](../agents/claude-skills/cs-reflect.md) | agent | Claude Skills | Mid-conversation reflection persona. Halts the current thread, re-reads full conversation from original goal forward, runs 5-dimension analysis (Macro / Gap /… |
 | [cs-roast-judge](../agents/claude-skills/cs-roast-judge.md) | agent | Claude Skills | Convenes a 5-angle adversarial panel (Critic, Champion, Analyst, Investigator, Customer) on a business idea, then acts as the Judge to deliver one GO / RESHAPE… |
 | [cs-weekly-review](../agents/claude-skills/cs-weekly-review.md) | agent | Claude Skills | Walks a user through a complete GTD weekly review — GET CLEAR (collect, process inboxes to zero, empty your head), GET CURRENT (next actions, previous + upcomi… |
+| [email-drafting-agent](../agents/agents-500/email-drafting-agent.md) | agent | 500 Agents | Two-agent CrewAI system that drafts professional emails from context |
+| [meeting-notes-agent](../agents/agents-500/meeting-notes-agent.md) | agent | 500 Agents | Converts meeting transcripts into structured notes with action items and decisions |
+| [recipe-agent](../agents/agents-500/recipe-agent.md) | agent | 500 Agents | Suggests recipes from available ingredients with instructions and nutrition info |
+| [travel-planner-agent](../agents/agents-500/travel-planner-agent.md) | agent | 500 Agents | Multi-agent CrewAI system creating personalized travel itineraries with budget planning |
 | [agent-memory](../skills/claude-skills/agent-memory/SKILL.md) | skill | Claude Skills | Use when a project's CLAUDE.md has grown past what anyone reads and you want the agent to learn durable facts from its own sessions instead — or when asking wh… |
 | [agentmail](../skills/hermes/agentmail/SKILL.md) | skill | Hermes | Use when an agent needs AgentMail CLI email inboxes. |
 | [airtable](../skills/hermes/airtable/SKILL.md) | skill | Hermes | Airtable REST API via curl. Records CRUD, filters, upserts. |

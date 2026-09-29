@@ -1,9 +1,10 @@
 # 🔬 Data & Research — Maʼlumot va tadqiqot
 
-106 items in this department.
+112 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
+| [competitive-analysis-agent](../agents/agents-500/competitive-analysis-agent.md) | agent | 500 Agents | Multi-step LangGraph agent for comprehensive competitive landscape analysis |
 | [cs-deep-research](../agents/claude-skills/cs-deep-research.md) | agent | Claude Skills | Rigor-first meta-research persona for high-stakes questions. Reframes the question into 2-4 falsifiable hypotheses, writes a plan, discovers available channels… |
 | [cs-dossier](../agents/claude-skills/cs-dossier.md) | agent | Claude Skills | Decision-grade entity research persona. Walks 6 forcing intake questions (subject identity + subject type + purpose + hypothesis-MANDATORY + depth + sensitivit… |
 | [cs-grants](../agents/claude-skills/cs-grants.md) | agent | Claude Skills | NIH grant research persona for clinical researchers. Walks 6 forcing intake questions (research idea + career stage + prelim data + environment + submission po… |
@@ -17,9 +18,14 @@
 | [cs-syllabus](../agents/claude-skills/cs-syllabus.md) | agent | Claude Skills | Course supplementary reading list persona. Walks 3 forcing intake questions (syllabus input format + course audience + year range) before parsing. Halts at gro… |
 | [cs-wiki-ingestor](../agents/claude-skills/cs-wiki-ingestor.md) | agent | Claude Skills | Dispatched sub-agent that ingests a new source into an LLM Wiki vault. Reads the source, proposes TL;DR and key claims, identifies which entity/concept/synthes… |
 | [cs-wiki-librarian](../agents/claude-skills/cs-wiki-librarian.md) | agent | Claude Skills | Dispatched sub-agent that answers queries against an LLM Wiki vault. Reads index.md first, drills into 3-10 relevant pages across categories, synthesizes an an… |
+| [data-analysis-agent](../agents/agents-500/data-analysis-agent.md) | agent | 500 Agents | Chat with CSV/Excel data using natural language queries powered by pandas |
 | [database-reviewer](../agents/ecc/database-reviewer.md) | agent | ECC | PostgreSQL database specialist for query optimization, schema design, security, and performance. Use PROACTIVELY when writing SQL, creating migrations, designi… |
 | [docs-lookup](../agents/ecc/docs-lookup.md) | agent | ECC | When the user asks how to use a library, framework, or API or needs up-to-date code examples, use Context7 MCP to fetch current documentation and return answer… |
 | [graphify-librarian](../agents/graphify/graphify-librarian.md) | agent | Graphify | Knowledge librarian. Maps a codebase, docs or this whole office library into a Graphify knowledge graph and answers questions by traversing it instead of grepp… |
+| [news-summarizer-agent](../agents/agents-500/news-summarizer-agent.md) | agent | 500 Agents | Fetches news on any topic and produces a structured briefing with key themes |
+| [pdf-qa-agent](../agents/agents-500/pdf-qa-agent.md) | agent | 500 Agents | Loads a PDF and answers questions about its content with conversation history |
+| [sql-query-agent](../agents/agents-500/sql-query-agent.md) | agent | 500 Agents | Answers natural language questions about SQL databases by generating and executing queries |
+| [web-research-agent](../agents/agents-500/web-research-agent.md) | agent | 500 Agents | Searches the web for a topic and synthesizes a structured research report |
 | [arxiv](../skills/hermes/arxiv/SKILL.md) | skill | Hermes | Search arXiv papers by keyword, author, category, or ID. |
 | [bioinformatics](../skills/hermes/bioinformatics/SKILL.md) | skill | Hermes | Gateway to 400+ genomics and computational biology skills. |
 | [blocked-page-recovery](../skills/hermes/blocked-page-recovery/SKILL.md) | skill | Hermes | Use when a fetch fails: 403/429, paywall, WAF, bot wall. |

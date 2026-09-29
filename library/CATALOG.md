@@ -3,7 +3,7 @@
 Everything from the six upstream repositories, gathered into one place (Graphify-style).
 Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 
-**205 agents · 883 skills · 253 commands · 25 guides** · 5087 graph edges
+**234 agents · 911 skills · 268 commands · 74 guides** · 5406 graph edges
 
 ## Sources
 
@@ -15,25 +15,30 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | Graphify | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) | Apache-2.0 | 1 | 1 | 0 | 1 |
 | Hermes Agent (Nous Research) | [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) | MIT | 1 | 211 | 0 | 1 |
 | ECC (Everything Claude Code) | [affaan-m/ECC](https://github.com/affaan-m/ECC) | MIT | 73 | 292 | 97 | 1 |
+| AI Agents for Beginners (Microsoft) | [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) | MIT | 0 | 0 | 0 | 20 |
+| AI Agent Book (Bojie Li) | [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) | Apache-2.0 | 0 | 0 | 0 | 12 |
+| Agent Skills (Addy Osmani) | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | MIT | 4 | 25 | 9 | 1 |
+| 500+ AI Agent Projects | [ashishpatel26/500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) | MIT | 21 | 0 | 0 | 5 |
+| Pi Agent Harness (Earendil) | [earendil-works/pi](https://github.com/earendil-works/pi) | MIT | 4 | 3 | 6 | 11 |
 
 ## Departments
 
 | Department | Agents | Skills | Commands |
 |---|---|---|---|
 | [👔 Executive Suite](departments/executive.md) — Rahbariyat | 21 | 62 | 2 |
-| [🛠️ Engineering Core](departments/engineering.md) — Muhandislik markazi | 34 | 142 | 41 |
+| [🛠️ Engineering Core](departments/engineering.md) — Muhandislik markazi | 43 | 155 | 52 |
 | [🧩 Languages & Build](departments/languages.md) — Dasturlash tillari | 25 | 52 | 16 |
-| [🎨 Frontend & Design](departments/frontend.md) — Frontend va dizayn | 7 | 65 | 18 |
-| [☁️ DevOps & Cloud](departments/devops.md) — DevOps va bulut | 7 | 37 | 1 |
-| [🛡️ Security & Compliance](departments/security.md) — Xavfsizlik va muvofiqlik | 11 | 58 | 8 |
-| [🧠 AI & ML Lab](departments/ai.md) — Sunʼiy intellekt laboratoriyasi | 11 | 87 | 5 |
-| [🔬 Data & Research](departments/data.md) — Maʼlumot va tadqiqot | 16 | 67 | 22 |
-| [🗺️ Product & Projects](departments/product.md) — Mahsulot va loyihalar | 9 | 38 | 25 |
-| [📣 Marketing & Growth](departments/marketing.md) — Marketing va o‘sish | 15 | 65 | 13 |
-| [💼 Sales, Finance & Ops](departments/business.md) — Savdo, moliya va operatsiyalar | 5 | 56 | 18 |
+| [🎨 Frontend & Design](departments/frontend.md) — Frontend va dizayn | 8 | 68 | 19 |
+| [☁️ DevOps & Cloud](departments/devops.md) — DevOps va bulut | 8 | 40 | 3 |
+| [🛡️ Security & Compliance](departments/security.md) — Xavfsizlik va muvofiqlik | 13 | 60 | 9 |
+| [🧠 AI & ML Lab](departments/ai.md) — Sunʼiy intellekt laboratoriyasi | 12 | 88 | 5 |
+| [🔬 Data & Research](departments/data.md) — Maʼlumot va tadqiqot | 22 | 67 | 22 |
+| [🗺️ Product & Projects](departments/product.md) — Mahsulot va loyihalar | 9 | 42 | 25 |
+| [📣 Marketing & Growth](departments/marketing.md) — Marketing va o‘sish | 16 | 65 | 13 |
+| [💼 Sales, Finance & Ops](departments/business.md) — Savdo, moliya va operatsiyalar | 9 | 56 | 18 |
 | [🎬 Creative Studio](departments/creative.md) — Ijodiy studiya | 3 | 43 | 0 |
-| [⚡ Productivity Hub](departments/productivity.md) — Samaradorlik markazi | 12 | 66 | 21 |
-| [🎓 Claude Academy](departments/academy.md) — Claude akademiyasi | 29 | 45 | 63 |
+| [⚡ Productivity Hub](departments/productivity.md) — Samaradorlik markazi | 16 | 66 | 21 |
+| [🎓 Claude Academy](departments/academy.md) — Claude akademiyasi | 29 | 47 | 63 |
 
 ## Most connected ("god nodes")
 
@@ -64,10 +69,13 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [chief-of-staff](agents/ecc/chief-of-staff.md) | agent | ECC | Personal communication chief of staff that triages email, Slack, LINE, and Messenger. Classifies messages into 4 tiers (skip/info_only/meeting_info/action_requ… |
 | [code-architect](agents/ecc/code-architect.md) | agent | ECC | Designs feature architectures by analyzing existing codebase patterns and conventions, then providing implementation blueprints with concrete files, interfaces… |
 | [code-explorer](agents/ecc/code-explorer.md) | agent | ECC | Deeply analyzes existing codebase features by tracing execution paths, mapping architecture layers, and documenting dependencies to inform new development. |
+| [code-review-agent](agents/agents-500/code-review-agent.md) | agent | 500 Agents | Reviews code for bugs, security issues, performance, and style violations |
 | [code-reviewer](agents/best-practice/code-reviewer.md) | agent | Best Practice | Meticulous, constructive reviewer for correctness, clarity, security, and maintainability. |
 | [code-reviewer](agents/ecc/code-reviewer.md) | agent | ECC | Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately after writing or modifying code. MUST BE US… |
+| [code-reviewer](agents/agent-skills/code-reviewer.md) | agent | Agent Skills | Senior code reviewer that evaluates changes across five dimensions — correctness, readability, architecture, security, and performance. Use for thorough code r… |
 | [code-simplifier](agents/ecc/code-simplifier.md) | agent | ECC | Simplifies and refines code for clarity, consistency, and maintainability while preserving behavior. Focus on recently modified code unless instructed otherwis… |
 | [comment-analyzer](agents/ecc/comment-analyzer.md) | agent | ECC | Analyze code comments for accuracy, completeness, maintainability, and comment rot risk. |
+| [competitive-analysis-agent](agents/agents-500/competitive-analysis-agent.md) | agent | 500 Agents | Multi-step LangGraph agent for comprehensive competitive landscape analysis |
 | [constitutional-validator](agents/best-practice/constitutional-validator.md) | agent | Best Practice | Validates roadmap items, features, and technical decisions against the project's constitution, principles, and core values. Ensures all proposals align with th… |
 | [Content Strategist](agents/claude-skills/content-strategist.md) | agent | Claude Skills | Builds content engines that rank, convert, and compound. Thinks in systems — topic clusters, not individual posts. Every piece earns its place or gets killed.… |
 | [conversation-analyzer](agents/ecc/conversation-analyzer.md) | agent | ECC | Use this agent when analyzing conversation transcripts to find behaviors worth preventing with hooks. Triggered by /hookify without arguments. |
@@ -167,7 +175,9 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [cs-workflow-architect](agents/claude-skills/cs-workflow-architect.md) | agent | Claude Skills | Workflow-architect persona. Opens every workflow-creation session with the intake question set, infers-and-proposes when the user is vague (never interrogates… |
 | [cs-workspace-admin](agents/claude-skills/cs-workspace-admin.md) | agent | Claude Skills | Google Workspace administration agent using the gws CLI. Orchestrates workspace setup, Gmail/Drive/Sheets/Calendar automation, security audits, and recipe exec… |
 | [csharp-reviewer](agents/ecc/csharp-reviewer.md) | agent | ECC | Expert C# code reviewer specializing in .NET conventions, async patterns, security, nullable reference types, and performance. Use for all C# code changes. MUS… |
+| [customer-support-agent](agents/agents-500/customer-support-agent.md) | agent | 500 Agents | RAG-powered customer support agent with escalation routing using LangGraph |
 | [dart-build-resolver](agents/ecc/dart-build-resolver.md) | agent | ECC | Dart/Flutter build, analysis, and dependency error resolution specialist. Fixes `dart analyze` errors, Flutter compilation failures, pub dependency conflicts,… |
+| [data-analysis-agent](agents/agents-500/data-analysis-agent.md) | agent | 500 Agents | Chat with CSV/Excel data using natural language queries powered by pandas |
 | [database-reviewer](agents/ecc/database-reviewer.md) | agent | ECC | PostgreSQL database specialist for query optimization, schema design, security, and performance. Use PROACTIVELY when writing SQL, creating migrations, designi… |
 | [development-workflows-research-agent](agents/best-practice/development-workflows-research-agent.md) | agent | Best Practice | Research agent that fetches GitHub repos, counts agents/skills/commands, gets star counts, and analyzes Claude Code workflow repositories |
 | [devils-advocate](agents/claude-skills/devils-advocate.md) | agent | Claude Skills | Adversarial reviewer for executive plans, proposals, and decisions. Returns exactly three specific concerns, each severity-rated CRITICAL / HIGH / MEDIUM, with… |
@@ -177,7 +187,9 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [doc-updater](agents/ecc/doc-updater.md) | agent | ECC | Documentation and codemap specialist. Use PROACTIVELY for updating codemaps and documentation. Generates docs/CODEMAPS/*, updates READMEs and guides. Backs the… |
 | [docs-lookup](agents/ecc/docs-lookup.md) | agent | ECC | When the user asks how to use a library, framework, or API or needs up-to-date code examples, use Context7 MCP to fetch current documentation and return answer… |
 | [documentation-analyst-writer](agents/best-practice/documentation-analyst-writer.md) | agent | Best Practice | Use this agent when you need to analyze existing documentation and create new or updated documentation that strictly adheres to project-specific documentation… |
+| [documentation-writer](agents/agents-500/documentation-writer.md) | agent | 500 Agents | Generates README and docstrings for Python modules |
 | [e2e-runner](agents/ecc/e2e-runner.md) | agent | ECC | End-to-end testing specialist using Vercel Agent Browser (preferred) with Playwright fallback. Use PROACTIVELY for generating, maintaining, and running E2E tes… |
+| [email-drafting-agent](agents/agents-500/email-drafting-agent.md) | agent | 500 Agents | Two-agent CrewAI system that drafts professional emails from context |
 | [enrichment-agent](agents/ecc/enrichment-agent.md) | agent | ECC | Pulls detailed profile, company, and activity data for qualified leads. Enriches prospects with recent news, funding data, content interests, and mutual overla… |
 | [experiment-runner](agents/claude-skills/experiment-runner.md) | agent | Claude Skills | Runs one iteration of an autoresearch experiment loop. Reads experiment state from .autoresearch/{domain}/{name}/, makes exactly ONE change to the target file,… |
 | [fastapi-reviewer](agents/ecc/fastapi-reviewer.md) | agent | ECC | Reviews FastAPI applications for async correctness, dependency injection, Pydantic schemas, security, OpenAPI quality, testing, and production readiness. |
@@ -187,6 +199,7 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [gan-evaluator](agents/ecc/gan-evaluator.md) | agent | ECC | GAN Harness — Evaluator agent. Tests the live running application via Playwright, scores against rubric, and provides actionable feedback to the Generator. |
 | [gan-generator](agents/ecc/gan-generator.md) | agent | ECC | GAN Harness — Generator agent. Implements features according to the spec, reads evaluator feedback, and iterates until quality threshold is met. |
 | [gan-planner](agents/ecc/gan-planner.md) | agent | ECC | GAN Harness — Planner agent. Expands a one-line prompt into a full product specification with features, sprints, evaluation criteria, and design direction. |
+| [github-issue-triager](agents/agents-500/github-issue-triager.md) | agent | 500 Agents | Automatically triages GitHub issues with severity, category, and routing recommendations |
 | [go-build-resolver](agents/ecc/go-build-resolver.md) | agent | ECC | Go build, vet, and compilation error resolution specialist. Fixes build errors, go vet issues, and linter warnings with minimal changes. Use when Go builds fai… |
 | [go-reviewer](agents/ecc/go-reviewer.md) | agent | ECC | Expert Go code reviewer specializing in idiomatic Go, concurrency patterns, error handling, and performance. Use for all Go code changes. MUST BE USED for Go p… |
 | [graphify-librarian](agents/graphify/graphify-librarian.md) | agent | Graphify | Knowledge librarian. Maps a codebase, docs or this whole office library into a Graphify knowledge graph and answers questions by traversing it instead of grepp… |
@@ -200,26 +213,33 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [hub-coordinator](agents/claude-skills/hub-coordinator.md) | agent | Claude Skills | Coordinator for AgentHub multi-agent collaboration sessions. Dispatches N parallel subagents in isolated git worktrees via the Agent tool, monitors progress vi… |
 | [java-build-resolver](agents/ecc/java-build-resolver.md) | agent | ECC | Java/Maven/Gradle build, compilation, and dependency error resolution specialist. Automatically detects Spring Boot or Quarkus and applies framework-specific f… |
 | [java-reviewer](agents/ecc/java-reviewer.md) | agent | ECC | Expert Java code reviewer for Spring Boot and Quarkus projects. Automatically detects the framework and applies the appropriate review rules. Covers layered ar… |
+| [job-application-agent](agents/agents-500/job-application-agent.md) | agent | 500 Agents | Generates cover letter, interview prep, and salary range from job description + candidate profile |
 | [kotlin-build-resolver](agents/ecc/kotlin-build-resolver.md) | agent | ECC | Kotlin/Gradle build, compilation, and dependency error resolution specialist. Fixes build errors, Kotlin compiler errors, and Gradle issues with minimal change… |
 | [kotlin-reviewer](agents/ecc/kotlin-reviewer.md) | agent | ECC | Kotlin and Android/KMP code reviewer. Reviews Kotlin code for idiomatic patterns, coroutine safety, Compose best practices, clean architecture violations, and… |
 | [loop-operator](agents/ecc/loop-operator.md) | agent | ECC | Operate autonomous agent loops, monitor progress, and intervene safely when loops stall. |
 | [marketing-agent](agents/ecc/marketing-agent.md) | agent | ECC | Marketing strategist and copywriter for campaign planning, audience research, positioning, copy creation, and content review. Covers landing pages, email seque… |
+| [meeting-notes-agent](agents/agents-500/meeting-notes-agent.md) | agent | 500 Agents | Converts meeting transcripts into structured notes with action items and decisions |
 | [memory-analyst](agents/claude-skills/memory-analyst.md) | agent | Claude Skills | Read-only analyst for `~/.claude/projects/ /memory/`. Identifies promotion candidates (entries proven enough for CLAUDE.md), stale references, consolidation op… |
 | [migration-planner](agents/claude-skills/migration-planner.md) | agent | Claude Skills | Analyzes Cypress or Selenium test suites and creates a file-by-file migration plan. Invoked by /pw:migrate before conversion starts. |
 | [mle-reviewer](agents/ecc/mle-reviewer.md) | agent | ECC | Production machine-learning engineering reviewer for data contracts, feature pipelines, training reproducibility, offline/online evaluation, model serving, mon… |
+| [multi-agent-debate](agents/agents-500/multi-agent-debate.md) | agent | 500 Agents | Two AI agents debate any topic with an AI judge scoring the outcome |
 | [mutual-mapper](agents/ecc/mutual-mapper.md) | agent | ECC | Maps the user's social graph (X following, LinkedIn connections) against scored prospects to find mutual connections and rank them by introduction potential. |
 | [network-architect](agents/ecc/network-architect.md) | agent | ECC | Designs enterprise or multi-site network architecture from requirements, using existing network skills for focused routing, validation, automation, and trouble… |
 | [network-config-reviewer](agents/ecc/network-config-reviewer.md) | agent | ECC | Reviews router and switch configurations for security, correctness, stale references, risky change-window commands, and missing operational guardrails. |
 | [network-troubleshooter](agents/ecc/network-troubleshooter.md) | agent | ECC | Diagnoses network connectivity, routing, DNS, interface, and policy symptoms with a read-only OSI-layer workflow and evidence-backed root cause summary. |
+| [news-summarizer-agent](agents/agents-500/news-summarizer-agent.md) | agent | 500 Agents | Fetches news on any topic and produces a structured briefing with key themes |
 | [observer](agents/ecc/observer.md) | agent | ECC | Background agent that analyzes session observations to detect patterns and create instincts. Uses Haiku for cost-efficiency. v2.1 adds project-scoped instincts. |
 | [office-manager](agents/claude-office/office-manager.md) | agent | Claude Office | Front-desk office manager. Reads an incoming request, picks the best specialist agent(s) from the office directory, hands the task over and reports back with a… |
 | [opensource-forker](agents/ecc/opensource-forker.md) | agent | ECC | Fork any project for open-sourcing. Copies files, strips secrets and credentials (20+ patterns), replaces internal references with placeholders, generates .env… |
 | [opensource-packager](agents/ecc/opensource-packager.md) | agent | ECC | Generate complete open-source packaging for a sanitized project. Produces CLAUDE.md, setup.sh, README.md, LICENSE, CONTRIBUTING.md, and GitHub issue templates.… |
 | [opensource-sanitizer](agents/ecc/opensource-sanitizer.md) | agent | ECC | Verify an open-source fork is fully sanitized before release. Scans for leaked secrets, PII, internal references, and dangerous files using 20+ regex patterns.… |
 | [outreach-drafter](agents/ecc/outreach-drafter.md) | agent | ECC | Generates personalized outreach messages for qualified leads. Creates warm intro requests, cold emails, X DMs, and follow-up sequences using enriched profile d… |
+| [pdf-qa-agent](agents/agents-500/pdf-qa-agent.md) | agent | 500 Agents | Loads a PDF and answers questions about its content with conversation history |
 | [performance-optimizer](agents/ecc/performance-optimizer.md) | agent | ECC | Performance analysis and optimization specialist. Use PROACTIVELY for identifying bottlenecks, optimizing slow code, reducing bundle sizes, and improving runti… |
 | [php-reviewer](agents/ecc/php-reviewer.md) | agent | ECC | Expert PHP code reviewer specializing in PSR-12 compliance, PHP type system, Eloquent ORM patterns, security, and performance. Use for all PHP code changes. MU… |
+| [pii-sanitization-agent](agents/agents-500/pii-sanitization-agent.md) | agent | 500 Agents | Sanitizes PII from text before it reaches LLMs or external APIs, using the TrustBoost API — fail-closed, multilingual, on-chain proof |
 | [planner](agents/ecc/planner.md) | agent | ECC | Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementation, architectural changes, or complex r… |
+| [planner](agents/pi/planner.md) | agent | Pi | Creates implementation plans from context and requirements |
 | [pr-test-analyzer](agents/ecc/pr-test-analyzer.md) | agent | ECC | Review pull request test coverage quality and completeness, with emphasis on behavioral coverage and real bug prevention. |
 | [presentation-claude-code](agents/best-practice/presentation-claude-code.md) | agent | Best Practice | PROACTIVELY use this agent whenever the user wants to update, modify, rearrange, or fix the CLAUDE-CODE-BEST-PRACTICE presentation (`presentation/claude-code-b… |
 | [presentation-claude-gemini](agents/best-practice/presentation-claude-gemini.md) | agent | Best Practice | PROACTIVELY use this agent whenever the user wants to update, modify, rearrange, or fix the CLAUDE-GEMINI presentation (`presentation/2026-04-25-gdg-kolachi-cl… |
@@ -231,32 +251,46 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [rag-pipeline-reviewer](agents/ecc/rag-pipeline-reviewer.md) | agent | ECC | Reviews RAG (Retrieval-Augmented Generation) pipelines for retrieval quality, chunking strategy, embedding choices, and evaluation coverage. Invoke when the us… |
 | [react-build-resolver](agents/ecc/react-build-resolver.md) | agent | ECC | Diagnose and fix React build failures across Vite, webpack, Next.js, CRA, Parcel, esbuild, and Bun. Handles JSX/TSX compile errors, hydration mismatches, serve… |
 | [react-reviewer](agents/ecc/react-reviewer.md) | agent | ECC | Expert React/JSX code reviewer specializing in hook correctness, render performance, server/client component boundaries, accessibility, and React-specific secu… |
+| [recipe-agent](agents/agents-500/recipe-agent.md) | agent | 500 Agents | Suggests recipes from available ingredients with instructions and nutrition info |
 | [refactor-cleaner](agents/ecc/refactor-cleaner.md) | agent | ECC | Dead code cleanup and consolidation specialist. Use PROACTIVELY for removing unused code, duplicates, and refactoring. Runs analysis tools (knip, depcheck, ts-… |
 | [requirement-parser](agents/best-practice/requirement-parser.md) | agent | Best Practice | Analyzes feature request descriptions and extracts structured requirements, goals, constraints, and metadata for downstream planning agents. |
+| [resume-parser-agent](agents/agents-500/resume-parser-agent.md) | agent | 500 Agents | Parses resumes to structured JSON and scores candidate fit against job descriptions |
+| [reviewer](agents/pi/reviewer.md) | agent | Pi | Code review specialist for quality and security analysis |
 | [rust-build-resolver](agents/ecc/rust-build-resolver.md) | agent | ECC | Rust build, compilation, and dependency error resolution specialist. Fixes cargo build errors, borrow checker issues, and Cargo.toml problems with minimal chan… |
 | [rust-reviewer](agents/ecc/rust-reviewer.md) | agent | ECC | Expert Rust code reviewer specializing in ownership, lifetimes, error handling, unsafe usage, and idiomatic patterns. Use for all Rust code changes. MUST BE US… |
+| [scout](agents/pi/scout.md) | agent | Pi | Fast codebase recon that returns compressed context for handoff to other agents |
+| [security-auditor](agents/agent-skills/security-auditor.md) | agent | Agent Skills | Security engineer focused on vulnerability detection, threat modeling, and secure coding practices. Use for security-focused code review, threat analysis, or h… |
 | [security-reviewer](agents/ecc/security-reviewer.md) | agent | ECC | Security vulnerability detection and remediation specialist. Use PROACTIVELY after writing code that handles user input, authentication, API endpoints, or sens… |
 | [senior-software-engineer](agents/best-practice/senior-software-engineer.md) | agent | Best Practice | Pragmatic IC who plans sanely, ships small reversible slices with tests, and writes clear PRs. |
 | [seo-specialist](agents/ecc/seo-specialist.md) | agent | ECC | SEO specialist for technical SEO audits, on-page optimization, structured data, Core Web Vitals, and content/keyword mapping. Use for site audits, meta tag rev… |
 | [signal-scorer](agents/ecc/signal-scorer.md) | agent | ECC | Searches and ranks prospects by relevance signals across X, Exa, and LinkedIn. Assigns weighted scores based on role, industry, activity, influence, and locati… |
 | [silent-failure-hunter](agents/ecc/silent-failure-hunter.md) | agent | ECC | Review code for silent failures, swallowed errors, bad fallbacks, and missing error propagation. |
 | [skill-extractor](agents/claude-skills/skill-extractor.md) | agent | Claude Skills | Transforms a proven pattern or debugging solution into a standalone, portable skill package. Generates `SKILL.md` with proper frontmatter, reference docs, and… |
+| [social-media-agent](agents/agents-500/social-media-agent.md) | agent | 500 Agents | Generates platform-optimized content for Twitter, LinkedIn, and Instagram |
 | [Solo Founder](agents/claude-skills/solo-founder.md) | agent | Claude Skills | Your co-founder who doesn't exist yet. Covers product, engineering, marketing, and strategy for one-person startups — because nobody's stopping you from making… |
 | [spec-miner](agents/ecc/spec-miner.md) | agent | ECC | Extracts behavioral specs from existing codebases for OpenSpec. Produces flat Requirement and Invariant blocks with structured metadata (entities, enforced, id… |
+| [sql-query-agent](agents/agents-500/sql-query-agent.md) | agent | 500 Agents | Answers natural language questions about SQL databases by generating and executing queries |
 | [Startup CTO](agents/claude-skills/startup-cto.md) | agent | Claude Skills | Technical co-founder who's been through two startups and learned what actually matters. Makes architecture decisions, selects tech stacks, builds engineering c… |
+| [stock-research-agent](agents/agents-500/stock-research-agent.md) | agent | 500 Agents | Real-time stock fundamentals with AI-powered investment analysis |
 | [swift-build-resolver](agents/ecc/swift-build-resolver.md) | agent | ECC | Swift/Xcode build, compilation, and dependency error resolution specialist. Fixes swift build errors, Xcode build failures, SPM dependency issues, and code sig… |
 | [swift-reviewer](agents/ecc/swift-reviewer.md) | agent | ECC | Expert Swift code reviewer specializing in protocol-oriented design, value semantics, ARC memory management, Swift Concurrency, and idiomatic patterns. Use for… |
 | [tdd-guide](agents/ecc/tdd-guide.md) | agent | ECC | Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensure… |
 | [technical-cto-advisor](agents/best-practice/technical-cto-advisor.md) | agent | Best Practice | Use this agent to align technological decisions with engineering principles and organizational standards. This agent acts as a CTO, evaluating technical recomm… |
 | [test-architect](agents/claude-skills/test-architect.md) | agent | Claude Skills | Plans test strategy for complex applications. Invoked by /pw:generate and /pw:coverage when the app has multiple routes, complex state, or requires a structure… |
 | [test-debugger](agents/claude-skills/test-debugger.md) | agent | Claude Skills | Diagnoses flaky or failing Playwright tests using systematic taxonomy. Invoked by /pw:fix when a test needs deep analysis including running tests, reading trac… |
+| [test-engineer](agents/agent-skills/test-engineer.md) | agent | Agent Skills | QA engineer specialized in test strategy, test writing, and coverage analysis. Use for designing test suites, writing tests for existing code, or evaluating te… |
 | [time-agent](agents/best-practice/time-agent.md) | agent | Best Practice | Use this agent to fetch the current time for Dubai, UAE (Asia/Dubai timezone, UTC+4). This agent fetches real-time Dubai time using its preloaded time-fetcher… |
 | [time-agent-pkt](agents/best-practice/time-agent-pkt.md) | agent | Best Practice | Use this agent to display the current time in Pakistan Standard Time (PKT, UTC+5). (root scope — see agent-teams for Dubai time) |
+| [travel-planner-agent](agents/agents-500/travel-planner-agent.md) | agent | 500 Agents | Multi-agent CrewAI system creating personalized travel itineraries with budget planning |
 | [type-design-analyzer](agents/ecc/type-design-analyzer.md) | agent | ECC | Analyze type design for encapsulation, invariant expression, usefulness, and enforcement. |
 | [typescript-reviewer](agents/ecc/typescript-reviewer.md) | agent | ECC | Expert TypeScript/JavaScript code reviewer specializing in type safety, async correctness, Node/web security, and idiomatic patterns. Use for all TypeScript an… |
+| [unit-test-generator](agents/agents-500/unit-test-generator.md) | agent | 500 Agents | Generates comprehensive pytest test suites from Python code |
 | [ux-designer](agents/best-practice/ux-designer.md) | agent | Best Practice | Produces a concise, accessible UX brief with flows, states, and annotations. |
 | [vue-reviewer](agents/ecc/vue-reviewer.md) | agent | ECC | Expert Vue.js code reviewer specializing in Composition API correctness, reactivity pitfalls, component architecture, template security, and Vue-specific perfo… |
 | [weather-agent](agents/best-practice/weather-agent.md) | agent | Best Practice | Use this agent PROACTIVELY when you need to fetch weather data for Dubai, UAE. This agent fetches real-time temperature by invoking the weather-fetcher skill v… |
+| [web-performance-auditor](agents/agent-skills/web-performance-auditor.md) | agent | Agent Skills | Web performance engineer focused on Core Web Vitals, loading, rendering, and network optimization. Use for performance-focused audits, CWV analysis, and identi… |
+| [web-research-agent](agents/agents-500/web-research-agent.md) | agent | 500 Agents | Searches the web for a topic and synthesizes a structured research report |
+| [worker](agents/pi/worker.md) | agent | Pi | General-purpose subagent with full capabilities, isolated context |
 | [workflow-claude-commands-agent](agents/best-practice/workflow-claude-commands-agent.md) | agent | Best Practice | Research agent that fetches Claude Code docs, reads the local commands report, and analyzes drift |
 | [workflow-claude-settings-agent](agents/best-practice/workflow-claude-settings-agent.md) | agent | Best Practice | Research agent that fetches Claude Code docs, reads the local settings report, and analyzes drift |
 | [workflow-claude-skills-agent](agents/best-practice/workflow-claude-skills-agent.md) | agent | Best Practice | Research agent that fetches Claude Code docs, reads the local skills report, and analyzes drift |

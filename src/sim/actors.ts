@@ -10,7 +10,7 @@ import type { Office } from '../world/office';
 import { ROLE_TITLE, lookFor, type Role } from '../world/human';
 import { Crowd, type Anim, type BodyState, type Look } from '../world/people';
 
-export type ActorKind = 'agent' | 'lead' | 'boss' | 'visitor' | 'staff';
+export type ActorKind = 'agent' | 'lead' | 'boss' | 'visitor' | 'staff' | 'teacher';
 export type Activity = 'idle' | 'walk' | 'work' | 'talk' | 'read' | 'coffee' | 'query' | 'wave' | 'think' | 'clean';
 
 /** Which job an agent does, judged from its building, department and name. */
@@ -18,6 +18,7 @@ export function roleOf(it: Pick<Item, 'name' | 'dept'>): Role {
   const n = it.name.toLowerCase();
   const b = buildingOf(it);
   if (b === 'moliya') return 'accountant';
+  if (b === 'akademiya') return 'teacher';
   if (b === 'savdo') return 'sales';
   if (/(^|-)(ceo|cto|coo|cfo|cmo|cpo|ciso|chief|director|founder|president|vp)(-|$)|executive|head-of|board/.test(n)) return 'director';
   if (b === 'boshqaruv') return it.dept === 'product' ? 'strategist' : 'operations';
@@ -76,6 +77,8 @@ export class Actor {
   targetHeading: number;
   onArrive: (() => void) | null = null;
   look!: Look;
+  /** moved directly by the keyboard this frame (the boss under your control) */
+  manual = false;
 
   constructor(
     readonly idx: number,
@@ -129,6 +132,8 @@ export class Cast {
   readonly staff: Actor[] = [];
   lead!: Actor;
   boss!: Actor;
+  /** Claude teaching in the academy */
+  teacher: Actor | null = null;
   private visitorsFree: number[] = [];
   private hotDeskUsed = new Set<number>();
 
@@ -143,7 +148,7 @@ export class Cast {
     const VISITORS = 12;
     const CLEANERS = 3;
     const coarse = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
-    this.crowd = new Crowd(agents.length + 2 + VISITORS + CLEANERS + 1, coarse ? 0.6 : 0.8);
+    this.crowd = new Crowd(agents.length + 3 + VISITORS + CLEANERS + 1, coarse ? 0.6 : 0.8);
     const lang = currentLang();
 
     this.lead = this.add('lead', 'Claude', layout.reception.lead, undefined, '#d97757', lookFor('coordinator', 0.4242, '#ffffff'));
@@ -178,6 +183,28 @@ export class Cast {
       this.staff.push(this.add('staff', ROLE_TITLE.cleaner[lang], home, undefined, '#1fa7a0', lookFor('cleaner', hash(`cleaner-${i}`), '#e9e6df')));
     }
     this.staff.push(this.add('staff', ROLE_TITLE.guard[lang], layout.staff.guard, undefined, '#1c2533', lookFor('guard', hash('guard'), '#c9a227')));
+    if (layout.academy) {
+      const look = lookFor('coordinator', 0.777, '#ffffff');
+      Object.assign(look, { eyewear: 'glasses', prop: 'tablet' });
+      this.teacher = this.add('teacher', lang === 'uz' ? 'Claude (o‘qituvchi)' : 'Claude (teacher)', layout.academy.podium, undefined, '#d97757', look);
+    }
+  }
+
+  /** Walk straight to a point (the boss when you click the ground). */
+  walkTo(a: Actor, x: number, z: number, then?: () => void) {
+    const spot: Spot = { x, z, heading: Math.atan2(x - a.body.x, z - a.body.z), pose: 'stand', zone: null, u: 0, v: 0, lineV: 0, lane: z >= 0 ? 4 : -4 };
+    a.plan([], true);
+    a.current = { go: spot, onEnd: then };
+    a.path = [[x, z]];
+    a.at = spot;
+    this.setActivity(a, 'walk');
+    a.body.pose = 'stand';
+  }
+
+  /** Where someone stands now, as a spot routes can start from. */
+  here(a: Actor): Spot {
+    const { x, z } = a.body;
+    return { x, z, heading: a.body.heading, pose: 'stand', zone: null, u: 0, v: 0, lineV: 0, lane: z >= 0 ? 4 : -4 };
   }
 
   private add(kind: ActorKind, name: string, home: Spot, item: Item | undefined, color: string, look: Look) {
@@ -244,7 +271,7 @@ export class Cast {
       if (!a.body.visible && a.kind === 'visitor' && !a.steps.length && !a.current) continue;
       this.step(a, dt, now);
       const b = a.body;
-      const moving = a.path.length > 0;
+      const moving = a.path.length > 0 || a.manual;
       b.anim = moving ? 'walk' : ANIM[a.activity];
       if (moving) b.phase += dt * 9.5;
       // Smooth turning.

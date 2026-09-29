@@ -19,7 +19,7 @@ const T = 0.25;
 const Y1 = GF + BAND - 0.3;
 
 const WALL: Record<BuildingStyle, string> = {
-  executive: '#e8e1d2', finance: '#eee6d6', tech: '#e3e8ee', sales: '#f2ede6', media: '#ece7f1', services: '#f0e9dc',
+  executive: '#e8e1d2', finance: '#eee6d6', tech: '#e3e8ee', sales: '#f2ede6', media: '#ece7f1', services: '#f0e9dc', academy: '#f3ece2',
 };
 const FRAME = '#394150';
 const WOOD = '#b58a58';
@@ -67,6 +67,15 @@ export class Campus {
   private lawn!: THREE.MeshLambertMaterial;
   /** spots trees must avoid: [x, z, radius] */
   private keepClear: [number, number, number][] = [];
+
+  /** Inside a building's plot (paving around it)? */
+  private inPlot(x: number, z: number, margin = 0) {
+    return this.layout.zones.some((zn) => {
+      const [ax, az] = zn.toWorld(-1.4 - margin, -2.8 - margin);
+      const [bx, bz] = zn.toWorld(zn.W + 1.4 + margin, zn.D + 1.4 + margin);
+      return x > Math.min(ax, bx) && x < Math.max(ax, bx) && z > Math.min(az, bz) && z < Math.max(az, bz);
+    });
+  }
   private field!: THREE.MeshLambertMaterial;
   private night = 0;
 
@@ -206,6 +215,9 @@ export class Campus {
       case 'services':
         verticals(0.9, 0.1, 0.35, () => WOOD, false);
         verticals(1.8, 0.07, 0.1, () => FRAME);
+        break;
+      case 'academy':
+        verticals(2.2, 0.4, 0.28, () => wall);
         break;
     }
 
@@ -392,6 +404,18 @@ export class Campus {
           tex.offset.x = (time * 0.04) % 1;
           sm.color.setScalar(1 + this.night * 0.6 + Math.sin(time * 2) * 0.05);
         });
+        break;
+      }
+      case 'academy': {
+        // A university front: portico of columns, a copper dome and Claude's spark on top.
+        const colTop = Y1 - 0.3;
+        for (let u = 3.2; u < W - 0.4; u += 2.4) base.push(C(u, -1.1, 0.26, 0.15, colTop - 0.2, '#f7f1e7', 18), B(u - 0.36, u + 0.36, -1.46, -0.74, 0, 0.15, STONE), B(u - 0.36, u + 0.36, -1.46, -0.74, colTop - 0.2, colTop, STONE));
+        base.push(B(2.6, W + T, -1.6, -T, colTop, Y1, wall), B(2.6, W + T, -1.62, -1.56, colTop, colTop + 0.16, acc));
+        const [dx, dz] = z.toWorld(W / 2, D * 0.55);
+        solid.push(part(new THREE.CylinderGeometry(3.3, 3.5, 1.3, 36), { at: [dx, pH + 0.65, dz], color: wall }));
+        solid.push(part(new THREE.SphereGeometry(3.2, 36, 14, 0, Math.PI * 2, 0, Math.PI / 2), { at: [dx, pH + 1.3, dz], color: '#c9764f' }));
+        solid.push(part(new THREE.CylinderGeometry(0.4, 0.55, 1.0, 14), { at: [dx, pH + 4.9, dz], color: '#e8c07a' }));
+        for (let k = 0; k < 4; k++) solid.push(part(new THREE.BoxGeometry(1.8, 0.2, 0.2), { rot: [0, 0, (k * Math.PI) / 4], at: [dx, pH + 6.4, dz], color: acc }));
         break;
       }
       case 'services': {
@@ -612,7 +636,7 @@ export class Campus {
       const [x, zz] = z.toWorld(z.W + 3.5, -1.2);
       if (this.layout.zones.some((o) => o !== z && o.sx === z.sx && o.sz === z.sz && o.x0 > z.x0)) benches.push([x, zz, z.face(0, -1)]);
     }
-    for (const [x, z] of [[-11, 22], [11, 22], [-9, -24], [9, -24]]) benches.push([x + 2.4, z, -Math.PI / 2 * Math.sign(x)]);
+    for (const [x, z] of [[-11, 22], [11, 22], [-9, -24], [9, -24]]) if (!this.inPlot(x, z, 2)) benches.push([x + 2.4, z, -Math.PI / 2 * Math.sign(x)]);
     for (const [x, z] of benches) this.keepClear.push([x, z, 1.6]);
     const bm = instanced(benchGeo, new THREE.MeshLambertMaterial({ vertexColors: true }), benches.length);
     benches.forEach(([x, z, h], i) => place(bm, i, x, 0, z, h));
@@ -702,7 +726,7 @@ export class Campus {
     const flowerColors = ['#e5484d', '#ffd166', '#f78fb3', '#ffffff', '#b784e6', '#ff9f43'];
     const flowers: [number, number, string][] = [];
     for (const [x, z, r] of beds) {
-      if (Math.abs(x - entrance.x) < 3 && z > 5) continue;
+      if ((Math.abs(x - entrance.x) < 3 && z > 5) || this.inPlot(x, z, r)) continue;
       this.base.push(part(new THREE.CylinderGeometry(r, r + 0.1, 0.22, 28), { at: [x, 0.11, z], color: '#d6cfc2' }));
       this.base.push(part(new THREE.CircleGeometry(r - 0.15, 28).rotateX(-Math.PI / 2), { at: [x, 0.225, z], color: '#6b4f3a' }));
       for (let k = 0; k < 40; k++) {
