@@ -20,7 +20,7 @@ import { Hud } from './ui/hud';
 import { ResultsView } from './ui/results';
 import { Fx } from './world/fx';
 import { Labels, type LabelRequest } from './world/labels';
-import { buildLayout } from './world/layout';
+import { BUILDINGS, buildLayout, buildingOf } from './world/layout';
 import { Office } from './world/office';
 
 const params = new URLSearchParams(location.search);
@@ -45,7 +45,7 @@ async function main() {
   renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog('#cfe8f6', 220, 700);
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.3, 1200);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.5, 1200);
   camera.position.set(0, 120, 170);
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
@@ -58,13 +58,13 @@ async function main() {
   labelRenderer.domElement.className = 'labels-layer';
   document.getElementById('app')!.insertBefore(labelRenderer.domElement, document.getElementById('hud'));
 
-  const agentsByDept = new Map<string, Item[]>();
+  // Two agents work in the plaza (reception, library); everyone else has a desk in their building.
+  const RESIDENTS = new Set(['agent:claude-office:office-manager', 'agent:graphify:graphify-librarian']);
+  const agentsByBuilding = new Map<string, Item[]>(BUILDINGS.map((b) => [b.id, []]));
   for (const it of data.registry.items) {
-    if (it.type !== 'agent') continue;
-    if (!agentsByDept.has(it.dept)) agentsByDept.set(it.dept, []);
-    agentsByDept.get(it.dept)!.push(it);
+    if (it.type === 'agent' && !RESIDENTS.has(it.id)) agentsByBuilding.get(buildingOf(it))!.push(it);
   }
-  const layout = buildLayout(data.registry.departments, agentsByDept);
+  const layout = buildLayout(agentsByBuilding, data.registry.departments.map((d) => d.id));
   const office = new Office(scene, layout, data);
   // Simulation time: real time scaled by ?speed=, paused when the tab is hidden.
   const timer = new THREE.Timer();
@@ -198,9 +198,15 @@ async function main() {
     dir.normalize().multiplyScalar(Math.cos(elevation) * distance).setY(Math.sin(elevation) * distance);
     tween = { p0: camera.position.clone(), p1: target.clone().add(dir), t0: controls.target.clone(), t1: target.clone(), k: 0, dur };
   };
+  // Whole campus in view: pull back further on narrow (portrait) screens.
+  const overviewPose = () => {
+    const k = Math.max(1, 1.25 / Math.max(0.5, camera.aspect));
+    return { pos: new THREE.Vector3(0, 58 * k, 80 * k), target: new THREE.Vector3(0, 0, -3) };
+  };
   const overview = () => {
     following = null;
-    tween = { p0: camera.position.clone(), p1: new THREE.Vector3(0, 88, 112), t0: controls.target.clone(), t1: new THREE.Vector3(0, 0, 4), k: 0, dur: 1.4 };
+    const o = overviewPose();
+    tween = { p0: camera.position.clone(), p1: o.pos, t0: controls.target.clone(), t1: o.target, k: 0, dur: 1.4 };
   };
   let following: Actor | null = null;
 
@@ -250,9 +256,19 @@ async function main() {
   const focusDept = (id: string) => {
     const z = layout.zoneByDept.get(id);
     if (!z) return;
+    const desks = z.desks.filter((d) => d.dept === id);
+    if (graphMode) setGraph(false);
+    if (!desks.length) return focusBuilding(z.building.id);
+    const x = desks.reduce((s, d) => s + d.x, 0) / desks.length;
+    const zz = desks.reduce((s, d) => s + d.z, 0) / desks.length;
+    flyTo(new THREE.Vector3(x, 0, zz), THREE.MathUtils.clamp(Math.sqrt(desks.length) * 4 + 8, 14, 40));
+  };
+  const focusBuilding = (id: string) => {
+    const z = layout.zoneByBuilding.get(id);
+    if (!z) return;
     const [x, zz] = z.toWorld(z.W / 2, z.D / 2);
     if (graphMode) setGraph(false);
-    flyTo(new THREE.Vector3(x, 0, zz), Math.max(z.W, z.D) * 1.35);
+    flyTo(new THREE.Vector3(x, 0, zz), Math.min(46, Math.max(z.W, z.D) * 1.3 + 6));
   };
   const setGraph = (on: boolean) => {
     graphMode = on;
@@ -267,7 +283,10 @@ async function main() {
     selectItem,
     selectActor,
     focusDept,
+    focusBuilding,
     focusActor,
+    toggleXray: () => (office.campus.xray = !office.campus.xray),
+    isXray: () => office.campus.xray,
     toggleGraph: () => setGraph(!graphMode),
     isGraph: () => graphMode,
     toggleNight: () => {
@@ -329,7 +348,7 @@ async function main() {
       else selectActor(a);
       return;
     }
-    const hits = ray.intersectObjects([office.books, office.core.pedestal, office.core.points, ...office.group.children.filter((o) => o instanceof THREE.Sprite && o.userData.dept)], false);
+    const hits = ray.intersectObjects([office.books, office.core.pedestal, office.core.points, ...office.campus.pickables.filter((o) => o.visible)], false);
     const hit = hits[0];
     if (!hit) return;
     if (hit.object === office.books && hit.instanceId !== undefined) {
@@ -338,6 +357,8 @@ async function main() {
       office.lightBook(hit.instanceId, 5);
     } else if (hit.object.userData.dept) {
       focusDept(hit.object.userData.dept);
+    } else if (hit.object.userData.building) {
+      focusBuilding(hit.object.userData.building);
     } else {
       setGraph(true);
     }
@@ -370,8 +391,9 @@ async function main() {
   // --------------------------------------------------------------- loop ---
   const reqs: LabelRequest[] = [];
   let inspectorTimer = 0;
-  // Intro fly-in.
-  tween = { p0: camera.position.clone(), p1: new THREE.Vector3(18, 34, 58), t0: new THREE.Vector3(), t1: new THREE.Vector3(0, 1, 2), k: 0, dur: 3.2 };
+  // Intro fly-in to the whole campus.
+  const intro = overviewPose();
+  tween = { p0: camera.position.clone(), p1: intro.pos, t0: new THREE.Vector3(), t1: intro.target, k: 0, dur: 3.2 };
   loading.classList.add('done');
   setTimeout(() => loading.remove(), 900);
 
@@ -395,7 +417,7 @@ async function main() {
 
     director.update(dt);
     cast.update(dt, time);
-    office.update(dt, time, camera);
+    office.update(dt, time, camera, controls.target);
     fx.update(dt, time);
 
     if (tween) {
@@ -445,7 +467,15 @@ async function main() {
 
   // Handy for debugging from the console.
   Object.assign(window, {
-    office: { data, layout, cast, director, crews, results, conn, camera, controls, selectItem, focusDept, setGraph, overview, engine: () => engine, lookAt: (x: number, z: number, d = 30) => flyTo(new THREE.Vector3(x, 0, z), d, 0.05) },
+    office: { data, layout, cast, director, crews, results, conn, camera, controls, renderer, selectItem, focusDept, focusBuilding, setGraph, overview, campus: office.campus, engine: () => engine, lookAt: (x: number, z: number, d = 30) => flyTo(new THREE.Vector3(x, 0, z), d, 0.05),
+      view: (p: [number, number, number], at: [number, number, number]) => {
+        tween = null;
+        following = null;
+        camera.position.set(...p);
+        controls.target.set(...at);
+        controls.update();
+      },
+    },
   });
 }
 

@@ -48,6 +48,7 @@ export class Director {
   private deptItems = new Map<string, Item[]>();
   private liveAgents = new Map<string, Actor>();
   private lastLive = 0;
+  private staffTimer = 0;
 
   constructor(
     readonly data: OfficeData,
@@ -101,6 +102,12 @@ export class Director {
   }
 
   update(dt: number) {
+    // Office services keep working even when the agents are paused.
+    this.staffTimer -= dt;
+    if (this.staffTimer <= 0) {
+      this.staffTimer = 0.5;
+      for (const a of this.cast.staff) if (a.idle && !a.path.length) this.staffJob(a);
+    }
     if (!this.ambient) return;
     this.spawnTimer -= dt;
     if (this.spawnTimer > 0) return;
@@ -117,6 +124,35 @@ export class Director {
     else if (r < 0.8) this.collaborate(a);
     else if (r < 0.95) this.coffee(a);
     else this.visitCore(a);
+  }
+
+  /** Cleaners mop the plaza and the offices; the guard minds the gate and patrols. */
+  private staffJob(a: Actor) {
+    const out = this.layout.outdoor;
+    if (a.look.role === 'guard') {
+      if (Math.random() < 0.75 || !out.length) {
+        a.plan([{ go: a.home }, { act: 'idle', dur: 6 + Math.random() * 10 }]);
+        return;
+      }
+      const route = [pick(out), pick(out)];
+      a.plan([...route.flatMap((s) => [{ go: s }, { act: 'idle' as const, dur: 1.5 + Math.random() * 2 }]), { go: a.home }]);
+      return;
+    }
+    const r = Math.random();
+    let spot: Spot | undefined;
+    if (r < 0.5 && out.length) spot = pick(out);
+    else {
+      const z = pick(this.layout.zones);
+      const choices = [z.coffee, ...z.shelves.map((s) => s.spot), ...z.desks.filter((_, i) => i % 3 === 0).map((d) => d.guest)];
+      spot = pick(choices);
+    }
+    if (!spot) return;
+    if (Math.random() < 0.12) {
+      const z = pick(this.layout.zones);
+      a.plan([{ go: z.coffee }, { act: 'coffee', dur: 4 + Math.random() * 3, bubble: '☕' }]);
+      return;
+    }
+    a.plan([{ go: spot }, { act: 'clean', dur: 6 + Math.random() * 8, bubble: Math.random() < 0.3 ? '🧹' : undefined }]);
   }
 
   private taskText(skill: Item) {

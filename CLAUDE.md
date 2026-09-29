@@ -16,7 +16,8 @@
 - `scripts/build-library.mjs` scans sources; `scripts/lib/departments.mjs` classifies items into departments; `scripts/lib/synthetic.mjs` adds the Hermes / Graphify / office-manager agents and README guides; `scripts/lib/teams.mjs` defines the task teams.
 - `library/` and `public/data/*.json` are generated — change the scripts, not the output (`benchmarks.json` comes from `npm run benchmark`).
 - `src/ai/engine.ts` picks where answers come from: the office server (`/api/ai` → Claude CLI), claude.ai's `sample` capability, or none. `src/ai/crews.ts` holds the chat / website / content / task pipelines.
-- `src/world/layout.ts` (floor plan + routing), `office.ts` (static scene, books, core), `people.ts` (instanced characters), `avatar.ts` (detailed portrait model), `src/sim/*` (actors + director), `src/ui/*` (HUD, results view, portrait, graph view).
+- `src/world/layout.ts` (campus plan: `BUILDINGS`, `buildingOf`, desks per building, routing), `campus.ts` (building shells that fade when zoomed in, plaza, gardens, gate), `office.ts` (interiors, books, core), `human.ts` (shared person model: geometry with colour slots, outfits, hair, roles/`lookFor`, `solvePose`), `people.ts` (instanced crowd with a per-person palette texture), `avatar.ts` (same person in high detail for the portrait), `src/sim/*` (actors incl. `roleOf`, cleaners/guard, director), `src/ui/*` (HUD, results view, portrait, graph view).
+- Person geometry is built in metres facing +z (left = +x); keep `solvePose` the single source of joint angles for both the crowd and the portrait.
 - `server/index.mjs` binds 127.0.0.1, checks Host/Origin, and requires the token in `~/.ai-agent-office/token` for hooks and POSTs. `server/ai.mjs` runs agent calls from an empty temp folder with no tools (Read only for screenshots) and a thinking budget per tier. Built sites are saved in `workspaces/` and served with a CSP sandbox.
 
 ## Debugging

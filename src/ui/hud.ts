@@ -13,12 +13,17 @@ import { compact, h } from './dom';
 import type { GraphView } from './graphView';
 import { renderMarkdown } from './markdown';
 import { Portrait } from './portrait';
+import { ROLE_TITLE } from '../world/human';
+import { BUILDINGS, buildingOf } from '../world/layout';
 
 export interface HudApi {
   selectItem(id: string, fly?: boolean): void;
   selectActor(a: Actor | null): void;
   focusDept(id: string): void;
+  focusBuilding(id: string): void;
   focusActor(a: Actor): void;
+  toggleXray(): boolean;
+  isXray(): boolean;
   toggleGraph(): void;
   isGraph(): boolean;
   toggleNight(): boolean;
@@ -93,6 +98,7 @@ export class Hud {
     this.el.nightBtn = h('button', { className: 'tb-btn', onclick: () => { this.api.toggleNight(); this.renderTopButtons(); } });
     this.el.graphBtn = h('button', { className: 'tb-btn', onclick: () => this.api.toggleGraph() });
     this.el.ambientBtn = h('button', { className: 'tb-btn', onclick: () => { this.director.ambient = !this.director.ambient; this.renderTopButtons(); } });
+    this.el.xrayBtn = h('button', { className: 'tb-btn', onclick: () => { this.api.toggleXray(); this.renderTopButtons(); } });
     const top = h(
       'header',
       { className: 'topbar' },
@@ -112,6 +118,7 @@ export class Hud {
         this.el.status,
         this.el.graphBtn,
         this.el.nightBtn,
+        this.el.xrayBtn,
         this.el.ambientBtn,
         h('button', { className: 'tb-btn', title: s.zoomOut, onclick: () => this.api.overview() }, '🎯'),
         h('button', { className: 'tb-btn', onclick: () => { toggleLang(); this.build(); } }, s.lang),
@@ -244,6 +251,9 @@ export class Hud {
     this.el.nightBtn.title = this.api.isNight() ? s.day : s.night;
     this.el.graphBtn.replaceChildren(this.api.isGraph() ? '🏢' : '🕸️', h('span', { className: 'lbl' }, ` ${this.api.isGraph() ? s.office : s.graph}`));
     this.el.graphBtn.title = this.api.isGraph() ? s.office : s.graph;
+    this.el.xrayBtn.textContent = this.api.isXray() ? '🏢' : '🏗️';
+    this.el.xrayBtn.title = this.api.isXray() ? T('Binolarni to‘liq ko‘rsatish', 'Show whole buildings') : T('Binolar ichini ko‘rish (tomlarsiz)', 'Look inside the buildings (no roofs)');
+    this.el.xrayBtn.classList.toggle('on', this.api.isXray());
     this.el.ambientBtn.textContent = this.director.ambient ? '🤖' : '⏸️';
     this.el.ambientBtn.title = s.ambient;
     this.el.ambientBtn.classList.toggle('off', !this.director.ambient);
@@ -291,7 +301,25 @@ export class Hud {
 
     if (this.tab === 'team') return this.renderTeams();
     if (this.tab === 'dept') {
+      const perBuilding = new Map<string, { agent: number; skill: number }>();
+      for (const it of this.data.registry.items) {
+        const b = buildingOf(it);
+        const c = perBuilding.get(b) || { agent: 0, skill: 0 };
+        if (it.type === 'agent') c.agent++;
+        else if (it.type === 'skill') c.skill++;
+        perBuilding.set(b, c);
+      }
       this.el.list.replaceChildren(
+        h('small', { className: 'list-head' }, T('🏙️ Kampus binolari', '🏙️ Campus buildings')),
+        ...BUILDINGS.map((b) =>
+          h(
+            'button',
+            { className: 'row', style: { '--dot': b.color }, onclick: () => this.api.focusBuilding(b.id) },
+            h('span', { className: 'dot' }),
+            h('div', { className: 'row-main' }, h('b', {}, `${b.emoji} ${b.name[currentLang()]}`), h('small', {}, `${perBuilding.get(b.id)?.agent || 0} ${s.agents.toLowerCase()} · ${perBuilding.get(b.id)?.skill || 0} ${s.skills.toLowerCase()}`)),
+          ),
+        ),
+        h('small', { className: 'list-head' }, T('🗂️ Bo‘limlar', '🗂️ Departments')),
         ...this.data.registry.departments.map((d) =>
           h(
             'button',
@@ -441,13 +469,18 @@ export class Hud {
     const portraitBlock = a ? this.portraitBlock(a) : null;
 
     if (!item && actor) {
-      const title = actor.kind === 'lead' ? s.lead : actor.kind === 'boss' ? s.you : `${s.visitor}: ${actor.name}`;
+      const role = ROLE_TITLE[actor.look.role];
+      const title = actor.kind === 'lead' ? s.lead : actor.kind === 'boss' ? s.you : actor.kind === 'staff' ? `${role.emoji} ${role[currentLang()]}` : `${s.visitor}: ${actor.name}`;
       const desc =
         actor.kind === 'lead'
           ? T('Claude — qabulxonadagi bosh agent. Claude Code’dagi haqiqiy ishlar (asboblar, skillar, subagentlar) shu yerda ko‘rinadi.', 'Claude Code — the lead agent at reception. Live hook events (tools, skills, subagents) show up here.')
           : actor.kind === 'boss'
-            ? T('Siz. Claude Code’ga yozgan so‘rovlaringiz shu odamning ustida chiqadi.', 'You. Prompts you type into Claude Code appear here.')
-            : T('Ofisda stoli yo‘q subagent (masalan general-purpose, Explore, Plan). Ishlayotganda mehmon stolida o‘tiradi.', 'A subagent type with no desk in the office (e.g. general-purpose, Explore, Plan). It works at a visitor desk.');
+            ? T('Siz — ofis direktori. Claude Code’ga yozgan so‘rovlaringiz shu odamning ustida chiqadi.', 'You — the office director. Prompts you type into Claude Code appear here.')
+            : actor.kind === 'staff'
+              ? actor.look.role === 'guard'
+                ? T('Kampus qo‘riqchisi: darvoza oldida turadi va vaqti-vaqti bilan hududni aylanib chiqadi.', 'Campus security: stands at the gate and patrols the grounds now and then.')
+                : T('Ofis xizmatlari xodimi: binolar va maydonni toza saqlaydi.', 'Office services: keeps the buildings and the plaza clean.')
+              : T('Ofisda stoli yo‘q subagent (masalan general-purpose, Explore, Plan). Ishlayotganda mehmon stolida o‘tiradi.', 'A subagent type with no desk in the office (e.g. general-purpose, Explore, Plan). It works at a visitor desk.');
       box.replaceChildren(
         ...compact([
           h('div', { className: 'insp-head' }, h('h2', {}, title), h('button', { className: 'x', onclick: () => this.api.selectActor(null), 'aria-label': s.close }, '✕')),
@@ -484,6 +517,8 @@ export class Hud {
         h(
           'div',
           { className: 'chips' },
+          a ? h('span', { className: 'chip', title: T('Lavozim', 'Role') }, `${ROLE_TITLE[a.look.role].emoji} ${ROLE_TITLE[a.look.role][currentLang()]}`) : null,
+          h('button', { className: 'chip', style: { '--c': BUILDINGS.find((b) => b.id === buildingOf(it))!.color }, onclick: () => this.api.focusBuilding(buildingOf(it)) }, `${BUILDINGS.find((b) => b.id === buildingOf(it))!.emoji} ${BUILDINGS.find((b) => b.id === buildingOf(it))!.name[currentLang()]}`),
           h('button', { className: 'chip', style: { '--c': d.color }, onclick: () => this.api.focusDept(d.id) }, `${d.emoji} ${d.name}`),
           h('span', { className: 'chip', style: { '--c': src.color } }, `📦 ${src.short}`),
           it.model ? h('span', { className: 'chip' }, `🧠 ${it.model}`) : null,
@@ -540,7 +575,7 @@ export class Hud {
     const d = a.item ? this.data.dept.get(a.item.dept) : undefined;
     const bg = d?.color || a.color;
     this.portrait.setLabels(T('Yuz', 'Face'), T('To‘liq bo‘y', 'Full body'));
-    this.portrait.show(a.look, bg, d?.emoji || (a.kind === 'lead' ? '✳️' : a.kind === 'boss' ? '👑' : '🎫'), a.activity === 'work' ? 'work' : a.activity === 'talk' ? 'talk' : 'idle');
+    this.portrait.show(a.look, bg, a.activity === 'work' || a.activity === 'clean' ? 'work' : a.activity === 'talk' ? 'talk' : 'idle');
     queueMicrotask(() => this.portrait.resume());
     return this.portrait.el;
   }
@@ -551,7 +586,7 @@ export class Hud {
     if (!el?.isConnected) return;
     el.className = `status ${a.live ? 'live' : a.activity}`;
     el.replaceChildren(`${s.status}: `, h('b', {}, a.live ? `LIVE · ${a.liveTask || ''}` : a.activity === 'idle' ? s.idle : `${s.working} (${a.activity})`), a.bubble ? h('span', {}, ` — ${a.bubble}`) : '');
-    this.portrait.setMood(a.activity === 'work' ? 'work' : a.activity === 'talk' ? 'talk' : 'idle');
+    this.portrait.setMood(a.activity === 'work' || a.activity === 'clean' ? 'work' : a.activity === 'talk' ? 'talk' : 'idle');
   }
 
   /** Cheap periodic refresh: the live status line of the inspected agent. */

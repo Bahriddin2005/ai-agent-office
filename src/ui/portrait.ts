@@ -3,12 +3,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { buildAvatar, type Avatar } from '../world/avatar';
-import type { Look } from '../world/people';
+import type { Look } from '../world/human';
 
 type Framing = 'face' | 'body';
 const FRAMES: Record<Framing, { target: [number, number, number]; pos: [number, number, number] }> = {
-  body: { target: [0, 1.0, 0], pos: [0.9, 1.35, 3.3] },
-  face: { target: [0, 1.66, 0], pos: [0.25, 1.72, 1.15] },
+  body: { target: [0, 0.9, 0], pos: [1.0, 1.25, 3.55] },
+  face: { target: [0, 1.6, 0], pos: [0.2, 1.64, 0.72] },
 };
 
 export class Portrait {
@@ -69,7 +69,7 @@ export class Portrait {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enablePan = false;
     this.controls.enableDamping = true;
-    this.controls.minDistance = 0.6;
+    this.controls.minDistance = 0.4;
     this.controls.maxDistance = 5;
     this.controls.minPolarAngle = 0.35;
     this.controls.maxPolarAngle = 1.75;
@@ -84,14 +84,14 @@ export class Portrait {
     this.buttons.forEach((b) => b.classList.toggle('on', b.dataset.framing === f));
   }
 
-  /** Show a person. `emoji` goes on the shirt; `mood` picks the idle animation. */
-  show(look: Look, background: string, emoji = '', mood: 'idle' | 'work' | 'talk' = 'idle') {
+  /** Show a person; `mood` picks the animation. */
+  show(look: Look, background: string, mood: 'idle' | 'work' | 'talk' = 'idle') {
     this.ensureRenderer();
     if (this.avatar) {
       this.scene.remove(this.avatar.group);
       this.avatar.dispose();
     }
-    this.avatar = buildAvatar(look, emoji);
+    this.avatar = buildAvatar(look);
     this.scene.add(this.avatar.group);
     this.canvasWrap.style.setProperty('--bg', background);
     this.mode = mood;

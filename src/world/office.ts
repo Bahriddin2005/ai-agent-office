@@ -4,7 +4,8 @@
 // setters used by the simulation.
 import * as THREE from 'three';
 import type { Item, OfficeData } from '../data';
-import type { DeskSlot, Layout, Shelf, Zone } from './layout';
+import { buildingOf, type DeskSlot, type Layout, type Shelf, type Zone } from './layout';
+import { Campus } from './campus';
 import { FONT, box, cyl, instanced, merge, part, place, textSprite } from './geo';
 
 const SCREEN_IDLE = new THREE.Color('#263246');
@@ -29,11 +30,10 @@ export class Office {
   readonly bookOf = new Map<string, number>();
   readonly core: Core;
   private litBooks = new Map<number, number>();
-  private signs: THREE.Sprite[] = [];
   private screenDept: THREE.Color[] = [];
   readonly hemi: THREE.HemisphereLight;
   readonly sun: THREE.DirectionalLight;
-  private ground: THREE.Mesh;
+  readonly campus: Campus;
   private coreLight: THREE.PointLight;
 
   constructor(
@@ -49,7 +49,8 @@ export class Office {
     this.coreLight.position.set(0, 6, 0);
     this.group.add(this.hemi, this.sun, this.coreLight);
 
-    this.ground = this.buildGround();
+    this.campus = new Campus(layout, data);
+    this.group.add(this.campus.group);
     this.buildZones();
     const { screens } = this.buildWorkstations();
     this.screens = screens;
@@ -60,116 +61,43 @@ export class Office {
     this.group.add(this.core.group);
   }
 
-  // ---------------------------------------------------------------- ground --
-  private buildGround() {
-    const { bounds } = this.layout;
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(900, 48).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: '#a9cf94' }));
-    ground.position.y = -0.32;
-    this.group.add(ground);
-
-    const w = bounds.maxX - bounds.minX + 8;
-    const d = bounds.maxZ - bounds.minZ + 8;
-    const slab = new THREE.Mesh(new THREE.BoxGeometry(w, 0.3, d), new THREE.MeshLambertMaterial({ color: '#ebe6dc' }));
-    slab.position.set((bounds.maxX + bounds.minX) / 2, -0.15, (bounds.maxZ + bounds.minZ) / 2);
-    this.group.add(slab);
-
-    const blvd = new THREE.Mesh(new THREE.PlaneGeometry(w, 10).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: '#d9d1c3' }));
-    blvd.position.set(slab.position.x, 0.005, 0);
-    this.group.add(blvd);
-    for (const zl of [-4, 4]) {
-      const lane = new THREE.Mesh(new THREE.PlaneGeometry(w - 4, 0.08).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#c8bfae' }));
-      lane.position.set(slab.position.x, 0.008, zl);
-      this.group.add(lane);
-    }
-    const atrium = new THREE.Mesh(new THREE.CircleGeometry(this.layout.atriumRadius, 64).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: '#f3ede2' }));
-    atrium.position.y = 0.01;
-    this.group.add(atrium);
-    for (const r of [this.layout.atriumRadius, 9.5, 5]) {
-      const ring = new THREE.Mesh(new THREE.RingGeometry(r - 0.12, r, 96).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#d97757', transparent: true, opacity: 0.55 }));
-      ring.position.y = 0.015;
-      this.group.add(ring);
-    }
-
-    // Trees around the building.
-    const trees: [number, number][] = [];
-    const perim = 2 * (w + d);
-    for (let i = 0; i < 70; i++) {
-      let s = (i / 70) * perim;
-      let x: number, z: number;
-      const mx = slab.position.x, mz = slab.position.z, hw = w / 2 + 6 + (i % 3) * 2.5, hd = d / 2 + 6 + ((i + 1) % 3) * 2.5;
-      if (s < w) { x = mx - w / 2 + s; z = mz - hd; }
-      else if ((s -= w) < d) { x = mx + hw; z = mz - d / 2 + s; }
-      else if ((s -= d) < w) { x = mx + w / 2 - s; z = mz + hd; }
-      else { s -= w; x = mx - hw; z = mz + d / 2 - s; }
-      trees.push([x, z]);
-    }
-    const treeGeo = merge([
-      cyl(0.18, 0.25, 1.6, 6, { at: [0, 0.8, 0], color: '#8b5e3c' }),
-      part(new THREE.IcosahedronGeometry(1.4, 0), { at: [0, 2.6, 0], color: '#5f9e4f' }),
-      part(new THREE.IcosahedronGeometry(1.0, 0), { at: [0.3, 3.5, 0.2], color: '#72b35d' }),
-    ]);
-    const treeMesh = instanced(treeGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }), trees.length);
-    trees.forEach(([x, z], i) => place(treeMesh, i, x, -0.3, z, i * 1.7, 0.8 + ((i * 37) % 10) / 20));
-    this.group.add(treeMesh);
-    return ground;
-  }
-
   // ----------------------------------------------------------------- zones --
   private buildZones() {
     const cream = new THREE.Color('#f7f3ec');
-    const glass = new THREE.MeshStandardMaterial({ color: '#bfe3f0', transparent: true, opacity: 0.28, roughness: 0.1, metalness: 0.1, depthWrite: false });
     for (const z of this.layout.zones) {
-      const dc = new THREE.Color(z.dept.color);
-      const carpetColor = dc.clone().lerp(cream, 0.72);
+      const bc = new THREE.Color(z.building.color);
       const [cx, cz] = z.toWorld(z.W / 2, z.D / 2);
-      const carpet = new THREE.Mesh(new THREE.PlaneGeometry(z.W, z.D).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: carpetColor }));
-      carpet.position.set(cx, 0.012, cz);
+      const carpet = new THREE.Mesh(new THREE.PlaneGeometry(z.W, z.D).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: bc.clone().lerp(cream, 0.8) }));
+      carpet.position.set(cx, 0.022, cz);
       this.group.add(carpet);
-      const stripe = new THREE.Mesh(new THREE.PlaneGeometry(z.W, 0.35).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: dc }));
+      const stripe = new THREE.Mesh(new THREE.PlaneGeometry(z.W, 0.35).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: bc }));
       const [sx, sz] = z.toWorld(z.W / 2, 0.18);
-      stripe.position.set(sx, 0.02, sz);
+      stripe.position.set(sx, 0.03, sz);
       this.group.add(stripe);
-
-      // Back wall (dept tinted) and glass side partitions.
-      const wallColor = dc.clone().lerp(cream, 0.45);
-      const back = new THREE.Mesh(new THREE.BoxGeometry(z.W, 3, 0.2), new THREE.MeshLambertMaterial({ color: wallColor }));
-      const [bx, bz] = z.toWorld(z.W / 2, z.D - 0.1);
-      back.position.set(bx, 1.5, bz);
-      this.group.add(back);
-      for (const u of [0.02, z.W - 0.02]) {
-        const side = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.3, z.D - 0.6), glass);
-        const [px, pz] = z.toWorld(u, (z.D + 0.6) / 2);
-        side.position.set(px, 0.65, pz);
-        this.group.add(side);
-        const rail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, z.D - 0.6), new THREE.MeshLambertMaterial({ color: '#9aa5b1' }));
-        rail.position.set(px, 1.32, pz);
-        this.group.add(rail);
+      // A soft coloured rug under each department's block of desks.
+      for (const id of z.depts) {
+        const desks = z.desks.filter((d) => d.dept === id);
+        if (!desks.length) continue;
+        const us = desks.map((d) => d.x);
+        const vs = desks.map((d) => d.z);
+        const x0 = Math.min(...us) - 1.0;
+        const x1 = Math.max(...us) + 1.0;
+        const z0 = Math.min(...vs) - 1.5;
+        const z1 = Math.max(...vs) + 1.5;
+        const rug = new THREE.Mesh(
+          new THREE.PlaneGeometry(x1 - x0, z1 - z0).rotateX(-Math.PI / 2),
+          new THREE.MeshLambertMaterial({ color: new THREE.Color(this.data.dept.get(id)?.color || '#999').lerp(cream, 0.72), transparent: true, opacity: 0.75, depthWrite: false }),
+        );
+        rug.position.set((x0 + x1) / 2, 0.026, (z0 + z1) / 2);
+        this.group.add(rug);
       }
-
-      // Hanging department sign over the zone entrance.
-      const counts = z.dept.counts;
-      const sign = textSprite(
-        [
-          { text: `${z.dept.emoji} ${z.dept.name}`, font: `700 44px ${FONT}`, color: '#1d2230' },
-          { text: z.dept.uz, font: `500 28px ${FONT}`, color: '#4a5163' },
-          { text: `${counts.agent || 0} agent · ${counts.skill || 0} skill · ${counts.command || 0} cmd`, font: `600 24px ${FONT}`, color: z.dept.color },
-        ],
-        { bg: 'rgba(255,255,255,0.92)', border: z.dept.color, width: 620 },
-      );
-      const sw = Math.min(7.5, z.W - 1);
-      sign.scale.set(sw, sw / sign.userData.aspect, 1);
-      const [gx, gz] = z.toWorld(z.W / 2, -0.2);
-      sign.position.set(gx, 3.9, gz);
-      sign.userData.dept = z.dept.id;
-      this.signs.push(sign);
-      this.group.add(sign);
     }
   }
 
   // ---------------------------------------------------------- workstations --
   private buildWorkstations() {
     const slots: { desk: DeskSlot; dept?: string }[] = [];
-    for (const z of this.layout.zones) for (const d of z.desks) slots.push({ desk: d, dept: z.dept.id });
+    for (const z of this.layout.zones) for (const d of z.desks) slots.push({ desk: d, dept: d.dept });
     for (const d of this.layout.hotDesks) slots.push({ desk: d });
     const lib = this.layout.librarian;
     slots.push({ desk: { ...lib.desk, seat: lib.seat, guest: lib.seat }, dept: 'data' });
@@ -179,8 +107,8 @@ export class Office {
       box(0.05, 0.72, 0.74, { at: [-0.76, 0.36, 0], color: '#a3adb8' }),
       box(0.05, 0.72, 0.74, { at: [0.76, 0.36, 0], color: '#a3adb8' }),
       box(1.48, 0.36, 0.03, { at: [0, 0.52, 0.34], color: '#b9c2cc' }),
-      box(0.5, 0.02, 0.16, { at: [0, 0.78, -0.13], color: '#2d3440' }),
-      box(0.07, 0.025, 0.1, { at: [0.36, 0.78, -0.12], color: '#2d3440' }),
+      box(0.5, 0.02, 0.16, { at: [0, 0.78, -0.24], color: '#2d3440' }),
+      box(0.07, 0.025, 0.1, { at: [0.36, 0.78, -0.23], color: '#2d3440' }),
       cyl(0.045, 0.04, 0.1, 8, { at: [-0.58, 0.82, -0.05], color: '#f1f1f1' }),
     ]);
     const monitorGeo = merge([
@@ -190,9 +118,9 @@ export class Office {
     ]);
     const screenGeo = new THREE.PlaneGeometry(0.68, 0.4).rotateY(Math.PI).translate(0, 1.18, 0.247);
     const chairGeo = merge([
-      box(0.5, 0.08, 0.48, { at: [0, 0.46, -0.04], color: '#ffffff' }),
-      box(0.5, 0.56, 0.07, { at: [0, 0.8, -0.3], color: '#ffffff' }),
-      box(0.06, 0.4, 0.06, { at: [0, 0.23, -0.04], color: '#3a404b' }),
+      box(0.5, 0.08, 0.48, { at: [0, 0.4, -0.04], color: '#ffffff' }),
+      box(0.5, 0.56, 0.07, { at: [0, 0.76, -0.3], color: '#ffffff' }),
+      box(0.06, 0.34, 0.06, { at: [0, 0.2, -0.04], color: '#3a404b' }),
       box(0.56, 0.04, 0.08, { at: [0, 0.03, -0.04], color: '#3a404b' }),
       box(0.08, 0.04, 0.56, { at: [0, 0.03, -0.04], color: '#3a404b' }),
     ]);
@@ -265,7 +193,7 @@ export class Office {
     const typeOrder = { skill: 0, command: 1, guide: 2, agent: 3 } as const;
     for (const z of this.layout.zones) {
       const items = this.data.registry.items
-        .filter((i) => i.dept === z.dept.id && i.type !== 'agent')
+        .filter((i) => i.type !== 'agent' && buildingOf(i) === z.building.id)
         .sort((a, b) => typeOrder[a.type] - typeOrder[b.type] || a.source.localeCompare(b.source) || a.name.localeCompare(b.name));
       let n = 0;
       const PER_ROW = 16;
@@ -348,23 +276,6 @@ export class Office {
     const plants = instanced(plantGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }), spots.length);
     spots.forEach(([x, z], i) => place(plants, i, x, 0, z, i, 0.9 + (i % 3) * 0.1));
     this.group.add(plants);
-
-    // Entrance arch.
-    const e = this.layout.entrance;
-    const arch = new THREE.Mesh(
-      merge([
-        box(0.5, 4, 0.5, { at: [-2.2, 2, 0], color: '#d97757' }),
-        box(0.5, 4, 0.5, { at: [2.2, 2, 0], color: '#d97757' }),
-        box(4.9, 0.5, 0.6, { at: [0, 4.2, 0], color: '#bf5f3f' }),
-      ]),
-      new THREE.MeshLambertMaterial({ vertexColors: true }),
-    );
-    arch.position.set(e.x, 0, e.z - 0.5);
-    this.group.add(arch);
-    const es = textSprite([{ text: 'KIRISH · ENTRANCE', font: `800 34px ${FONT}`, color: '#ffffff' }], { bg: '#bf5f3f', width: 460, padding: 14 });
-    es.scale.set(3.4, 3.4 / es.userData.aspect, 1);
-    es.position.set(e.x, 5.0, e.z - 0.5);
-    this.group.add(es);
   }
 
   private buildReception() {
@@ -402,21 +313,12 @@ export class Office {
     this.hemi.color.set('#f4f7ff').lerp(new THREE.Color('#7d8fcf'), t);
     this.sun.intensity = THREE.MathUtils.lerp(1.9, 0.4, t);
     this.sun.color.set('#fff4e0').lerp(new THREE.Color('#9fb4ff'), t);
-    (this.ground.material as THREE.MeshLambertMaterial).color.set('#a9cf94').lerp(new THREE.Color('#1d2b22'), t);
+    this.campus.setNight(t);
     this.coreLight.intensity = THREE.MathUtils.lerp(0, 60, t);
   }
 
-  update(dt: number, time: number, camera?: THREE.Camera) {
-    if (camera) {
-      // Fade department signs out when the camera is close so they never block the view.
-      for (const s of this.signs) {
-        const d = camera.position.distanceTo(s.position);
-        const o = THREE.MathUtils.clamp((d - 9) / 14, 0, 1);
-        const m = s.material as THREE.SpriteMaterial;
-        m.opacity = o;
-        s.visible = o > 0.02;
-      }
-    }
+  update(dt: number, time: number, camera?: THREE.Camera, target?: THREE.Vector3) {
+    if (camera && target) this.campus.update(dt, time, camera, target);
     for (const [i, left] of this.litBooks) {
       const next = left - dt;
       if (next > 0) {

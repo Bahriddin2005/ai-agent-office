@@ -1,8 +1,10 @@
-// Floor plan: a central atrium (reception + Graphify core) on a boulevard that
-// runs east–west, with one department zone per department packed into the
-// four quadrants. Everything is in metres; +z points towards the default
-// camera ("south"). A character with heading h faces (sin h, cos h).
-import type { Department, Item } from '../data';
+// Campus plan: a central plaza (reception + Graphify core) on a boulevard that
+// runs east–west, and six department buildings — Boshqaruv, AI va
+// texnologiya, Savdo, Marketing va media, Moliya, Ofis xizmatlari — each
+// holding the desks of the departments that work there. Everything is in
+// metres; +z points towards the default camera ("south"). A character with
+// heading h faces (sin h, cos h).
+import type { Item } from '../data';
 
 export type Pose = 'sit' | 'stand';
 
@@ -16,7 +18,7 @@ export interface Spot {
   u: number;
   v: number;
   lineV: number;
-  /** z of the boulevard lane used to reach an atrium spot */
+  /** z of the boulevard lane used to reach a plaza spot */
   lane: number;
   /** index of the monitor on this seat's desk, if any */
   screen?: number;
@@ -28,6 +30,8 @@ export interface DeskSlot {
   heading: number;
   seat: Spot;
   guest: Spot;
+  /** department of the agent who sits here (colours the chair) */
+  dept?: string;
 }
 
 export interface Shelf {
@@ -37,8 +41,51 @@ export interface Shelf {
   spot: Spot;
 }
 
+export type BuildingStyle = 'executive' | 'tech' | 'sales' | 'media' | 'finance' | 'services';
+
+export interface BuildingDef {
+  id: string;
+  name: { uz: string; en: string };
+  emoji: string;
+  color: string;
+  accent: string;
+  style: BuildingStyle;
+  /** storeys drawn on the outside (the office itself is the ground floor) */
+  floors: number;
+  quad: [1 | -1, 1 | -1];
+}
+
+export const BUILDINGS: BuildingDef[] = [
+  { id: 'boshqaruv', name: { uz: 'Boshqaruv', en: 'Management' }, emoji: '🏛️', color: '#c9a227', accent: '#1f2a44', style: 'executive', floors: 4, quad: [1, -1] },
+  { id: 'moliya', name: { uz: 'Moliya', en: 'Finance' }, emoji: '💰', color: '#3f9b5a', accent: '#e9dcc0', style: 'finance', floors: 2, quad: [1, -1] },
+  { id: 'tech', name: { uz: 'AI va texnologiya', en: 'AI & Technology' }, emoji: '🤖', color: '#3d7bf2', accent: '#1b2436', style: 'tech', floors: 3, quad: [-1, -1] },
+  { id: 'savdo', name: { uz: 'Savdo', en: 'Sales' }, emoji: '🤝', color: '#f08c2e', accent: '#2a2f38', style: 'sales', floors: 2, quad: [1, 1] },
+  { id: 'media', name: { uz: 'Marketing va media', en: 'Marketing & Media' }, emoji: '📣', color: '#d45ad4', accent: '#231a2e', style: 'media', floors: 2, quad: [1, 1] },
+  { id: 'xizmat', name: { uz: 'Ofis xizmatlari', en: 'Office Services' }, emoji: '☕', color: '#1fa7a0', accent: '#f1e6d2', style: 'services', floors: 2, quad: [-1, 1] },
+];
+
+const BY_DEPT: Record<string, string> = {
+  executive: 'boshqaruv', product: 'boshqaruv',
+  engineering: 'tech', languages: 'tech', frontend: 'tech', devops: 'tech', security: 'tech', ai: 'tech', data: 'tech',
+  marketing: 'media', creative: 'media',
+  business: 'savdo',
+  productivity: 'xizmat', academy: 'xizmat',
+};
+const FINANCE = /(cfo|financ|account|invoice|billing|tax|budget|cash|unit-econ|saas-metric|payment|bank|trading|ledger|payroll|finance)/i;
+const SALES = /(sales|revenue|commercial|crm|prospect|outreach|lead-?gen|pipeline|deal|signal-scor|enrichment|mutual|demand-gen|cro-advisor|customer-success|pricing)/i;
+
+/** Which building an agent, skill or command works in. */
+export function buildingOf(it: Pick<Item, 'name' | 'dept'>): string {
+  if (['business', 'executive', 'marketing', 'product'].includes(it.dept) && FINANCE.test(it.name)) return 'moliya';
+  if (['business', 'executive', 'marketing'].includes(it.dept) && SALES.test(it.name)) return 'savdo';
+  return BY_DEPT[it.dept] || 'xizmat';
+}
+
 export interface Zone {
-  dept: Department;
+  building: BuildingDef;
+  /** departments working in this building, in desk order */
+  depts: string[];
+  agents: Item[];
   sx: 1 | -1;
   sz: 1 | -1;
   x0: number;
@@ -60,12 +107,16 @@ export interface Zone {
 export interface Layout {
   zones: Zone[];
   zoneByDept: Map<string, Zone>;
+  zoneByBuilding: Map<string, Zone>;
   atriumRadius: number;
   core: { x: number; z: number; spots: Spot[] };
   reception: { desk: { x: number; z: number; heading: number }; lead: Spot; manager: Spot; boss: Spot };
   librarian: { desk: { x: number; z: number; heading: number }; seat: Spot };
   hotDesks: DeskSlot[];
   entrance: Spot;
+  /** walkable points outdoors (plaza, boulevard) for staff who wander */
+  outdoor: Spot[];
+  staff: { guard: Spot; cleaners: Spot[] };
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
 }
 
@@ -75,15 +126,19 @@ const ROW0 = 4.4;
 const ROW_PITCH = 3.4;
 const COL0 = 2.6;
 const COL_PITCH = 2.3;
-const Z0 = 6;
-const X0 = 17;
+/** distance from the boulevard centre line to a building's front wall */
+export const Z0 = 7;
+const X0 = 19;
 const LANE = 4;
-const GAP = 1.2;
+const GAP = 7;
 
 export const headingOf = (dx: number, dz: number) => Math.atan2(dx, dz);
+const colsFor = (n: number) => Math.min(14, Math.max(3, Math.ceil(Math.sqrt(n * 1.6))));
 
-function makeZone(dept: Department, n: number, sx: 1 | -1, sz: 1 | -1, x0: number): Zone {
-  const cols = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(n * 1.6))));
+function makeZone(building: BuildingDef, agents: Item[], x0: number): Zone {
+  const [sx, sz] = building.quad;
+  const n = agents.length;
+  const cols = colsFor(n);
   const rows = Math.max(2, Math.ceil(n / cols));
   const W = cols * COL_PITCH + 2.3;
   const vBack = ROW0 + (rows - 1) * ROW_PITCH + 1.6;
@@ -91,8 +146,9 @@ function makeZone(dept: Department, n: number, sx: 1 | -1, sz: 1 | -1, x0: numbe
   const toWorld = (u: number, v: number): [number, number] => [sx * (x0 + u), sz * (Z0 + v)];
   const face = (du: number, dv: number) => headingOf(sx * du, sz * dv);
   const lane = sz * LANE;
+  const depts = [...new Set(agents.map((a) => a.dept))];
   const zone: Zone = {
-    dept, sx, sz, x0, W, D, cols, rows, desks: [], shelves: [], lane, toWorld, face,
+    building, depts, agents, sx, sz, x0, W, D, cols, rows, desks: [], shelves: [], lane, toWorld, face,
     coffee: null as unknown as Spot,
     coffeeMachine: null as unknown as Zone['coffeeMachine'],
     door: { x: 0, z: 0 },
@@ -111,6 +167,7 @@ function makeZone(dept: Department, n: number, sx: 1 | -1, sz: 1 | -1, x0: numbe
         x, z, heading: face(0, 1),
         seat: spot(u, vDesk - 0.78, aisle, face(0, 1), 'sit'),
         guest: spot(u + 1.15, vDesk - 0.95, aisle, face(-1, 0.25), 'stand'),
+        dept: agents[r * cols + c]?.dept,
       });
     }
   }
@@ -129,45 +186,31 @@ function makeZone(dept: Department, n: number, sx: 1 | -1, sz: 1 | -1, x0: numbe
   return zone;
 }
 
-export function buildLayout(departments: Department[], agentsByDept: Map<string, Item[]>): Layout {
-  const quads: { sx: 1 | -1; sz: 1 | -1; width: number; depts: Department[] }[] = [
-    { sx: 1, sz: -1, width: 0, depts: [] },
-    { sx: -1, sz: -1, width: 0, depts: [] },
-    { sx: 1, sz: 1, width: 0, depts: [] },
-    { sx: -1, sz: 1, width: 0, depts: [] },
-  ];
-  const widthOf = (d: Department) => {
-    const n = agentsByDept.get(d.id)?.length || 0;
-    return Math.min(8, Math.max(3, Math.ceil(Math.sqrt(n * 1.6)))) * COL_PITCH + 2.3 + GAP;
-  };
-  // Greedy balance by width; keep the original department order inside a quadrant.
-  const order = [...departments].sort((a, b) => widthOf(b) - widthOf(a));
-  for (const d of order) {
-    const q = quads.reduce((m, q) => (q.width < m.width ? q : m));
-    q.depts.push(d);
-    q.width += widthOf(d);
-  }
+/** @param agentsByBuilding agents of each building, already in desk order */
+export function buildLayout(agentsByBuilding: Map<string, Item[]>, deptOrder: string[]): Layout {
   const zones: Zone[] = [];
-  for (const q of quads) {
-    q.depts.sort((a, b) => departments.indexOf(a) - departments.indexOf(b));
-    let x0 = X0;
-    for (const d of q.depts) {
-      const z = makeZone(d, agentsByDept.get(d.id)?.length || 0, q.sx, q.sz, x0);
-      zones.push(z);
-      x0 += z.W + GAP;
-    }
+  const nextX = new Map<string, number>();
+  for (const b of BUILDINGS) {
+    const key = b.quad.join(',');
+    const x0 = nextX.get(key) ?? X0;
+    const agents = [...(agentsByBuilding.get(b.id) || [])].sort((a, c) => deptOrder.indexOf(a.dept) - deptOrder.indexOf(c.dept));
+    const z = makeZone(b, agents, x0);
+    zones.push(z);
+    nextX.set(key, x0 + z.W + GAP);
   }
+  const zoneByDept = new Map<string, Zone>();
+  for (const z of zones) for (const d of z.depts) if (!zoneByDept.has(d)) zoneByDept.set(d, z);
 
-  const atriumSpot = (x: number, z: number, heading: number, pose: Pose, lane = z >= 0 ? LANE : -LANE): Spot => ({
+  const plazaSpot = (x: number, z: number, heading: number, pose: Pose, lane = z >= 0 ? LANE : -LANE): Spot => ({
     x, z, heading, pose, zone: null, u: 0, v: 0, lineV: 0, lane,
   });
 
   const coreSpots: Spot[] = [];
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2 + Math.PI / 12;
-    const x = Math.cos(a) * 3.7;
-    const z = Math.sin(a) * 3.7;
-    coreSpots.push(atriumSpot(x, z, headingOf(-x, -z), 'stand'));
+    const x = Math.cos(a) * 4.6;
+    const z = Math.sin(a) * 4.6;
+    coreSpots.push(plazaSpot(x, z, headingOf(-x, -z), 'stand'));
   }
 
   const hotDesks: DeskSlot[] = [];
@@ -175,35 +218,51 @@ export function buildLayout(departments: Department[], agentsByDept: Map<string,
     const x = -5.75 + i * 2.3;
     hotDesks.push({
       x, z: -11.2, heading: 0,
-      seat: atriumSpot(x, -11.98, 0, 'sit'),
-      guest: atriumSpot(x + 1.15, -12.1, headingOf(-1, 0.25), 'stand'),
+      seat: plazaSpot(x, -11.98, 0, 'sit'),
+      guest: plazaSpot(x + 1.15, -12.1, headingOf(-1, 0.25), 'stand'),
     });
   }
 
   let minX = 0, maxX = 0, minZ = 0, maxZ = 0;
   for (const z of zones) {
-    const [ax, az] = z.toWorld(-0.3, -0.5);
-    const [bx, bz] = z.toWorld(z.W + 0.3, z.D + 0.3);
+    const [ax, az] = z.toWorld(-0.6, -1.5);
+    const [bx, bz] = z.toWorld(z.W + 0.6, z.D + 0.6);
     minX = Math.min(minX, ax, bx); maxX = Math.max(maxX, ax, bx);
     minZ = Math.min(minZ, az, bz); maxZ = Math.max(maxZ, az, bz);
   }
-  minZ = Math.min(minZ, -16); maxZ = Math.max(maxZ, 16);
-  const entranceZ = maxZ + 0.5;
+  minZ = Math.min(minZ, -18); maxZ = Math.max(maxZ, 18);
+  const entranceZ = maxZ + 4;
+
+  // Where the cleaners and guards walk: along both lanes and around the plaza.
+  const outdoor: Spot[] = [];
+  for (let x = minX + 4; x <= maxX - 4; x += 9) for (const lane of [-LANE, LANE]) outdoor.push(plazaSpot(x, lane, x > 0 ? -Math.PI / 2 : Math.PI / 2, 'stand', lane));
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const x = Math.cos(a) * 10;
+    const z = Math.sin(a) * 10;
+    if (Math.abs(z) > 5.5) outdoor.push(plazaSpot(x, z, headingOf(-x, -z), 'stand'));
+  }
 
   return {
     zones,
-    zoneByDept: new Map(zones.map((z) => [z.dept.id, z])),
-    atriumRadius: 15,
+    zoneByDept,
+    zoneByBuilding: new Map(zones.map((z) => [z.building.id, z])),
+    atriumRadius: 16,
     core: { x: 0, z: 0, spots: coreSpots },
     reception: {
       desk: { x: 0, z: 9.5, heading: 0 },
-      lead: atriumSpot(0, 8.72, 0, 'sit'),
-      manager: atriumSpot(-2.3, 8.72, 0, 'sit'),
-      boss: atriumSpot(1.6, 11.2, Math.PI, 'stand'),
+      lead: plazaSpot(0, 8.72, 0, 'sit'),
+      manager: plazaSpot(-2.3, 8.72, 0, 'sit'),
+      boss: plazaSpot(1.6, 11.2, Math.PI, 'stand'),
     },
-    librarian: { desk: { x: 0, z: -7.4, heading: 0 }, seat: atriumSpot(0, -8.18, 0, 'sit') },
+    librarian: { desk: { x: 0, z: -7.4, heading: 0 }, seat: plazaSpot(0, -8.18, 0, 'sit') },
     hotDesks,
-    entrance: atriumSpot(4.6, entranceZ, Math.PI, 'stand', LANE),
+    entrance: plazaSpot(4.6, entranceZ, Math.PI, 'stand', LANE),
+    outdoor,
+    staff: {
+      guard: plazaSpot(0.9, entranceZ - 1.1, 0, 'stand', LANE),
+      cleaners: [plazaSpot(-12, LANE, Math.PI / 2, 'stand', LANE), plazaSpot(12, -LANE, -Math.PI / 2, 'stand', -LANE), plazaSpot(-26, -LANE, Math.PI / 2, 'stand', -LANE)],
+    },
     bounds: { minX, maxX, minZ, maxZ },
   };
 }
@@ -236,8 +295,8 @@ export function route(a: Spot, b: Spot): P[] {
   const laneB = b.zone ? b.zone.lane : b.lane;
   const xB = b.zone ? b.zone.door.x : b.x;
   if (laneA !== laneB) {
-    // Cross the boulevard away from the core pedestal.
-    const xc = Math.abs(xB) < 5 ? (xB >= 0 ? 5.5 : -5.5) : xB;
+    // Cross the boulevard away from the core fountain.
+    const xc = Math.abs(xB) < 7 ? (xB >= 0 ? 7.5 : -7.5) : xB;
     pts.push([xc, laneA], [xc, laneB]);
   }
   pts.push([xB, laneB]);

@@ -165,3 +165,14 @@
 @media (prefers-reduced-motion: reduce) {
   .site-wrap { transition: none; }
 }
+
+/* Section headings inside the directory list (campus buildings / departments). */
+.list-head {
+  display: block;
+  padding: 10px 12px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}

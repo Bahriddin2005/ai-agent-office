@@ -1,7 +1,7 @@
 # 🏢 AI Agent Office
 
 **Claude Code agentlari, skillari va buyruqlari yashaydigan va ishlaydigan 3D ofis.**
-Oltita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Graphify uslubidagi bilim grafiga bog‘langan va Three.js'da jonli ofis sifatida ko‘rsatiladi.
+Oltita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Graphify uslubidagi bilim grafiga bog‘langan va Three.js'da jonli **ofis kampusi** sifatida ko‘rsatiladi: har bir yo‘nalish uchun alohida bino, ichida esa haqiqiy odamlarga o‘xshagan xodimlar — direktordan farroshgacha.
 
 > 🇬🇧 English version: [below](#-english).
 
@@ -9,7 +9,8 @@ Oltita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Graphify
 
 | | |
 |---|---|
-| **205** agent | har biri o‘z bo‘limida, o‘z stolida o‘tiradi |
+| **6** bino | Boshqaruv · AI va texnologiya · Savdo · Marketing va media · Moliya · Ofis xizmatlari |
+| **205** agent | har biri o‘z binosida, o‘z bo‘limi stolida o‘tiradi; lavozimiga mos kiyingan |
 | **883** skill | bo‘lim javonlaridagi kitoblar (1 skill = 1 kitob) |
 | **253** buyruq (slash command) | javonlardagi papkalar |
 | **25** qo‘llanma | Claude Code best-practice va har bir manbaning README'si |
@@ -18,7 +19,9 @@ Oltita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Graphify
 
 ## Nima qila oladi
 
-- **3D ofis.** Har bir agent o‘z bo‘limida stolda o‘tiradi. Agentlar javondan kerakli skill kitobini olib o‘qiydi, stolida ishlaydi, grafda bog‘langan hamkasblari bilan maslahatlashadi, qahva ichgani boradi va markazdagi **Graphify Core**'ga savol beradi.
+- **3D kampus.** Bitta hududda 6 ta bino, har biri o‘z vazifasiga mos: 🏛️ **Boshqaruv** (tosh ustunlar, bayroq, vertolyot maydonchasi), 🤖 **AI va texnologiya** (LED chiziqlar, quyosh panellari, antenna, AI gologrammasi), 🤝 **Savdo** (billboard, soyabon), 📣 **Marketing va media** (jonli LED ekran, rangli qanotlar), 💰 **Moliya** (kolonnada va frontón), ☕ **Ofis xizmatlari** (tomdagi bog‘, kafe). O‘rtada favvorali maydon va Graphify Core, atrofda bog‘lar, chiroqlar, skameykalar, darvoza va qo‘riqchi budkasi. Uzoqdan binolar to‘liq ko‘rinadi; yaqinlashsangiz tomi va yuqori qavatlari yo‘qolib, ichidagi ish ko‘rinadi (🏗️ tugmasi — hamma binoning ichini birdan ko‘rish).
+- **Haqiqiy odamlarga o‘xshagan xodimlar.** Har bir agent realistik proporsiyadagi odam: yuz (ko‘z, qosh, burun, lab, quloq), soch turmagi (qisqa, yon tomonga, uzun, tugun, dumcha, jingalak, kal, **hijob**, **do‘ppi**, furajka), soqol/mo‘ylov, tizzasi bukiladigan oyoqlar va tirsakli qo‘llar. Kiyim **lavozimga** qarab: direktor — kostyum va galstuk, yordamchi — blazer va planshet, dasturchi — xudi/naushnik, dizayner — golf, hisobchi — sviter va papka, savdo menejeri — kostyum va telefon, **farrosh** — ish kiyimi, fartuk va shvabra, **qo‘riqchi** — forma va furajka. Jami 12+ lavozim: direktor, yordamchi, operatsion menejer, AI strateg, savdo menejeri, marketing mutaxassisi, kontent yaratuvchi, dizayner, data tahlilchi, dasturchi, hisobchi, farrosh (+ qo‘riqchi, bosh koordinator Claude).
+- **Jonli ofis hayoti.** Agentlar javondan kerakli skill kitobini olib o‘qiydi, stolida ishlaydi, grafda bog‘langan hamkasblari bilan maslahatlashadi, qahva ichgani boradi va markazdagi **Graphify Core**'ga savol beradi; farroshlar maydon va ofislarni tozalaydi, qo‘riqchi darvozada turadi va hududni aylanib chiqadi.
 - **Jonli rejim.** Claude Code hooklari ulanganda ofis haqiqiy ishingizni ko‘rsatadi: siz yozgan so‘rov Boss ustida chiqadi, Claude (qabulxonada) asboblarni ishlatadi, Claude subagent chaqirsa — shu nomdagi agent stolida qizil belgi bilan ishlay boshlaydi, skill ishlatilsa — javondagi kitobi yonadi. Ofisda stoli yo‘q subagentlar (masalan `Explore`, `Plan`) mehmon sifatida kirib keladi.
 - **Ofis bilan gaplashish va buyruq berish.** Pastdagi maydonga yozing (o‘zbekcha ham tushunadi) — ofis buyruqni o‘zi tushunib, kerakli jamoaga beradi:
   - 💬 **“Salom hammaga, ahvollar qalay?”** — bir nechta agent o‘z xarakterida javob beradi (chatda va 3D’da boshlari ustida).
@@ -26,23 +29,27 @@ Oltita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Graphify
   - ✍️ **📎 Instagram/Telegram skrinshotlari + “akkauntni tahlil qil, uslubini mening kontentimga qo‘lla”** — **Kontent jamoasi**: `cs-content-creator` skrinshotlarni ko‘rib tahlil qiladi (auditoriya, ohang, ranglar palitrasi, kontent ustunlari, kuchli/zaif tomonlar) → `content-strategist` sizga moslab strategiya va **14 kunlik kontent reja** → `cs-growth-strategist` **5 ta tayyor post** → hisobot. Reja `.csv`, hisobot `.md` bo‘lib yuklanadi.
   - ⚡ **Boshqa har qanday vazifa** — eng mos jamoa: yetakchi reja tuzadi, mutaxassis bajaradi, boshqa agent tekshiradi.
 - **Jamoalar va haqiqiy sinov.** 205 agent ish turiga qarab 11 ta jamoaga ajratilgan (Coder, Kontent, Dizayn, Marketing, Tahlil, Biznes, Taʼlim, Xavfsizlik, DevOps, Mahsulot, Ofis). Har bir agent o‘z jamoasining vazifasi bilan **haqiqatan sinovdan o‘tkazilgan**: vaqti o‘lchangan va alohida “hakam” javobni 1–10 ball bilan baholagan. “👥 Jamoalar” bo‘limida 🏆 eng zo‘r va ⚡ eng tez agentlar ko‘rinadi (`npm run benchmark`).
-- **Agent portreti.** Istalgan odamni bosing — inspektorda uning 3D portreti chiqadi: to‘liq yuz (ko‘z, qosh, burun, og‘iz, soch turmagi) va butun tana, bo‘limiga mos aksessuar (naushnik, ko‘zoynak, galstuk, beret, VR-vizor, akademik qalpoq). Aylantirish mumkin, “🙂 Yuz” va “🧍 To‘liq bo‘y” ko‘rinishlari bor.
+- **Agent portreti.** Istalgan odamni bosing — inspektorda o‘sha odamning o‘zi yuqori sifatda chiqadi: to‘liq yuz (ko‘z pirpiratadi, gapirganda og‘zi qimirlaydi) va butun tana, lavozimi va binosi. Aylantirish mumkin, “🙂 Yuz” va “🧍 To‘liq bo‘y” ko‘rinishlari bor.
 - **Ishga olish.** Istalgan agent, skill yoki buyruqni bir tugma bilan `.claude/` papkangizga o‘rnating (agent o‘zi e’lon qilgan skillari bilan birga).
 - **Bilim grafi.** 1386 tugun va 5087 bog‘lanishdan iborat Graphify uslubidagi graf: bo‘limlar bo‘yicha jamoalar, “eng bog‘langan tugunlar”, qidiruv, EXTRACTED/INFERRED filtrlari.
 - **Bitta joy.** `library/` papkasida barcha agentlar, skillar, buyruqlar va qo‘llanmalar asl holida, litsenziyalari bilan; `library/CATALOG.md` va `library/departments/*.md` — to‘liq katalog.
 - Kun/tun rejimi, o‘zbek/ingliz interfeysi, telefonda ham ishlaydi.
 
-| 👥 Jamoalar (haqiqiy sinov baholari) va “Salom hammaga” suhbati | 🧍 Agent portreti: yuz va butun tana |
+| 🏗️ Binolar ichi: 205 agent o‘z binosida ishlamoqda | 🧍 Agent portreti: yuz va butun tana, lavozim |
 |---|---|
-| ![Jamoalar va chat](docs/images/teams-chat.jpg) | ![Portret](docs/images/portrait.jpg) |
+| ![Binolar ichi](docs/images/campus-inside.jpg) | ![Portret](docs/images/portrait.jpg) |
+| 👔 Boshqaruv binosi: kostyumdagi rahbarlar | 📣 Marketing va media: blazer, hijob, lanyard |
+| ![Boshqaruv ichida](docs/images/people-suits.jpg) | ![Marketing ichida](docs/images/people-media.jpg) |
+| 👥 Jamoalar (haqiqiy sinov baholari) va “Salom hammaga” suhbati | 🌙 Tungi kampus: derazalar va chiroqlar yonadi |
+| ![Jamoalar va chat](docs/images/teams-chat.jpg) | ![Tun](docs/images/office-night.jpg) |
 | 🌐 **“O‘quvchilardan test oladigan veb-sayt qilib ber”** — Coder jamoasi qurgan sayt ofisda darhol ochiladi | ✅ O‘sha sayt ishlaydi: kod `DEMO1` → ism → test → natija va javoblar tahlili |
 | ![Sayt natijasi](docs/images/website-result.jpg) | ![Sayt ishlaydi](docs/images/website-works.jpg) |
 | ✍️ **Instagram skrinshoti + “uslubini mening kontentimga qo‘lla”** — tahlil | ✍️ Tayyor postlar (matematika repetitori uchun) |
 | ![Kontent tahlili](docs/images/content-analysis.jpg) | ![Postlar](docs/images/content-posts.jpg) |
 | ⚡ Boshqa vazifa: “narx strategiyasi tuz” → Biznes jamoasi (reja → bajarish → tekshiruv) | 📱 Telefonda |
 | ![Vazifa natijasi](docs/images/task-result.jpg) | ![Telefon](docs/images/mobile.jpg) |
-| 🌙 Tungi ofis va Graphify Core | 🕸️ Bilim grafi |
-| ![Tun](docs/images/office-night.jpg) | ![Graf](docs/images/knowledge-graph.jpg) |
+| 🕸️ Bilim grafi | |
+| ![Graf](docs/images/knowledge-graph.jpg) | |
 
 ## Tez boshlash
 
@@ -123,6 +130,19 @@ npm run build:library   # library/, public/data/registry.json va graph.json ni q
 
 To‘liq Graphify grafini ham qurish mumkin: `uv tool install graphifyy && graphify install`, keyin Claude Code'da `/graphify library/`.
 
+## Kampus binolari
+
+| Bino / Building | Ichidagi bo‘limlar | Agentlar | Skillar | Buyruqlar |
+|---|---|---|---|---|
+| 🏛️ **Boshqaruv** — Management | Rahbariyat, Mahsulot va loyihalar | 28 | 96 | 27 |
+| 🤖 **AI va texnologiya** — AI & Technology | Muhandislik, dasturlash tillari, frontend, DevOps, xavfsizlik, AI, data | 111 | 508 | 111 |
+| 🤝 **Savdo** — Sales | savdo/CRM agentlari (marketing, biznes, rahbariyatdan) | 8 | 50 | 18 |
+| 📣 **Marketing va media** — Marketing & Media | Marketing va o‘sish, Ijodiy studiya | 14 | 108 | 12 |
+| 💰 **Moliya** — Finance | CFO, moliya, hisob-kitob agentlari | 3 | 10 | 1 |
+| ☕ **Ofis xizmatlari** — Office Services | Samaradorlik markazi, Claude akademiyasi | 41 | 111 | 84 |
+
+Agent qaysi binoda ishlashi bo‘limidan va nomidan aniqlanadi (`buildingOf` — `src/world/layout.ts`), lavozimi va kiyimi esa `roleOf` (`src/sim/actors.ts`) va `lookFor` (`src/world/human.ts`) orqali.
+
 ## Bo‘limlar
 
 | Bo‘lim / Department | Agentlar | Skillar | Buyruqlar |
@@ -142,7 +162,7 @@ To‘liq Graphify grafini ham qurish mumkin: `uv tool install graphifyy && graph
 | ⚡ **Productivity Hub** — Samaradorlik markazi | 12 | 66 | 21 |
 | 🎓 **Claude Academy** — Claude akademiyasi | 29 | 45 | 63 |
 
-Markaziy atriumda: **Claude** (bosh agent, qabulxonada), **office-manager** (Claude-Office'dan), **Siz (Boss)**, **graphify-librarian** va Graphify Core gologrammasi; mehmon agentlar uchun stollar.
+Markaziy maydonda: **Claude** (bosh koordinator, qabulxonada), **office-manager** (Claude-Office'dan), **Direktor (Siz)**, **graphify-librarian**, favvora va Graphify Core gologrammasi; mehmon agentlar uchun stollar. Kampusda yana 3 ta farrosh va 1 qo‘riqchi ishlaydi.
 
 ## Manbalar
 
@@ -169,7 +189,7 @@ Claude Code ──hook (office-hook.mjs)──▶ server :3334 ──WebSocket�
 
 | Papka | Mazmuni |
 |---|---|
-| `src/world/` | Sahna: reja (`layout.ts`), mebel va javonlar (`office.ts`), instanced odamlar (`people.ts`), effektlar, yorliqlar |
+| `src/world/` | Sahna: kampus rejasi va binolar ro‘yxati (`layout.ts`), binolar, maydon, bog‘lar (`campus.ts`), mebel va javonlar (`office.ts`), odam modeli, kiyimlar, lavozimlar va harakatlar (`human.ts`), instanced olomon (`people.ts`), portret (`avatar.ts`), effektlar, yorliqlar |
 | `src/sim/` | Agentlar holat mashinasi (`actors.ts`) va rejissyor: avto-hayot + jonli hodisalar (`director.ts`) |
 | `src/ui/` | Panellar (`hud.ts`), bilim grafi (`graphView.ts`), markdown |
 | `src/router.ts` | Vazifani eng mos agentga yo‘naltirish (TF‑IDF, o‘zbekcha sinonimlar bilan) |
@@ -194,13 +214,15 @@ Claude Code ──hook (office-hook.mjs)──▶ server :3334 ──WebSocket�
 
 **A 3D office where Claude Code agents, skills and commands live and work.** Everything from six open-source repos — [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [claude-skills](https://github.com/alirezarezvani/claude-skills), [Claude-Office](https://github.com/W17ant/Claude-Office), [graphify](https://github.com/Graphify-Labs/graphify), [hermes-agent](https://github.com/NousResearch/hermes-agent) and [ECC](https://github.com/affaan-m/ECC) — is gathered into `library/`, linked into a Graphify-style knowledge graph and rendered as a living Three.js office.
 
-- **205 agents** sit at desks in **14 departments**; **883 skills** and **253 commands** are books on each department's shelves.
+- **A campus of six buildings**, one per line of work, in one architectural family: 🏛️ Management (stone piers, flag, helipad), 🤖 AI & Technology (LED bands, solar roof, dish, AI hologram), 🤝 Sales (billboard, awning), 📣 Marketing & Media (live LED screen, colour fins), 💰 Finance (colonnade and pediment), ☕ Office Services (roof garden, café) — around a plaza with a fountain and the Graphify Core, gardens, lamps and a gated entrance. From afar you see whole buildings; zoom in and roofs and upper floors fade away to show the work inside (🏗️ shows every interior at once).
+- **People who look like people:** realistic proportions, faces, hair (including hijab and doppi), beards, knees and elbows, and clothes by job — director in a suit and tie, assistant with a tablet, developer in a hoodie with headphones, accountant in a sweater with a folder, cleaner with an apron and a mop, guard in uniform. 12+ roles from director to cleaner; cleaners mop the plaza and offices and a guard patrols the gate.
+- **205 agents** sit at desks in their building by department; **883 skills** and **253 commands** are books on each building's shelves.
 - **Ambient life:** agents fetch skill books, work, consult colleagues they are linked to in the graph, grab coffee and query the central **Graphify Core**.
 - **Live mode:** `npm run hooks:install` wires Claude Code hooks to the office. Your prompts, Claude's tool calls, subagents (matched to their desks, or arriving as visitors) and skills (glowing books) show up in real time.
 - **Talk and give work (English or Uzbek):** “hi everyone” gets in-character replies from several agents; “build me a quiz website” sends the **Coder team** through plan → SQLite database → Express backend → complete frontend → QA (and a fix pass) → report, then opens the finished site with its plan, code and a .zip; screenshots of an Instagram/Telegram account plus “analyse and apply the style to my content” sends the **Content team** through analysis → strategy and 14-day plan → 5 ready posts. Any other task goes to the best team: the lead plans, a specialist delivers, a colleague reviews.
 - **Real agents:** every step is a real call with that agent's own instructions — through the Claude Code CLI when the local server runs, or through the viewer's own Claude when the office is opened in claude.ai.
 - **Teams and a real benchmark:** 11 task teams; `npm run benchmark` gave every member its team's task, timed it and had a judge model score it (52 runs). The Teams tab marks 🏆 best and ⚡ fastest agents.
-- **Portraits:** click anyone for a rotatable 3D portrait with a full face and body, hair style and a department accessory.
+- **Portraits:** click anyone for the same person in high detail — a rotatable face (blinking, talking) and full body, with their role and building.
 - **Hire:** install any agent/skill/command into `.claude/` from the inspector or with `npm run hire -- <id>`.
 - **Knowledge graph:** 1,386 nodes / 5,087 edges with EXTRACTED vs INFERRED edges, communities by department and "god nodes".
 

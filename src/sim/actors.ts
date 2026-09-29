@@ -4,12 +4,35 @@
 // ("walk there", "do this for N seconds").
 import * as THREE from 'three';
 import type { Item, OfficeData } from '../data';
-import { route, type Layout, type Spot } from '../world/layout';
+import { currentLang } from '../i18n';
+import { BUILDINGS, buildingOf, route, type Layout, type Spot } from '../world/layout';
 import type { Office } from '../world/office';
-import { Crowd, randomLook, type Anim, type BodyState, type Look } from '../world/people';
+import { ROLE_TITLE, lookFor, type Role } from '../world/human';
+import { Crowd, type Anim, type BodyState, type Look } from '../world/people';
 
-export type ActorKind = 'agent' | 'lead' | 'boss' | 'visitor';
-export type Activity = 'idle' | 'walk' | 'work' | 'talk' | 'read' | 'coffee' | 'query' | 'wave' | 'think';
+export type ActorKind = 'agent' | 'lead' | 'boss' | 'visitor' | 'staff';
+export type Activity = 'idle' | 'walk' | 'work' | 'talk' | 'read' | 'coffee' | 'query' | 'wave' | 'think' | 'clean';
+
+/** Which job an agent does, judged from its building, department and name. */
+export function roleOf(it: Pick<Item, 'name' | 'dept'>): Role {
+  const n = it.name.toLowerCase();
+  const b = buildingOf(it);
+  if (b === 'moliya') return 'accountant';
+  if (b === 'savdo') return 'sales';
+  if (/(^|-)(ceo|cto|coo|cfo|cmo|cpo|ciso|chief|director|founder|president|vp)(-|$)|executive|head-of|board/.test(n)) return 'director';
+  if (b === 'boshqaruv') return it.dept === 'product' ? 'strategist' : 'operations';
+  if (b === 'media') {
+    if (it.dept === 'creative') return /(design|ui|ux|brand|visual|image|art|figma|logo|video)/.test(n) ? 'designer' : 'creator';
+    return /(content|copy|social|video|writer|story|script|podcast|newsletter)/.test(n) ? 'creator' : 'marketer';
+  }
+  if (b === 'tech') {
+    if (it.dept === 'data') return 'analyst';
+    if (it.dept === 'ai' && /(strateg|architect|research|advisor|prompt|evaluat)/.test(n)) return 'strategist';
+    if (/(design|ui-|ux)/.test(n)) return 'designer';
+    return 'developer';
+  }
+  return /(design|ui|ux)/.test(n) ? 'designer' : /(analy|research|data)/.test(n) ? 'analyst' : 'assistant';
+}
 
 export interface Step {
   go?: Spot;
@@ -31,7 +54,7 @@ export const MARKERS: Partial<Record<Activity, THREE.Color>> = {
 const LIVE_MARKER = new THREE.Color('#ff4d6d').multiplyScalar(2);
 
 const ANIM: Record<Activity, Anim> = {
-  idle: 'idle', walk: 'walk', work: 'type', talk: 'talk', read: 'read', coffee: 'drink', query: 'think', wave: 'wave', think: 'think',
+  idle: 'idle', walk: 'walk', work: 'type', talk: 'talk', read: 'read', coffee: 'drink', query: 'think', wave: 'wave', think: 'think', clean: 'mop',
 };
 
 const WALK_SPEED = 2.8;
@@ -103,6 +126,7 @@ export class Cast {
   readonly byItem = new Map<string, Actor>();
   readonly byName = new Map<string, Actor[]>();
   readonly crowd: Crowd;
+  readonly staff: Actor[] = [];
   lead!: Actor;
   boss!: Actor;
   private visitorsFree: number[] = [];
@@ -117,41 +141,46 @@ export class Cast {
     Actor.now = now;
     const agents = data.registry.items.filter((i) => i.type === 'agent');
     const VISITORS = 12;
-    this.crowd = new Crowd(agents.length + 2 + VISITORS);
+    const CLEANERS = 3;
+    const coarse = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
+    this.crowd = new Crowd(agents.length + 2 + VISITORS + CLEANERS + 1, coarse ? 0.6 : 0.8);
+    const lang = currentLang();
 
-    const lead = this.add('lead', 'Claude', layout.reception.lead, undefined, '#d97757', { shirt: '#d97757', pants: '#3d3a36', skin: '#f3d2b3', hair: '#6b3f2a', badge: '#ffffff', hairStyle: 'short', accessory: 'headphones', accent: '#bf5f3f' });
-    this.lead = lead;
-    this.boss = this.add('boss', 'Boss', layout.reception.boss, undefined, '#2b2d42', { shirt: '#23263a', pants: '#1c1d29', skin: '#eac09a', hair: '#1b1b1f', badge: '#ffd166', scale: 1.06, hairStyle: 'short', accessory: 'sunglasses', accent: '#ffd166' });
+    this.lead = this.add('lead', 'Claude', layout.reception.lead, undefined, '#d97757', lookFor('coordinator', 0.4242, '#ffffff'));
+    const boss = lookFor('director', 0.1337, '#ffd166');
+    Object.assign(boss, { outfit: 'suit', top: '#1f2a44', pants: '#1f2a44', under: '#f5f6f8', accent: '#8a6d1e', hairStyle: 'side', facial: 'none', lower: 'trousers', eyewear: 'none', prop: 'none', scale: 1.04 });
+    this.boss = this.add('boss', 'Direktor', layout.reception.boss, undefined, '#1f2a44', boss);
 
-    // Agents: fill each department's desks in registry order; special residents go to the atrium.
-    const perDept = new Map<string, Item[]>();
-    for (const a of agents) {
-      if (!perDept.has(a.dept)) perDept.set(a.dept, []);
-      perDept.get(a.dept)!.push(a);
-    }
+    // Agents sit at their building's desks in department order; two residents work in the plaza.
+    const deskOf = new Map<string, Spot>();
+    for (const z of layout.zones) z.agents.forEach((a, i) => z.desks[i] && deskOf.set(a.id, z.desks[i].seat));
+    const tint = new Map(BUILDINGS.map((b) => [b.id, b.color]));
     for (const a of agents) {
       let spot: Spot | undefined;
       if (a.id === 'agent:claude-office:office-manager') spot = layout.reception.manager;
       else if (a.id === 'agent:graphify:graphify-librarian') spot = layout.librarian.seat;
-      else {
-        const zone = layout.zoneByDept.get(a.dept)!;
-        const list = perDept.get(a.dept)!.filter((x) => x.id !== 'agent:claude-office:office-manager' && x.id !== 'agent:graphify:graphify-librarian');
-        spot = zone.desks[list.indexOf(a)]?.seat;
-      }
+      else spot = deskOf.get(a.id);
       if (!spot) continue;
       const dept = data.dept.get(a.dept)!;
       const src = data.source.get(a.source)!;
-      const seed = hash(a.id);
-      this.add('agent', a.name, spot, a, dept.color, randomLook(seed, dept.color, src.color, a.dept));
+      const role = a.id === 'agent:claude-office:office-manager' ? 'assistant' : a.id === 'agent:graphify:graphify-librarian' ? 'analyst' : roleOf(a);
+      this.add('agent', a.name, spot, a, dept.color, lookFor(role, hash(a.id), src.color, tint.get(buildingOf(a))));
     }
     for (let i = 0; i < VISITORS; i++) {
-      const v = this.add('visitor', 'visitor', layout.entrance, undefined, '#9aa5b1', { shirt: '#9aa5b1', pants: '#374151', skin: '#eac09a', hair: '#4a3223', badge: '#ffd166', hairStyle: 'curly', accessory: 'cap', accent: '#ffd166' });
+      const role = (['developer', 'analyst', 'strategist'] as const)[i % 3];
+      const v = this.add('visitor', 'visitor', layout.entrance, undefined, '#9aa5b1', lookFor(role, hash(`visitor-${i}`), '#ffd166', '#ffd166'));
       v.body.visible = false;
       this.visitorsFree.push(v.idx);
     }
+    // Office services: cleaners with mops and a guard at the gate.
+    for (let i = 0; i < CLEANERS; i++) {
+      const home = layout.staff.cleaners[i % layout.staff.cleaners.length];
+      this.staff.push(this.add('staff', ROLE_TITLE.cleaner[lang], home, undefined, '#1fa7a0', lookFor('cleaner', hash(`cleaner-${i}`), '#e9e6df')));
+    }
+    this.staff.push(this.add('staff', ROLE_TITLE.guard[lang], layout.staff.guard, undefined, '#1c2533', lookFor('guard', hash('guard'), '#c9a227')));
   }
 
-  private add(kind: ActorKind, name: string, home: Spot, item: Item | undefined, color: string, look: Parameters<Crowd['setLook']>[1]) {
+  private add(kind: ActorKind, name: string, home: Spot, item: Item | undefined, color: string, look: Look) {
     const a = new Actor(this.actors.length, kind, name, home, item, color);
     a.look = look;
     this.actors.push(a);
@@ -264,7 +293,7 @@ export class Cast {
     const next = a.steps.shift();
     if (!next) {
       if (a.activity !== 'idle') this.setActivity(a, 'idle');
-      if (a.at !== a.home && a.kind !== 'visitor' && a.kind !== 'boss' && now > a.busyUntil) a.plan([{ go: a.home }]);
+      if (a.at !== a.home && a.kind !== 'visitor' && a.kind !== 'boss' && a.kind !== 'staff' && now > a.busyUntil) a.plan([{ go: a.home }]);
       return;
     }
     a.current = next;

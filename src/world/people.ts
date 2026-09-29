@@ -1,9 +1,16 @@
-// Every person in the office is drawn with a handful of InstancedMeshes (one
-// per body part), so hundreds of animated agents cost ~11 draw calls.
+// Everyone in the office is drawn with instanced meshes: one mesh per body
+// part *variant* (each outfit, hair style, prop…), each person using only the
+// variants they wear. Colours come from a per-person palette texture looked
+// up by the vertex's colour slot, so hundreds of differently dressed,
+// animated people cost ~40 draw calls.
 import * as THREE from 'three';
-import { box, instanced, merge } from './geo';
+import { instanced } from './geo';
+import {
+  DIM, EYEWEAR, FACIALS, HAIR_STYLES, LOWERS, MOP_PIVOT, Mesher, OUTFITS, PROPS, SLOTS, cupGeo, eyewearGeo, foreArmGeo, hairGeo, headGeo, hipsGeo, mopGeo, newJoints, propGeo, shinGeo,
+  solvePose, thighGeo, torsoGeo, upperArmGeo, type Anim, type Look,
+} from './human';
 
-export type Anim = 'idle' | 'walk' | 'type' | 'talk' | 'read' | 'drink' | 'wave' | 'think';
+export type { Anim, Look } from './human';
 
 export interface BodyState {
   x: number;
@@ -19,239 +26,247 @@ export interface BodyState {
   seed: number;
 }
 
-export const HAIR_STYLES = ['short', 'long', 'bun', 'curly', 'bald'] as const;
-export type HairStyle = (typeof HAIR_STYLES)[number];
-export type Accessory = 'none' | 'headphones' | 'glasses' | 'tie' | 'beret' | 'cap' | 'visor' | 'mortarboard' | 'sunglasses';
+const PALETTE_W = 16;
+const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 
-export interface Look {
-  shirt: THREE.ColorRepresentation;
-  pants: THREE.ColorRepresentation;
-  skin: THREE.ColorRepresentation;
-  hair: THREE.ColorRepresentation;
-  badge: THREE.ColorRepresentation;
-  scale?: number;
-  hairStyle?: HairStyle;
-  accessory?: Accessory;
-  accent?: THREE.ColorRepresentation;
-}
-
-const SKINS = ['#f6d5b8', '#eac09a', '#d7a27a', '#b97c55', '#8d5a3b', '#fbe3cf', '#c68d63'];
-const HAIRS = ['#2b2118', '#4a3223', '#7b4a26', '#b5773d', '#d9b26a', '#1b1b1f', '#8a8f98', '#a33b2b', '#e8e2d6'];
-const PANTS = ['#2f3b52', '#3d4250', '#1f2937', '#4b5563', '#50413a', '#2d4a3e', '#334155'];
-const STYLE_WEIGHTS: HairStyle[] = ['short', 'short', 'short', 'long', 'long', 'bun', 'curly', 'curly', 'bald'];
-
-/** What people in each department tend to wear. */
-export const DEPT_ACCESSORY: Record<string, Accessory> = {
-  engineering: 'headphones', languages: 'headphones', devops: 'cap', frontend: 'beret', creative: 'beret',
-  data: 'glasses', research: 'glasses', security: 'glasses', executive: 'tie', business: 'tie',
-  ai: 'visor', academy: 'mortarboard', product: 'none', marketing: 'none', productivity: 'none',
-};
-
-export function randomLook(seed: number, shirt: THREE.ColorRepresentation, badge: THREE.ColorRepresentation, dept?: string): Look {
-  const pick = <T,>(arr: readonly T[], k: number) => arr[Math.abs(Math.floor(seed * 7919 + k * 104729)) % arr.length];
-  const accessory = dept ? DEPT_ACCESSORY[dept] || 'none' : 'none';
-  // Only about half of a department wears its accessory, so faces stay varied.
-  const wears = Math.floor(seed * 1000) % 2 === 0;
-  return {
-    shirt, badge, accent: shirt,
-    skin: pick(SKINS, 1), hair: pick(HAIRS, 2), pants: pick(PANTS, 3),
-    hairStyle: pick(STYLE_WEIGHTS, 4),
-    accessory: wears ? accessory : 'none',
+function paletteMaterial(palette: THREE.Texture) {
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uPalette = { value: palette };
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute float slot;\nattribute float person;\nuniform sampler2D uPalette;')
+      .replace(
+        '#include <color_vertex>',
+        '#include <color_vertex>\n\tif ( slot > -0.5 ) vColor.rgb = texelFetch( uPalette, ivec2( int( slot + 0.5 ), int( person + 0.5 ) ), 0 ).rgb;',
+      );
   };
+  mat.customProgramCacheKey = () => 'office-crowd-palette';
+  return mat;
 }
 
-const m4 = new THREE.Matrix4();
-const root = new THREE.Matrix4();
+/** One body part: a mesh per variant; each person gets `per` instances in theirs. */
+class Part {
+  readonly meshes = new Map<string, THREE.InstancedMesh>();
+  private meshOf: (THREE.InstancedMesh | null)[] = [];
+  private slotOf: Int32Array;
+
+  constructor(
+    readonly capacity: number,
+    readonly per: 1 | 2,
+    variants: Record<string, (me: Mesher) => void>,
+    mat: THREE.Material,
+    group: THREE.Group,
+    detail: number,
+  ) {
+    this.slotOf = new Int32Array(capacity * per).fill(-1);
+    for (const [name, build] of Object.entries(variants)) {
+      const me = new Mesher(detail);
+      build(me);
+      if (!me.idx.length) continue;
+      const geo = me.geometry();
+      geo.setAttribute('person', new THREE.InstancedBufferAttribute(new Float32Array(capacity * per), 1));
+      const mesh = instanced(geo, mat, capacity * per);
+      mesh.count = 0;
+      mesh.name = name;
+      this.meshes.set(name, mesh);
+      group.add(mesh);
+    }
+  }
+
+  assign(person: number, variant: string) {
+    const old = this.meshOf[person];
+    if (old) for (let k = 0; k < this.per; k++) old.setMatrixAt(this.slotOf[person * this.per + k], ZERO);
+    const mesh = this.meshes.get(variant) || null;
+    this.meshOf[person] = mesh;
+    if (!mesh) return;
+    const attr = mesh.geometry.getAttribute('person') as THREE.InstancedBufferAttribute;
+    for (let k = 0; k < this.per; k++) {
+      const inst = mesh.count++;
+      this.slotOf[person * this.per + k] = inst;
+      attr.setX(inst, person);
+      mesh.setMatrixAt(inst, ZERO);
+    }
+    attr.needsUpdate = true;
+  }
+
+  set(person: number, k: number, m: THREE.Matrix4) {
+    const mesh = this.meshOf[person];
+    if (mesh) mesh.setMatrixAt(this.slotOf[person * this.per + k], m);
+  }
+
+  hide(person: number) {
+    const mesh = this.meshOf[person];
+    if (mesh) for (let k = 0; k < this.per; k++) mesh.setMatrixAt(this.slotOf[person * this.per + k], ZERO);
+  }
+
+  commit() {
+    for (const m of this.meshes.values()) m.instanceMatrix.needsUpdate = true;
+  }
+}
+
+const variants = <T extends string>(names: readonly T[], fn: (me: Mesher, v: T) => void) => Object.fromEntries(names.map((n) => [n, (me: Mesher) => fn(me, n)]));
+
+// Scratch matrices for posing.
+const mRoot = new THREE.Matrix4();
+const mHips = new THREE.Matrix4();
+const mTorso = new THREE.Matrix4();
+const mHead = new THREE.Matrix4();
+const mUA = new THREE.Matrix4();
+const mFA = new THREE.Matrix4();
+const mHand = new THREE.Matrix4();
+const mTh = new THREE.Matrix4();
+const mSh = new THREE.Matrix4();
+const mTmp = new THREE.Matrix4();
 const local = new THREE.Matrix4();
 const euler = new THREE.Euler();
 const scaleM = new THREE.Matrix4();
-const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+const J = newJoints();
+
+function joint(out: THREE.Matrix4, parent: THREE.Matrix4, x: number, y: number, z: number, rx: number, ry: number, rz: number, order: THREE.EulerOrder) {
+  local.makeRotationFromEuler(euler.set(rx, ry, rz, order)).setPosition(x, y, z);
+  return out.multiplyMatrices(parent, local);
+}
 
 export class Crowd {
   readonly group = new THREE.Group();
-  readonly torso: THREE.InstancedMesh;
-  readonly head: THREE.InstancedMesh;
-  private legL: THREE.InstancedMesh;
-  private legR: THREE.InstancedMesh;
-  private armL: THREE.InstancedMesh;
-  private armR: THREE.InstancedMesh;
-  /** One mesh per hair style; each person only ever uses theirs. */
-  private hairs: Record<HairStyle, THREE.InstancedMesh>;
-  private hairOf: HairStyle[] = [];
-  private eyes: THREE.InstancedMesh;
-  private badge: THREE.InstancedMesh;
+  private palette: THREE.DataTexture;
+  private parts: Record<'hips' | 'torso' | 'head' | 'hair' | 'eyewear' | 'uArm' | 'fArm' | 'thigh' | 'shin' | 'prop' | 'cup', Part>;
+  private looks: Look[] = [];
   private marker: THREE.InstancedMesh;
   private shadow: THREE.InstancedMesh;
-  private scales: number[] = [];
+  private hit: THREE.InstancedMesh;
 
-  constructor(readonly capacity: number) {
-    const lambert = () => new THREE.MeshLambertMaterial();
-    const vc = () => new THREE.MeshLambertMaterial({ vertexColors: true });
-    const leg = new THREE.BoxGeometry(0.15, 0.62, 0.17).translate(0, -0.31, 0);
-    const arm = new THREE.BoxGeometry(0.11, 0.5, 0.13).translate(0, -0.25, 0);
-    this.legL = instanced(leg, lambert(), capacity);
-    this.legR = instanced(leg, lambert(), capacity);
-    this.armL = instanced(arm, lambert(), capacity);
-    this.armR = instanced(arm, lambert(), capacity);
-    this.torso = instanced(new THREE.BoxGeometry(0.44, 0.54, 0.26).translate(0, 0.27, 0), lambert(), capacity);
-    this.head = instanced(new THREE.BoxGeometry(0.34, 0.32, 0.32).translate(0, 0.16, 0), lambert(), capacity);
-    const top = () => box(0.37, 0.1, 0.35, { at: [0, 0.35, -0.01] });
-    this.hairs = {
-      short: instanced(merge([top(), box(0.37, 0.22, 0.06, { at: [0, 0.22, -0.16] })]), lambert(), capacity),
-      long: instanced(
-        merge([top(), box(0.38, 0.46, 0.07, { at: [0, 0.12, -0.165] }), box(0.05, 0.3, 0.26, { at: [-0.185, 0.2, -0.03] }), box(0.05, 0.3, 0.26, { at: [0.185, 0.2, -0.03] })]),
-        lambert(),
-        capacity,
-      ),
-      bun: instanced(merge([top(), box(0.37, 0.2, 0.06, { at: [0, 0.23, -0.16] }), box(0.16, 0.14, 0.14, { at: [0, 0.44, -0.1] })]), lambert(), capacity),
-      curly: instanced(
-        merge([
-          box(0.41, 0.14, 0.39, { at: [0, 0.36, -0.01] }),
-          box(0.12, 0.1, 0.12, { at: [-0.13, 0.44, 0.08] }),
-          box(0.12, 0.1, 0.12, { at: [0.12, 0.44, -0.08] }),
-          box(0.12, 0.1, 0.12, { at: [0, 0.45, 0.02] }),
-          box(0.41, 0.24, 0.08, { at: [0, 0.22, -0.17] }),
-        ]),
-        lambert(),
-        capacity,
-      ),
-      bald: instanced(box(0.3, 0.02, 0.28, { at: [0, 0.325, -0.02] }), lambert(), capacity),
+  constructor(
+    readonly capacity: number,
+    /** mesh detail: 1 = full, lower for phones */
+    readonly detail = 0.8,
+  ) {
+    const data = new Float32Array(PALETTE_W * capacity * 4);
+    this.palette = new THREE.DataTexture(data, PALETTE_W, capacity, THREE.RGBAFormat, THREE.FloatType);
+    this.palette.magFilter = this.palette.minFilter = THREE.NearestFilter;
+    this.palette.needsUpdate = true;
+    const mat = paletteMaterial(this.palette);
+    const g = this.group;
+    this.parts = {
+      hips: new Part(capacity, 1, { base: hipsGeo }, mat, g, detail),
+      torso: new Part(capacity, 1, variants(OUTFITS, torsoGeo), mat, g, detail),
+      head: new Part(capacity, 1, variants(FACIALS, (me, f) => headGeo(me, f)), mat, g, detail),
+      hair: new Part(capacity, 1, variants(HAIR_STYLES, hairGeo), mat, g, detail),
+      eyewear: new Part(capacity, 1, variants(EYEWEAR, eyewearGeo), mat, g, detail),
+      uArm: new Part(capacity, 2, { base: upperArmGeo }, mat, g, detail),
+      fArm: new Part(capacity, 2, { base: foreArmGeo }, mat, g, detail),
+      thigh: new Part(capacity, 2, variants(LOWERS, thighGeo), mat, g, detail),
+      shin: new Part(capacity, 2, variants(LOWERS, shinGeo), mat, g, detail),
+      prop: new Part(capacity, 1, variants(PROPS, (me, p) => (p === 'mop' ? mopGeo(me) : propGeo(me, p))), mat, g, detail),
+      cup: new Part(capacity, 1, { base: cupGeo }, mat, g, detail),
     };
-    this.eyes = instanced(
-      merge([box(0.055, 0.07, 0.02, { at: [-0.075, 0.17, 0.165], color: '#1d1d24' }), box(0.055, 0.07, 0.02, { at: [0.075, 0.17, 0.165], color: '#1d1d24' })]),
-      vc(),
-      capacity,
-    );
-    this.badge = instanced(new THREE.BoxGeometry(0.11, 0.13, 0.02).translate(0.11, 0.38, 0.135), new THREE.MeshBasicMaterial(), capacity);
-    this.marker = instanced(new THREE.OctahedronGeometry(0.11, 0), new THREE.MeshBasicMaterial(), capacity);
+    this.marker = instanced(new THREE.OctahedronGeometry(0.1, 0), new THREE.MeshBasicMaterial(), capacity);
     this.shadow = instanced(
       new THREE.CircleGeometry(0.34, 16).rotateX(-Math.PI / 2),
       new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.16, depthWrite: false }),
       capacity,
     );
-    const all = [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, ...Object.values(this.hairs), this.eyes, this.badge, this.marker, this.shadow];
-    for (const m of all) {
+    // Invisible, cheap stand-in used for clicking on people.
+    this.hit = instanced(new THREE.BoxGeometry(0.56, 1.8, 0.42).translate(0, 0.9, 0), new THREE.MeshBasicMaterial(), capacity);
+    this.hit.visible = false;
+    for (const m of [this.marker, this.shadow, this.hit]) {
       for (let i = 0; i < capacity; i++) m.setMatrixAt(i, ZERO);
-      this.group.add(m);
     }
-    this.torso.userData.pickable = true;
-    this.head.userData.pickable = true;
+    g.add(this.marker, this.shadow, this.hit);
   }
 
   setLook(i: number, look: Look) {
+    this.looks[i] = look;
+    const data = this.palette.image.data as Float32Array;
     const c = new THREE.Color();
-    this.legL.setColorAt(i, c.set(look.pants));
-    this.legR.setColorAt(i, c);
-    this.torso.setColorAt(i, c.set(look.shirt));
-    this.armL.setColorAt(i, c.clone().multiplyScalar(0.92));
-    this.armR.setColorAt(i, c.clone().multiplyScalar(0.92));
-    this.head.setColorAt(i, c.set(look.skin));
-    const style = look.hairStyle || 'short';
-    this.hairOf[i] = style;
-    // Bald heads keep a faint skin-toned crown instead of hair.
-    this.hairs[style].setColorAt(i, style === 'bald' ? c.set(look.skin).multiplyScalar(0.94) : c.set(look.hair));
-    this.badge.setColorAt(i, c.set(look.badge));
-    this.eyes.setColorAt(i, c.set('#ffffff'));
+    SLOTS.forEach((s, k) => {
+      c.set(look[s]);
+      data.set([c.r, c.g, c.b, 1], (i * PALETTE_W + k) * 4);
+    });
+    this.palette.needsUpdate = true;
+    const P = this.parts;
+    P.hips.assign(i, 'base');
+    P.torso.assign(i, look.outfit);
+    P.head.assign(i, look.facial);
+    P.hair.assign(i, look.hairStyle);
+    P.eyewear.assign(i, look.eyewear);
+    P.uArm.assign(i, 'base');
+    P.fArm.assign(i, 'base');
+    P.thigh.assign(i, look.lower);
+    P.shin.assign(i, look.lower);
+    P.prop.assign(i, look.prop);
+    P.cup.assign(i, 'base');
     this.marker.setColorAt(i, c.set('#ffffff'));
-    this.scales[i] = look.scale ?? 1;
-    for (const m of [this.legL, this.legR, this.torso, this.armL, this.armR, this.head, ...Object.values(this.hairs), this.badge, this.eyes, this.marker]) {
-      if (m.instanceColor) m.instanceColor.needsUpdate = true;
-    }
-  }
-
-  private set(mesh: THREE.InstancedMesh, i: number, px: number, py: number, pz: number, rx = 0, ry = 0) {
-    euler.set(rx, ry, 0, 'YXZ');
-    local.makeRotationFromEuler(euler).setPosition(px, py, pz);
-    mesh.setMatrixAt(i, m4.multiplyMatrices(root, local));
   }
 
   update(i: number, b: BodyState, time: number) {
-    const hair = this.hairs[this.hairOf[i] || 'short'];
-    if (!b.visible) {
-      for (const m of [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, hair, this.eyes, this.badge, this.marker, this.shadow]) m.setMatrixAt(i, ZERO);
+    const P = this.parts;
+    const look = this.looks[i];
+    if (!b.visible || !look) {
+      for (const p of Object.values(P)) p.hide(i);
+      this.marker.setMatrixAt(i, ZERO);
+      this.shadow.setMatrixAt(i, ZERO);
+      this.hit.setMatrixAt(i, ZERO);
       return;
     }
-    const s = this.scales[i] ?? 1;
-    root.makeRotationY(b.heading).setPosition(b.x, 0, b.z);
-    if (s !== 1) root.multiply(scaleM.makeScale(s, s, s));
-
+    const s = look.scale;
     const sit = b.pose === 'sit';
-    const t = time + b.seed * 10;
-    let hip = sit ? 0.5 : 0.62;
-    let legA = 0, legB = 0, armL = 0, armR = 0, lean = 0, nod = 0, look = 0;
+    mRoot.makeRotationY(b.heading).setPosition(b.x, 0, b.z);
+    if (s !== 1) mRoot.multiply(scaleM.makeScale(s, s, s));
+    solvePose(J, b.anim, sit, time + b.seed * 10, b.phase, look.prop);
 
-    switch (b.anim) {
-      case 'walk': {
-        const sw = Math.sin(b.phase);
-        legA = sw * 0.62; legB = -sw * 0.62; armL = -sw * 0.55; armR = sw * 0.55;
-        hip += Math.abs(Math.cos(b.phase)) * 0.035;
-        break;
-      }
-      case 'type':
-        armL = -1.2 + Math.sin(t * 15) * 0.07;
-        armR = -1.2 + Math.sin(t * 15 + 1.7) * 0.07;
-        lean = 0.1; nod = 0.12 + Math.sin(t * 0.7) * 0.05;
-        break;
-      case 'talk':
-        armR = -0.55 - Math.max(0, Math.sin(t * 3.1)) * 0.6;
-        armL = -0.25 - Math.max(0, Math.sin(t * 2.3 + 1)) * 0.3;
-        nod = Math.sin(t * 3) * 0.12; look = Math.sin(t * 0.9) * 0.2;
-        break;
-      case 'read':
-        armL = -1.0; armR = -1.0; nod = 0.4; lean = 0.05;
-        break;
-      case 'drink':
-        armR = -0.3 - Math.max(0, Math.sin(t * 1.1)) * 1.9;
-        armL = -0.1; look = Math.sin(t * 0.5) * 0.3;
-        break;
-      case 'wave':
-        armR = -2.7 + Math.sin(t * 9) * 0.35;
-        break;
-      case 'think':
-        armR = -1.9; armL = -0.4; nod = -0.15; look = Math.sin(t * 0.6) * 0.35;
-        break;
-      default:
-        if (sit) { armL = -0.85; armR = -0.85; }
-        else { armL = Math.sin(t * 0.8) * 0.04; armR = -Math.sin(t * 0.8) * 0.04; }
-        look = Math.sin(t * 0.25) * 0.35;
+    joint(mHips, mRoot, 0, J.hipY, 0, 0, 0, 0, 'XYZ');
+    P.hips.set(i, 0, mHips);
+    joint(mTorso, mHips, 0, 0, 0, J.lean, J.twist, 0, 'YXZ');
+    P.torso.set(i, 0, mTorso);
+    joint(mHead, mTorso, 0, DIM.neckY, 0, J.nod, J.turn, 0, 'YXZ');
+    P.head.set(i, 0, mHead);
+    P.hair.set(i, 0, mHead);
+    P.eyewear.set(i, 0, mHead);
+    for (let k = 0; k < 2; k++) {
+      const sx = k === 0 ? 1 : -1;
+      joint(mUA, mTorso, sx * DIM.shoulderX, DIM.shoulderY, 0, J.armX[k], 0, J.armZ[k], 'ZXY');
+      P.uArm.set(i, k, mUA);
+      joint(mFA, mUA, 0, -DIM.upperArm, 0, J.elbow[k], 0, 0, 'XYZ');
+      P.fArm.set(i, k, mFA);
+      if (k === 1) joint(mHand, mFA, 0, -DIM.foreArm, 0, 0, 0, 0, 'XYZ');
+      joint(mTh, mHips, sx * DIM.hipX, 0, 0, J.thigh[k], 0, sit ? sx * 0.06 : 0, 'ZXY');
+      P.thigh.set(i, k, mTh);
+      joint(mSh, mTh, 0, -DIM.thigh, 0, J.knee[k], 0, 0, 'XYZ');
+      P.shin.set(i, k, mSh);
     }
-    if (sit) { legA += -Math.PI / 2 + 0.08; legB += -Math.PI / 2 + 0.08; }
+    if (look.prop === 'mop') {
+      joint(mTmp, mRoot, MOP_PIVOT[0], 0, MOP_PIVOT[1], 0, J.sway, 0, 'XYZ');
+      P.prop.set(i, 0, mTmp.multiply(local.makeTranslation(-MOP_PIVOT[0], 0, -MOP_PIVOT[1])));
+    }
+    else P.prop.set(i, 0, J.prop ? mHand : ZERO);
+    P.cup.set(i, 0, b.anim === 'drink' ? mHand : ZERO);
 
-    this.set(this.legL, i, -0.1, hip, 0, legA);
-    this.set(this.legR, i, 0.1, hip, 0, legB);
-    this.set(this.torso, i, 0, hip, 0, lean);
-    this.set(this.badge, i, 0, hip, 0, lean);
-    const shoulder = hip + 0.5;
-    const fwd = Math.sin(lean) * 0.5;
-    this.set(this.armL, i, -0.285, shoulder, fwd, armL);
-    this.set(this.armR, i, 0.285, shoulder, fwd, armR);
-    const headY = hip + 0.57;
-    const headZ = Math.sin(lean) * 0.57;
-    this.set(this.head, i, 0, headY, headZ, nod, look);
-    this.set(hair, i, 0, headY, headZ, nod, look);
-    this.set(this.eyes, i, 0, headY, headZ, nod, look);
-    this.set(this.shadow, i, 0, 0.025, sit ? 0.12 : 0, 0);
-
+    local.makeScale(1, 1, 1).setPosition(0, 0.025, sit ? 0.12 : 0);
+    this.shadow.setMatrixAt(i, mTmp.multiplyMatrices(mRoot, local));
+    local.makeScale(1, sit ? 0.78 : 1, 1);
+    this.hit.setMatrixAt(i, mTmp.multiplyMatrices(mRoot, local));
     if (b.marker) {
       this.marker.setColorAt(i, b.marker);
       this.marker.instanceColor!.needsUpdate = true;
-      euler.set(0, time * 2.2 + b.seed, 0);
-      local.makeRotationFromEuler(euler).setPosition(0, headY + 0.72 + Math.sin(time * 3 + b.seed) * 0.06, headZ);
-      this.marker.setMatrixAt(i, m4.multiplyMatrices(root, local));
+      const e = mHead.elements;
+      local.makeRotationY(time * 2.2 + b.seed).setPosition(e[12], e[13] + 0.52 * s + Math.sin(time * 3 + b.seed) * 0.05, e[14]);
+      this.marker.setMatrixAt(i, local);
     } else {
       this.marker.setMatrixAt(i, ZERO);
     }
   }
 
   commit() {
-    for (const m of [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, ...Object.values(this.hairs), this.eyes, this.badge, this.marker, this.shadow]) {
-      m.instanceMatrix.needsUpdate = true;
-    }
+    for (const p of Object.values(this.parts)) p.commit();
+    this.marker.instanceMatrix.needsUpdate = true;
+    this.shadow.instanceMatrix.needsUpdate = true;
+    this.hit.instanceMatrix.needsUpdate = true;
   }
 
-  /** Instance index under the ray, or -1. */
+  /** Person index under the ray, or -1. */
   pick(ray: THREE.Raycaster): number {
-    const hits = ray.intersectObjects([this.torso, this.head], false);
+    const hits = ray.intersectObject(this.hit, false);
     return hits.length ? (hits[0].instanceId ?? -1) : -1;
   }
 }
