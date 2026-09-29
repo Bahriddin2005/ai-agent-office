@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.sources/
+.office/
+*.log
+.DS_Store
+office.config.json

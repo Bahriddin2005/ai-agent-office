@@ -1,0 +1,65 @@
+{
+  "$comment": "Upstream repositories gathered into the AI Agent Office library. `npm run sync` clones/updates them into .sources/ and `npm run build:library` regenerates library/ and public/data/.",
+  "sources": [
+    {
+      "id": "best-practice",
+      "repo": "shanraisshan/claude-code-best-practice",
+      "branch": "main",
+      "label": "Claude Code Best Practice",
+      "short": "Best Practice",
+      "license": "MIT",
+      "color": "#f2c14e",
+      "role": "Academy: Claude Code best practices, workflows, example agents, skills and commands"
+    },
+    {
+      "id": "claude-skills",
+      "repo": "alirezarezvani/claude-skills",
+      "branch": "main",
+      "label": "Claude Skills (alirezarezvani)",
+      "short": "Claude Skills",
+      "license": "MIT",
+      "color": "#5b8def",
+      "role": "The big skill & persona library: engineering, product, marketing, C-level, compliance, finance"
+    },
+    {
+      "id": "claude-office",
+      "repo": "W17ant/Claude-Office",
+      "branch": "main",
+      "label": "Claude Office (W17ant)",
+      "short": "Claude Office",
+      "license": "MIT",
+      "color": "#e8736b",
+      "role": "Original pixel-art office: Claude Code hook -> server -> live office visualisation idea"
+    },
+    {
+      "id": "graphify",
+      "repo": "Graphify-Labs/graphify",
+      "branch": "v8",
+      "label": "Graphify",
+      "short": "Graphify",
+      "license": "Apache-2.0",
+      "color": "#2ec4b6",
+      "role": "Knowledge graph: every agent, skill and command gathered into one navigable graph"
+    },
+    {
+      "id": "hermes",
+      "repo": "NousResearch/hermes-agent",
+      "branch": "main",
+      "label": "Hermes Agent (Nous Research)",
+      "short": "Hermes",
+      "license": "MIT",
+      "color": "#a06cd5",
+      "role": "Self-improving agent with a learning loop and a large skills catalogue"
+    },
+    {
+      "id": "ecc",
+      "repo": "affaan-m/ECC",
+      "branch": "main",
+      "label": "ECC (Everything Claude Code)",
+      "short": "ECC",
+      "license": "MIT",
+      "color": "#ff9f1c",
+      "role": "Production agent harness: language reviewers, build resolvers, commands, hooks and hundreds of skills"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "best-practice": {
+    "repo": "shanraisshan/claude-code-best-practice",
+    "branch": "main",
+    "commit": "c757d6bb2a50626d3161d00865ca2241059427a1"
+  },
+  "claude-skills": {
+    "repo": "alirezarezvani/claude-skills",
+    "branch": "main",
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94"
+  },
+  "claude-office": {
+    "repo": "W17ant/Claude-Office",
+    "branch": "main",
+    "commit": "291e7608aa3beb614aca80fe86077ef8c0cbc21d"
+  },
+  "graphify": {
+    "repo": "Graphify-Labs/graphify",
+    "branch": "v8",
+    "commit": "d6eaa8aae8df155874ebb1044302c055c286342a"
+  },
+  "hermes": {
+    "repo": "NousResearch/hermes-agent",
+    "branch": "main",
+    "commit": "39faafb61688282a372ff2d59191581588e9a003"
+  },
+  "ecc": {
+    "repo": "affaan-m/ECC",
+    "branch": "main",
+    "commit": "d3b8a3e908904e242ed2dbe66af62cca71131419"
+  }
+}

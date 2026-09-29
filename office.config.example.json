@@ -1,0 +1,9 @@
+{
+  "$comment": "Copy to office.config.json. Every field is optional.",
+  "port": 3334,
+  "projectDir": "../my-project",
+  "allowWrite": false,
+  "maxTurns": 12,
+  "model": "sonnet",
+  "concurrency": 2
+}

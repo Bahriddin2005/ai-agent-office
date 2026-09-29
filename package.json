@@ -1,0 +1,35 @@
+{
+  "name": "ai-agent-office",
+  "version": "1.0.0",
+  "description": "3D visual office where Claude Code agents, skills and commands from six open-source repos live and work",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c yellow,cyan \"node server/index.mjs\" \"vite\"",
+    "web": "vite",
+    "server": "node server/index.mjs",
+    "build": "tsc --noEmit && vite build",
+    "start": "npm run build && node server/index.mjs",
+    "sync": "node scripts/sync-sources.mjs",
+    "build:library": "node scripts/build-library.mjs",
+    "hire": "node scripts/hire.mjs",
+    "hooks:install": "node scripts/install-hooks.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "three": "^0.186.1",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "concurrently": "^9.2.1",
+    "d3-force-3d": "^3.0.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7",
+    "yaml": "^2.8.1"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
+}
