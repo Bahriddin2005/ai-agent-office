@@ -33,6 +33,7 @@ export default defineConfig({
     port: 3333,
     proxy: {
       '/api': api,
+      '/workspaces': api,
       '/ws': { target: api.replace('http', 'ws'), ws: true },
     },
   },

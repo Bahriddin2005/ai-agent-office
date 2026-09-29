@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { Item, OfficeData } from '../data';
 import { route, type Layout, type Spot } from '../world/layout';
 import type { Office } from '../world/office';
-import { Crowd, randomLook, type Anim, type BodyState } from '../world/people';
+import { Crowd, randomLook, type Anim, type BodyState, type Look } from '../world/people';
 
 export type ActorKind = 'agent' | 'lead' | 'boss' | 'visitor';
 export type Activity = 'idle' | 'walk' | 'work' | 'talk' | 'read' | 'coffee' | 'query' | 'wave' | 'think';
@@ -52,6 +52,7 @@ export class Actor {
   liveTask: string | null = null;
   targetHeading: number;
   onArrive: (() => void) | null = null;
+  look!: Look;
 
   constructor(
     readonly idx: number,
@@ -118,9 +119,9 @@ export class Cast {
     const VISITORS = 12;
     this.crowd = new Crowd(agents.length + 2 + VISITORS);
 
-    const lead = this.add('lead', 'Claude', layout.reception.lead, undefined, '#d97757', { shirt: '#d97757', pants: '#3d3a36', skin: '#f3d2b3', hair: '#6b3f2a', badge: '#ffffff' });
+    const lead = this.add('lead', 'Claude', layout.reception.lead, undefined, '#d97757', { shirt: '#d97757', pants: '#3d3a36', skin: '#f3d2b3', hair: '#6b3f2a', badge: '#ffffff', hairStyle: 'short', accessory: 'headphones', accent: '#bf5f3f' });
     this.lead = lead;
-    this.boss = this.add('boss', 'Boss', layout.reception.boss, undefined, '#2b2d42', { shirt: '#23263a', pants: '#1c1d29', skin: '#eac09a', hair: '#1b1b1f', badge: '#ffd166', scale: 1.06 });
+    this.boss = this.add('boss', 'Boss', layout.reception.boss, undefined, '#2b2d42', { shirt: '#23263a', pants: '#1c1d29', skin: '#eac09a', hair: '#1b1b1f', badge: '#ffd166', scale: 1.06, hairStyle: 'short', accessory: 'sunglasses', accent: '#ffd166' });
 
     // Agents: fill each department's desks in registry order; special residents go to the atrium.
     const perDept = new Map<string, Item[]>();
@@ -141,10 +142,10 @@ export class Cast {
       const dept = data.dept.get(a.dept)!;
       const src = data.source.get(a.source)!;
       const seed = hash(a.id);
-      this.add('agent', a.name, spot, a, dept.color, randomLook(seed, dept.color, src.color));
+      this.add('agent', a.name, spot, a, dept.color, randomLook(seed, dept.color, src.color, a.dept));
     }
     for (let i = 0; i < VISITORS; i++) {
-      const v = this.add('visitor', 'visitor', layout.entrance, undefined, '#9aa5b1', { shirt: '#9aa5b1', pants: '#374151', skin: '#eac09a', hair: '#4a3223', badge: '#ffd166' });
+      const v = this.add('visitor', 'visitor', layout.entrance, undefined, '#9aa5b1', { shirt: '#9aa5b1', pants: '#374151', skin: '#eac09a', hair: '#4a3223', badge: '#ffd166', hairStyle: 'curly', accessory: 'cap', accent: '#ffd166' });
       v.body.visible = false;
       this.visitorsFree.push(v.idx);
     }
@@ -152,6 +153,7 @@ export class Cast {
 
   private add(kind: ActorKind, name: string, home: Spot, item: Item | undefined, color: string, look: Parameters<Crowd['setLook']>[1]) {
     const a = new Actor(this.actors.length, kind, name, home, item, color);
+    a.look = look;
     this.actors.push(a);
     this.crowd.setLook(a.idx, look);
     if (item) {

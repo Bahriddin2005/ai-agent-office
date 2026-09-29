@@ -320,7 +320,8 @@ export class Director {
     a.busyUntil = this.now() + 3600;
     a.liveTask = title;
     this.fx.arc(this.cast.lead.worldPos(1.4), new THREE.Vector3(a.home.x, 1.4, a.home.z), '#ffd166', 3.5);
-    const skill = this.skillFor(a);
+    // Agents in a department fetch a skill book first; atrium residents stay at their desks.
+    const skill = a.home.zone ? this.skillFor(a) : undefined;
     const work = { act: 'work' as const, dur: 3600, bubble: `⚡ ${short(title, 44)}` };
     if (skill && a.kind === 'agent') {
       a.plan([], true);

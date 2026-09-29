@@ -5,5 +5,8 @@
   "allowWrite": false,
   "maxTurns": 12,
   "model": "sonnet",
-  "concurrency": 2
+  "concurrency": 2,
+  "aiConcurrency": 3,
+  "models": { "quick": "haiku", "default": "sonnet", "complex": "opus" },
+  "thinking": { "quick": 0, "default": 4000, "complex": 12000 }
 }

@@ -2,6 +2,7 @@ node_modules/
 dist/
 .sources/
 .office/
+workspaces/
 *.log
 .DS_Store
 office.config.json

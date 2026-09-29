@@ -1,0 +1,167 @@
+/* Chat, teams, portrait, command bar and results view. Builds on the tokens in styles.css. */
+
+/* ------------------------------------------------------------ top bar --- */
+.engine-badge { white-space: nowrap; border-radius: 999px; padding: 6px 11px; font-size: 11px; font-weight: 700; border: 1px solid var(--panel-border); background: rgba(255, 255, 255, 0.06); color: var(--muted); }
+.engine-badge.server, .engine-badge.claude { color: #fff; background: rgba(46, 196, 182, 0.22); border-color: rgba(46, 196, 182, 0.65); }
+.engine-badge.none { color: #ffb4a8; }
+
+/* ------------------------------------------------------------ portrait --- */
+.portrait { position: relative; margin: 2px 0 12px; }
+.portrait-canvas { position: relative; border-radius: 14px; overflow: hidden; background: radial-gradient(120% 90% at 50% 20%, color-mix(in srgb, var(--bg, #4f86f7) 55%, #ffffff 10%), color-mix(in srgb, var(--bg, #4f86f7) 30%, #0d1220) 70%); cursor: grab; }
+.portrait-canvas:active { cursor: grabbing; }
+.portrait-canvas canvas { display: block; width: 100% !important; }
+.portrait-bar { position: absolute; right: 8px; bottom: 8px; display: flex; gap: 4px; }
+.portrait-bar button { width: 34px; height: 30px; border-radius: 9px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(10, 14, 24, 0.55); font-size: 15px; }
+.portrait-bar button.on { background: rgba(255, 255, 255, 0.28); border-color: #fff; }
+
+/* -------------------------------------------------------------- teams --- */
+.bench-note { font-size: 11.5px; color: var(--muted); margin: 2px 6px 10px; line-height: 1.45; }
+.team-card { border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); background: color-mix(in srgb, var(--c) 9%, transparent); border-radius: 12px; padding: 10px 10px 12px; margin: 0 4px 10px; }
+.team-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.team-head b { font-size: 14px; }
+.team-best { color: #cfd5e2; font-size: 12px; margin: 5px 0 8px; line-height: 1.45; }
+.team-members { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 3px; }
+.member { width: 100%; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; column-gap: 8px; text-align: left; background: rgba(0, 0, 0, 0.18); border: 1px solid transparent; border-radius: 8px; padding: 6px 8px; }
+.member:hover { border-color: color-mix(in srgb, var(--c) 60%, transparent); }
+.m-name { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.member small { grid-column: 1; color: var(--muted); font-size: 11px; }
+.m-bench { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.badge { font-size: 11px; }
+.team-skills { margin-bottom: 8px; }
+.btn.small, .team-go { padding: 5px 9px; font-size: 11.5px; }
+
+/* inspector benchmark */
+.bench { margin: 8px 0; border: 1px solid var(--panel-border); border-radius: 10px; padding: 6px 10px; font-size: 12px; background: rgba(255, 255, 255, 0.03); }
+.bench summary { cursor: pointer; }
+.bench .md { font-size: 12px; max-height: 220px; overflow: auto; }
+
+/* markdown tables */
+.md-table { overflow-x: auto; margin: 8px 0 12px; }
+.md-table table { border-collapse: collapse; font-size: 12.5px; min-width: 60%; }
+.md-table th, .md-table td { border-bottom: 1px solid var(--panel-border); padding: 5px 9px; text-align: left; vertical-align: top; }
+.md-table th { color: var(--muted); font-weight: 600; }
+.md-table td { font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- chat --- */
+.chat-list, .runs-list { flex: 1; overflow-y: auto; padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+.chat-empty { color: var(--muted); font-size: 12.5px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; padding: 6px 2px; }
+.chat-empty b { color: var(--text); font-size: 13.5px; }
+.chat-empty p { margin: 0; }
+.chip.example { white-space: normal; text-align: left; cursor: pointer; }
+.msg { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; }
+.msg .bubble { border-radius: 12px; padding: 7px 10px; max-width: 88%; min-width: 0; line-height: 1.45; }
+.msg .bubble p { margin: 0; }
+.msg .bubble img { display: block; max-width: 100%; max-height: 140px; border-radius: 8px; margin-bottom: 4px; }
+.msg.me { justify-content: flex-end; }
+.msg.me .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+.msg.agent .bubble { background: rgba(255, 255, 255, 0.07); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); border-bottom-left-radius: 4px; }
+.msg.agent .bubble small { display: block; color: color-mix(in srgb, var(--c) 70%, #fff); font-weight: 700; font-size: 11px; margin-bottom: 2px; }
+.msg.agent .bubble .md p { margin: 0 0 4px; }
+.msg.agent .bubble .md p:last-child { margin: 0; }
+.msg.agent .btn { margin-top: 6px; }
+.msg.system { justify-content: center; color: var(--warn); font-size: 11.5px; text-align: center; }
+.avatar { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 0; background: var(--c); color: #fff; font-weight: 800; font-size: 12px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15); }
+
+/* ---------------------------------------------------------------- runs --- */
+.run { border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); border-radius: 12px; padding: 9px 10px; background: rgba(255, 255, 255, 0.03); }
+.run-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; }
+.run-head b { overflow-wrap: anywhere; }
+.run-head small { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.run-steps { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 2px; font-size: 12px; }
+.run-steps li.wait { color: var(--muted); }
+.run-steps li.run { color: var(--warn); }
+.run-steps small { color: var(--muted); }
+.live-text { font-size: 11px; color: #cfd5e2; opacity: 0.8; padding-left: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.run.running { box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.25); }
+
+/* -------------------------------------------------------- command bar --- */
+.taskbar .task-row { align-items: flex-end; }
+.task-input { resize: none; min-height: 42px; max-height: 140px; line-height: 1.4; font-family: inherit; }
+.attach { display: grid; place-items: center; width: 40px; height: 42px; border-radius: 10px; border: 1px solid var(--panel-border); background: rgba(255, 255, 255, 0.07); cursor: pointer; font-size: 17px; flex: none; }
+.attach:hover { background: rgba(255, 255, 255, 0.14); }
+.thumbs { display: flex; gap: 6px; margin-bottom: 7px; flex-wrap: wrap; }
+.thumb { position: relative; }
+.thumb img { width: 54px; height: 54px; object-fit: cover; border-radius: 8px; display: block; border: 1px solid var(--panel-border); }
+.thumb .x { position: absolute; top: -6px; right: -6px; }
+.task-meta { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 7px; }
+.modes, .routes { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.chip.mode { cursor: pointer; }
+
+/* ------------------------------------------------------------- results --- */
+.results { position: absolute; inset: 0; z-index: 30; background: rgba(5, 8, 16, 0.6); display: grid; place-items: center; padding: calc(12px + env(safe-area-inset-top, 0px)) 12px calc(12px + env(safe-area-inset-bottom, 0px)); }
+.res-card { width: min(1180px, 100%); height: min(92vh, 100%); display: flex; flex-direction: column; background: var(--panel-solid); border: 1px solid var(--panel-border); border-radius: 18px; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55); overflow: hidden; }
+.res-head { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px 8px; }
+.res-title { flex: 1; min-width: 0; }
+.res-title small { color: var(--muted); font-size: 11.5px; }
+.res-title h2 { margin: 2px 0 0; font-size: 20px; line-height: 1.25; text-wrap: balance; overflow-wrap: anywhere; }
+.res-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.res-steps { display: flex; gap: 6px; padding: 0 16px 8px; overflow-x: auto; }
+.res-step { display: flex; gap: 7px; align-items: center; text-align: left; flex: none; border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); background: color-mix(in srgb, var(--c) 10%, transparent); border-radius: 10px; padding: 5px 9px; font-size: 11.5px; }
+.res-step .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.res-step b, .res-step small { display: block; }
+.res-step small { color: var(--muted); font-size: 10.5px; }
+.res-step.error { border-color: #e5484d; }
+.res-tabs { display: flex; gap: 4px; padding: 0 16px 8px; border-bottom: 1px solid var(--panel-border); overflow-x: auto; }
+.res-tabs .tab { flex: none; }
+.res-body { flex: 1; overflow: auto; padding: 14px 16px 20px; font-size: 13.5px; line-height: 1.55; }
+.res-body h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin: 14px 0 6px; }
+.res-body h4 { margin: 12px 0 4px; }
+.res-body ul { padding-left: 20px; margin: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 22px; }
+.grid2 section { min-width: 0; }
+.span2 { grid-column: 1 / -1; }
+.device-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.site-wrap { margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1px solid var(--panel-border); background: #fff; transition: width 0.25s; }
+.site-wrap.desktop { width: 100%; height: calc(92vh - 250px); min-height: 380px; }
+.site-wrap.phone { width: 390px; max-width: 100%; height: calc(92vh - 250px); min-height: 520px; }
+.site-frame { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+.code-file { margin-bottom: 14px; border: 1px solid var(--panel-border); border-radius: 10px; overflow: hidden; }
+.code-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(255, 255, 255, 0.05); font-size: 12px; }
+.code-file pre { margin: 0; padding: 10px 12px; max-height: 60vh; overflow: auto; font-size: 12px; line-height: 1.45; background: rgba(0, 0, 0, 0.35); }
+.table-wrap { overflow-x: auto; }
+.res-body table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.res-body th, .res-body td { border-bottom: 1px solid var(--panel-border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.res-body th { color: var(--muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px; }
+.res-body td { font-variant-numeric: tabular-nums; }
+.res-body dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 0; }
+.res-body dt { color: var(--muted); text-transform: capitalize; }
+.res-body dd { margin: 0; }
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 8px; }
+.swatches span { display: inline-flex; align-items: flex-end; width: 64px; height: 46px; border-radius: 8px; background: var(--c); font-size: 10px; padding: 3px 5px; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.2); }
+.bar { position: relative; padding: 5px 8px; margin: 4px 0; border-radius: 8px; background: rgba(255, 255, 255, 0.04); overflow: hidden; }
+.bar span { position: absolute; inset: 0 auto 0 0; width: var(--w, 0%); background: rgba(255, 122, 69, 0.25); }
+.bar b, .bar small { position: relative; }
+.shots { display: flex; gap: 8px; flex-wrap: wrap; }
+.shots img { max-height: 220px; border-radius: 10px; border: 1px solid var(--panel-border); }
+.posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.post { border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; background: rgba(255, 255, 255, 0.03); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.post-head { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.post p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.post .hook { font-weight: 700; }
+.post .tags { color: #8ecbff; font-size: 12px; }
+.score { display: flex; align-items: baseline; gap: 4px; }
+.score b { font-size: 44px; line-height: 1; }
+.score span { color: var(--muted); }
+.checks { list-style: none; padding: 0 !important; }
+.sev { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); }
+.sev.high { background: rgba(229, 72, 77, 0.3); color: #ff9da0; }
+.sev.medium { background: rgba(255, 209, 102, 0.25); color: var(--warn); }
+.note { color: var(--warn); font-size: 12px; margin: 4px 0 8px; }
+.toast { display: flex; gap: 10px; align-items: center; }
+
+@media (max-width: 760px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .res-head { flex-wrap: wrap; }
+  .res-actions { width: 100%; justify-content: flex-start; order: 3; }
+  .res-card { height: 100%; border-radius: 14px; }
+  .site-wrap.desktop, .site-wrap.phone { height: 62vh; min-height: 320px; }
+  .taskbar { bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+  /* The command bar is taller on phones (mode chips wrap), so panels sit above it. */
+  .dir, .feed, .inspector { bottom: calc(178px + env(safe-area-inset-bottom, 0px)); }
+  .inspector { max-height: 50vh; }
+  .task-meta { gap: 6px; }
+  .modes .chip { font-size: 11px; padding: 3px 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-wrap { transition: none; }
+}

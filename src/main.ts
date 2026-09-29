@@ -6,15 +6,18 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import './styles.css';
+import './ui.css';
 import { loadData, type Item } from './data';
-import { t } from './i18n';
+import { currentLang, t } from './i18n';
 import { Connection } from './live/connection';
 import { Router } from './router';
 import { Cast, type Actor } from './sim/actors';
 import { Director } from './sim/director';
-import { TaskManager } from './tasks';
+import { Crews, type Bench, type Step, type Team } from './ai/crews';
+import { pickEngine, type Engine } from './ai/engine';
 import { GraphView } from './ui/graphView';
 import { Hud } from './ui/hud';
+import { ResultsView } from './ui/results';
 import { Fx } from './world/fx';
 import { Labels, type LabelRequest } from './world/labels';
 import { buildLayout } from './world/layout';
@@ -27,7 +30,12 @@ const speed = Math.max(0.1, Math.min(20, Number(params.get('speed')) || 1));
 async function main() {
   const loading = document.getElementById('loading')!;
   loading.querySelector('p')!.textContent = t().loading;
-  const data = await loadData();
+  const [data, teamsFile, benchFile, prompts] = await Promise.all([
+    loadData(),
+    fetch('data/teams.json').then((r) => r.json() as Promise<{ teams: Team[] }>),
+    fetch('data/benchmarks.json').then((r) => (r.ok ? (r.json() as Promise<{ results: Bench[] }>) : { results: [] })).catch(() => ({ results: [] as Bench[] })),
+    fetch('data/prompts.json').then((r) => r.json() as Promise<Record<string, string>>),
+  ]);
 
   // ---------------------------------------------------------------- scene --
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -72,8 +80,96 @@ async function main() {
   const director = new Director(data, layout, cast, office, fx, now);
   const router = new Router(data);
   const conn = new Connection();
-  const tasks = new TaskManager(data, cast, director, conn);
   const graph = new GraphView(data, canvas);
+
+  // ------------------------------------------------------------ agents AI --
+  // Real answers come from the office server (Claude CLI) or, inside
+  // claude.ai, from the viewer's own Claude; re-picked when the server
+  // connects or drops.
+  let engine: Engine | null = null;
+  let picking: Promise<Engine> | null = null;
+  const refreshEngine = () =>
+    (picking = pickEngine(conn).then((e) => {
+      engine = e;
+      hud?.renderEngine();
+      return e;
+    }));
+  const getEngine = async () => {
+    const wantServer = conn.status === 'live' && !!conn.health?.claude;
+    if (engine && (engine.kind === 'server') === wantServer) return engine;
+    return picking && !engine ? picking : refreshEngine();
+  };
+  const stepControls = new Map<Step, ReturnType<Director['beginTask']>>();
+  const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+  const crews: Crews = new Crews(data, teamsFile.teams, benchFile.results, prompts, router, getEngine, {
+    stepStart(run, step) {
+      const a = cast.byItem.get(step.agentId);
+      if (!a) return;
+      if (run.kind === 'chat') {
+        a.plan([{ act: 'think', dur: 30 }], true);
+        return;
+      }
+      stepControls.set(step, director.beginTask(a, step.label[currentLang()]));
+      director.log({ kind: 'task', icon: '⏳', text: `${a.name}: ${step.label[currentLang()]}`, actor: a, itemId: a.item?.id });
+    },
+    stepEnd(run, step, next) {
+      const a = cast.byItem.get(step.agentId);
+      if (run.kind === 'chat') {
+        a?.plan([{ act: 'talk', dur: 6 }], true);
+        return;
+      }
+      stepControls.get(step)?.finish(step.status !== 'error');
+      stepControls.delete(step);
+      const b = next && cast.byItem.get(next.agentId);
+      if (a && b && a !== b) fx.arc(a.worldPos(1.4), new THREE.Vector3(b.home.x, 1.4, b.home.z), run.kind === 'website' ? '#4f86f7' : '#ff7a45', 3.5);
+    },
+    message(msg) {
+      hud.onMessage();
+      if (msg.from === 'user') cast.boss.say(`🗣️ ${clip(msg.text, 60)}`, 7);
+      else if (msg.from !== 'system') cast.byItem.get(msg.from)?.say(`💬 ${clip(msg.text, 90)}`, 10);
+    },
+    changed() {
+      hud.renderRunsSoon();
+    },
+    done(run) {
+      hud.renderRuns();
+      if (run.status === 'done' && run.result) {
+        results.open(run);
+        hud.toast(`✅ ${currentLang() === 'uz' ? 'Tayyor' : 'Ready'}: ${run.title}`, 8000, { label: currentLang() === 'uz' ? 'Ochish' : 'Open', fn: () => results.open(run) });
+      } else if (run.status === 'error') {
+        hud.toast(`⚠️ ${run.error || 'error'}`, 8000);
+      }
+    },
+    async saveWorkspace(id, files) {
+      if (engine?.kind !== 'server') return null;
+      const r = await conn.saveWorkspace(id, files);
+      return { url: r.url, dir: r.dir };
+    },
+  });
+
+  // Files for the viewer: the claude.ai download prompt when framed there, a plain download otherwise.
+  const save = async (filename: string, body: Blob | string) => {
+    const c = (window as unknown as { claude?: { use?: (n: string) => Promise<unknown> } }).claude;
+    const dl = c?.use ? ((await c.use('downloads').catch(() => null)) as { save(r: { filename: string; data: Blob | string }): Promise<unknown> } | null) : null;
+    if (dl) {
+      try {
+        await dl.save({ filename, data: body });
+        return true;
+      } catch (e) {
+        hud.toast(`⚠️ ${(e as { code?: string }).code || 'download failed'}`, 5000);
+        return false;
+      }
+    }
+    const url = URL.createObjectURL(typeof body === 'string' ? new Blob([body], { type: 'text/plain;charset=utf-8' }) : body);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    return true;
+  };
+  const results = new ResultsView(data, crews, save, (id) => selectItem(id, true));
+  document.getElementById('hud')!.after(results.el);
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
@@ -167,7 +263,7 @@ async function main() {
     hud.setGraphMode(on);
   };
 
-  const hud = new Hud(data, cast, director, router, conn, tasks, graph, {
+  const hud: Hud = new Hud(data, cast, director, crews, conn, graph, {
     selectItem,
     selectActor,
     focusDept,
@@ -186,12 +282,25 @@ async function main() {
     isNight: () => nightTarget === 1,
     overview,
     setFollow: (on) => (following = on ? selectedActor : null),
+    openRun: (run) => results.open(run),
+    highlight: (ids, color) => {
+      for (const id of ids) {
+        const a = cast.byItem.get(id);
+        if (a) fx.glow(a.worldPos(2.9), color, 6, 1.6);
+      }
+      overview();
+    },
+    engine: () => engine,
   });
   graph.onSelect = (id) => selectItem(id, false);
 
   conn.onEvent((e) => director.handleLive(e));
+  conn.onStatus((s) => {
+    if (s !== 'connecting') void refreshEngine();
+  });
   // Static builds (GitHub Pages, previews) have no office server: stay in simulation mode.
   if (!params.has('offline') && !import.meta.env.VITE_OFFLINE) conn.start();
+  void refreshEngine();
   director.warmStart(coarse ? 14 : 28);
   director.log({ kind: 'system', icon: '🏢', text: `${data.registry.counts.agent} agents · ${data.registry.counts.skill} skills · ${data.registry.counts.command} commands` });
 
@@ -336,7 +445,7 @@ async function main() {
 
   // Handy for debugging from the console.
   Object.assign(window, {
-    office: { data, layout, cast, director, tasks, conn, camera, controls, selectItem, focusDept, setGraph, overview, lookAt: (x: number, z: number, d = 30) => flyTo(new THREE.Vector3(x, 0, z), d, 0.05) },
+    office: { data, layout, cast, director, crews, results, conn, camera, controls, selectItem, focusDept, setGraph, overview, engine: () => engine, lookAt: (x: number, z: number, d = 30) => flyTo(new THREE.Vector3(x, 0, z), d, 0.05) },
   });
 }
 

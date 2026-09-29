@@ -13,6 +13,7 @@ import { parse as parseYaml } from 'yaml';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
 import { DEPARTMENTS, classify } from './lib/departments.mjs';
 import { SYNTHETIC } from './lib/synthetic.mjs';
+import { buildTeams } from './build-teams.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const args = process.argv.slice(2);
@@ -392,6 +393,8 @@ writeFileSync(
     '',
   ].join('\n'),
 );
+
+buildTeams();
 
 const statSize = (p) => statSync(p).size;
 console.log(`✓ ${items.length} items → library/ (${total.agent} agents, ${total.skill} skills, ${total.command} commands, ${total.guide || 0} guides)`);

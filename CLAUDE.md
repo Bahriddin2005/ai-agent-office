@@ -1,22 +1,24 @@
 # AI Agent Office
 
-3D office (Three.js + Vite, vanilla TS) that visualises Claude Code agents, skills and commands gathered from six upstream repos, plus a small Express/WebSocket server for live hook events, task dispatch (`claude -p`) and "hiring" into `.claude/`.
+3D office (Three.js + Vite, vanilla TS) that visualises Claude Code agents, skills and commands gathered from six upstream repos, and runs them: task teams (crews) take chat messages, website requests and screenshot analyses. A small Express/WebSocket server handles live hook events, agent calls through the Claude CLI and "hiring" into `.claude/`.
 
 ## Commands
 
-- `npm run dev` — server (:3334) + Vite (:3333, proxies /api and /ws)
-- `npm run build` — `tsc --noEmit` + `vite build` (copies `library/` into `dist/`)
+- `npm run dev` — server (:3334) + Vite (:3333, proxies /api, /ws, /workspaces)
+- `npm run build` — `tsc --noEmit` + `vite build` (copies `library/` into `dist/`); `VITE_OFFLINE=1` for static hosting
 - `npm start` — build, then serve UI + API on :3334
-- `npm run sync` / `npm run build:library [-- --dir <sources>]` — refresh `.sources/` and regenerate `library/`, `public/data/registry.json`, `public/data/graph.json`
+- `npm run sync` / `npm run build:library [-- --dir <sources>]` — refresh `.sources/` and regenerate `library/` and `public/data/*.json`
+- `npm run build:teams` — regenerate `teams.json` and `prompts.json` only; `npm run benchmark [-- --team coder]` — real timed + judged test of team members (spends Claude usage)
 - `npm run hire -- <id|name> [--scope user] [--project dir]`, `npm run hooks:install [-- --project dir | --remove]`
 
 ## Layout
 
-- `scripts/build-library.mjs` scans sources; `scripts/lib/departments.mjs` classifies items into departments; `scripts/lib/synthetic.mjs` adds the Hermes / Graphify / office-manager agents and README guides.
-- `library/` and `public/data/*.json` are generated — change the scripts, not the output.
-- `src/world/layout.ts` (floor plan + routing), `office.ts` (static scene, books, core), `people.ts` (instanced characters), `src/sim/*` (actors + director), `src/ui/*` (HUD, graph view).
-- `server/index.mjs` binds 127.0.0.1, checks Host/Origin, and requires the token in `~/.ai-agent-office/token` for hooks and POSTs.
+- `scripts/build-library.mjs` scans sources; `scripts/lib/departments.mjs` classifies items into departments; `scripts/lib/synthetic.mjs` adds the Hermes / Graphify / office-manager agents and README guides; `scripts/lib/teams.mjs` defines the task teams.
+- `library/` and `public/data/*.json` are generated — change the scripts, not the output (`benchmarks.json` comes from `npm run benchmark`).
+- `src/ai/engine.ts` picks where answers come from: the office server (`/api/ai` → Claude CLI), claude.ai's `sample` capability, or none. `src/ai/crews.ts` holds the chat / website / content / task pipelines.
+- `src/world/layout.ts` (floor plan + routing), `office.ts` (static scene, books, core), `people.ts` (instanced characters), `avatar.ts` (detailed portrait model), `src/sim/*` (actors + director), `src/ui/*` (HUD, results view, portrait, graph view).
+- `server/index.mjs` binds 127.0.0.1, checks Host/Origin, and requires the token in `~/.ai-agent-office/token` for hooks and POSTs. `server/ai.mjs` runs agent calls from an empty temp folder with no tools (Read only for screenshots) and a thinking budget per tier. Built sites are saved in `workspaces/` and served with a CSP sandbox.
 
 ## Debugging
 
-Open the page with `?speed=3&nobloom`; `window.office` exposes `lookAt(x, z, d)`, `selectItem(id)`, `setGraph(bool)`, `director`, `cast`.
+Open the page with `?speed=3&nobloom`; `window.office` exposes `lookAt(x, z, d)`, `selectItem(id)`, `setGraph(bool)`, `crews`, `results`, `engine()`, `director`, `cast`. Set `OFFICE_DEBUG_AI=1` to keep the last `/api/ai` request in `$TMPDIR/ai-agent-office-run/last-request.json`.

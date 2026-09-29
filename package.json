@@ -12,6 +12,8 @@
     "start": "npm run build && node server/index.mjs",
     "sync": "node scripts/sync-sources.mjs",
     "build:library": "node scripts/build-library.mjs",
+    "build:teams": "node scripts/build-teams.mjs",
+    "benchmark": "node scripts/benchmark.mjs",
     "hire": "node scripts/hire.mjs",
     "hooks:install": "node scripts/install-hooks.mjs",
     "typecheck": "tsc --noEmit"

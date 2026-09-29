@@ -55,7 +55,15 @@ export function renderMarkdown(src: string): string {
       const buf: string[] = [];
       for (; i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i]); i++) buf.push(lines[i]);
       i--;
-      out.push(`<pre class="md-table">${esc(buf.join('\n'))}</pre>`);
+      const cells = (row: string) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+      const isSep = (row: string) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(row);
+      const [head, ...rest] = buf;
+      const body = rest.filter((r) => !isSep(r));
+      out.push(
+        `<div class="md-table"><table><thead><tr>${cells(head).map((c) => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${body
+          .map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`)
+          .join('')}</tbody></table></div>`,
+      );
       continue;
     }
     const li = /^\s*([-*+]|\d+[.)])\s+(.*)$/.exec(line);

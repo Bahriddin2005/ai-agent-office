@@ -90,11 +90,12 @@ export class Connection {
     };
   }
 
-  private async post(path: string, body: unknown) {
+  private async post(path: string, body: unknown, signal?: AbortSignal) {
     const res = await fetch(path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Office-Token': this.token },
       body: JSON.stringify(body),
+      signal,
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
@@ -107,5 +108,15 @@ export class Connection {
 
   hire(ids: string[], scope: 'project' | 'user'): Promise<{ installed: string[]; target: string }> {
     return this.post('api/hire', { ids, scope });
+  }
+
+  /** One agent answer from the Claude CLI on the office server. */
+  ai(body: { system: string; prompt: string; tier: string; images: string[] }, signal?: AbortSignal): Promise<{ text: string; seconds: number; model?: string; truncated?: boolean }> {
+    return this.post('api/ai', body, signal);
+  }
+
+  /** Save generated project files under workspaces/<id>/ and get a preview URL back. */
+  saveWorkspace(id: string, files: Record<string, string>): Promise<{ id: string; url: string; dir: string }> {
+    return this.post('api/workspaces', { id, files });
   }
 }

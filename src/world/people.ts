@@ -19,6 +19,10 @@ export interface BodyState {
   seed: number;
 }
 
+export const HAIR_STYLES = ['short', 'long', 'bun', 'curly', 'bald'] as const;
+export type HairStyle = (typeof HAIR_STYLES)[number];
+export type Accessory = 'none' | 'headphones' | 'glasses' | 'tie' | 'beret' | 'cap' | 'visor' | 'mortarboard' | 'sunglasses';
+
 export interface Look {
   shirt: THREE.ColorRepresentation;
   pants: THREE.ColorRepresentation;
@@ -26,15 +30,34 @@ export interface Look {
   hair: THREE.ColorRepresentation;
   badge: THREE.ColorRepresentation;
   scale?: number;
+  hairStyle?: HairStyle;
+  accessory?: Accessory;
+  accent?: THREE.ColorRepresentation;
 }
 
 const SKINS = ['#f6d5b8', '#eac09a', '#d7a27a', '#b97c55', '#8d5a3b', '#fbe3cf', '#c68d63'];
 const HAIRS = ['#2b2118', '#4a3223', '#7b4a26', '#b5773d', '#d9b26a', '#1b1b1f', '#8a8f98', '#a33b2b', '#e8e2d6'];
 const PANTS = ['#2f3b52', '#3d4250', '#1f2937', '#4b5563', '#50413a', '#2d4a3e', '#334155'];
+const STYLE_WEIGHTS: HairStyle[] = ['short', 'short', 'short', 'long', 'long', 'bun', 'curly', 'curly', 'bald'];
 
-export function randomLook(seed: number, shirt: THREE.ColorRepresentation, badge: THREE.ColorRepresentation): Look {
-  const pick = <T,>(arr: T[], k: number) => arr[Math.abs(Math.floor(seed * 7919 + k * 104729)) % arr.length];
-  return { shirt, badge, skin: pick(SKINS, 1), hair: pick(HAIRS, 2), pants: pick(PANTS, 3) };
+/** What people in each department tend to wear. */
+export const DEPT_ACCESSORY: Record<string, Accessory> = {
+  engineering: 'headphones', languages: 'headphones', devops: 'cap', frontend: 'beret', creative: 'beret',
+  data: 'glasses', research: 'glasses', security: 'glasses', executive: 'tie', business: 'tie',
+  ai: 'visor', academy: 'mortarboard', product: 'none', marketing: 'none', productivity: 'none',
+};
+
+export function randomLook(seed: number, shirt: THREE.ColorRepresentation, badge: THREE.ColorRepresentation, dept?: string): Look {
+  const pick = <T,>(arr: readonly T[], k: number) => arr[Math.abs(Math.floor(seed * 7919 + k * 104729)) % arr.length];
+  const accessory = dept ? DEPT_ACCESSORY[dept] || 'none' : 'none';
+  // Only about half of a department wears its accessory, so faces stay varied.
+  const wears = Math.floor(seed * 1000) % 2 === 0;
+  return {
+    shirt, badge, accent: shirt,
+    skin: pick(SKINS, 1), hair: pick(HAIRS, 2), pants: pick(PANTS, 3),
+    hairStyle: pick(STYLE_WEIGHTS, 4),
+    accessory: wears ? accessory : 'none',
+  };
 }
 
 const m4 = new THREE.Matrix4();
@@ -52,7 +75,9 @@ export class Crowd {
   private legR: THREE.InstancedMesh;
   private armL: THREE.InstancedMesh;
   private armR: THREE.InstancedMesh;
-  private hair: THREE.InstancedMesh;
+  /** One mesh per hair style; each person only ever uses theirs. */
+  private hairs: Record<HairStyle, THREE.InstancedMesh>;
+  private hairOf: HairStyle[] = [];
   private eyes: THREE.InstancedMesh;
   private badge: THREE.InstancedMesh;
   private marker: THREE.InstancedMesh;
@@ -70,11 +95,28 @@ export class Crowd {
     this.armR = instanced(arm, lambert(), capacity);
     this.torso = instanced(new THREE.BoxGeometry(0.44, 0.54, 0.26).translate(0, 0.27, 0), lambert(), capacity);
     this.head = instanced(new THREE.BoxGeometry(0.34, 0.32, 0.32).translate(0, 0.16, 0), lambert(), capacity);
-    this.hair = instanced(
-      merge([box(0.37, 0.1, 0.35, { at: [0, 0.35, -0.01] }), box(0.37, 0.22, 0.06, { at: [0, 0.22, -0.16] })]),
-      lambert(),
-      capacity,
-    );
+    const top = () => box(0.37, 0.1, 0.35, { at: [0, 0.35, -0.01] });
+    this.hairs = {
+      short: instanced(merge([top(), box(0.37, 0.22, 0.06, { at: [0, 0.22, -0.16] })]), lambert(), capacity),
+      long: instanced(
+        merge([top(), box(0.38, 0.46, 0.07, { at: [0, 0.12, -0.165] }), box(0.05, 0.3, 0.26, { at: [-0.185, 0.2, -0.03] }), box(0.05, 0.3, 0.26, { at: [0.185, 0.2, -0.03] })]),
+        lambert(),
+        capacity,
+      ),
+      bun: instanced(merge([top(), box(0.37, 0.2, 0.06, { at: [0, 0.23, -0.16] }), box(0.16, 0.14, 0.14, { at: [0, 0.44, -0.1] })]), lambert(), capacity),
+      curly: instanced(
+        merge([
+          box(0.41, 0.14, 0.39, { at: [0, 0.36, -0.01] }),
+          box(0.12, 0.1, 0.12, { at: [-0.13, 0.44, 0.08] }),
+          box(0.12, 0.1, 0.12, { at: [0.12, 0.44, -0.08] }),
+          box(0.12, 0.1, 0.12, { at: [0, 0.45, 0.02] }),
+          box(0.41, 0.24, 0.08, { at: [0, 0.22, -0.17] }),
+        ]),
+        lambert(),
+        capacity,
+      ),
+      bald: instanced(box(0.3, 0.02, 0.28, { at: [0, 0.325, -0.02] }), lambert(), capacity),
+    };
     this.eyes = instanced(
       merge([box(0.055, 0.07, 0.02, { at: [-0.075, 0.17, 0.165], color: '#1d1d24' }), box(0.055, 0.07, 0.02, { at: [0.075, 0.17, 0.165], color: '#1d1d24' })]),
       vc(),
@@ -87,7 +129,7 @@ export class Crowd {
       new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.16, depthWrite: false }),
       capacity,
     );
-    const all = [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, this.hair, this.eyes, this.badge, this.marker, this.shadow];
+    const all = [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, ...Object.values(this.hairs), this.eyes, this.badge, this.marker, this.shadow];
     for (const m of all) {
       for (let i = 0; i < capacity; i++) m.setMatrixAt(i, ZERO);
       this.group.add(m);
@@ -104,12 +146,15 @@ export class Crowd {
     this.armL.setColorAt(i, c.clone().multiplyScalar(0.92));
     this.armR.setColorAt(i, c.clone().multiplyScalar(0.92));
     this.head.setColorAt(i, c.set(look.skin));
-    this.hair.setColorAt(i, c.set(look.hair));
+    const style = look.hairStyle || 'short';
+    this.hairOf[i] = style;
+    // Bald heads keep a faint skin-toned crown instead of hair.
+    this.hairs[style].setColorAt(i, style === 'bald' ? c.set(look.skin).multiplyScalar(0.94) : c.set(look.hair));
     this.badge.setColorAt(i, c.set(look.badge));
     this.eyes.setColorAt(i, c.set('#ffffff'));
     this.marker.setColorAt(i, c.set('#ffffff'));
     this.scales[i] = look.scale ?? 1;
-    for (const m of [this.legL, this.legR, this.torso, this.armL, this.armR, this.head, this.hair, this.badge, this.eyes, this.marker]) {
+    for (const m of [this.legL, this.legR, this.torso, this.armL, this.armR, this.head, ...Object.values(this.hairs), this.badge, this.eyes, this.marker]) {
       if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }
   }
@@ -121,8 +166,9 @@ export class Crowd {
   }
 
   update(i: number, b: BodyState, time: number) {
+    const hair = this.hairs[this.hairOf[i] || 'short'];
     if (!b.visible) {
-      for (const m of [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, this.hair, this.eyes, this.badge, this.marker, this.shadow]) m.setMatrixAt(i, ZERO);
+      for (const m of [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, hair, this.eyes, this.badge, this.marker, this.shadow]) m.setMatrixAt(i, ZERO);
       return;
     }
     const s = this.scales[i] ?? 1;
@@ -182,7 +228,7 @@ export class Crowd {
     const headY = hip + 0.57;
     const headZ = Math.sin(lean) * 0.57;
     this.set(this.head, i, 0, headY, headZ, nod, look);
-    this.set(this.hair, i, 0, headY, headZ, nod, look);
+    this.set(hair, i, 0, headY, headZ, nod, look);
     this.set(this.eyes, i, 0, headY, headZ, nod, look);
     this.set(this.shadow, i, 0, 0.025, sit ? 0.12 : 0, 0);
 
@@ -198,7 +244,7 @@ export class Crowd {
   }
 
   commit() {
-    for (const m of [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, this.hair, this.eyes, this.badge, this.marker, this.shadow]) {
+    for (const m of [this.legL, this.legR, this.armL, this.armR, this.torso, this.head, ...Object.values(this.hairs), this.eyes, this.badge, this.marker, this.shadow]) {
       m.instanceMatrix.needsUpdate = true;
     }
   }

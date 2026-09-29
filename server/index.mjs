@@ -4,16 +4,19 @@
 //  - GET  /api/session    token + health for the page (same-origin only)
 //  - POST /api/tasks      run a task with an office agent via the Claude CLI
 //  - POST /api/hire       install agents/skills/commands into .claude/
+//  - POST /api/ai         one agent answer (chat and multi-agent crews)
+//  - POST /api/workspaces save a project the Coder team built; served at /workspaces/
 //  - WS   /ws             live events for the 3D office
 //  - serves dist/ when built (npm start)
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { homedir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import { hire, loadRegistry } from '../scripts/lib/hire.mjs';
+import { AiRunner } from './ai.mjs';
 import { Dispatcher } from './dispatch.mjs';
 
 const root = resolve(import.meta.dirname, '..');
@@ -42,6 +45,7 @@ const broadcast = (msg) => {
   for (const ws of clients) if (ws.readyState === 1) ws.send(data);
 };
 const dispatcher = new Dispatcher({ root, projectDir, allowWrite, maxTurns: config.maxTurns || 12, model: config.model, concurrency: config.concurrency || 2, broadcast });
+const ai = new AiRunner({ concurrency: config.aiConcurrency || 3, models: config.models || {}, thinking: config.thinking || {} });
 const health = () => ({ ok: true, claude: dispatcher.claude, projectDir, version, allowWrite });
 
 const LOCAL = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
@@ -59,10 +63,15 @@ const app = express();
 app.disable('x-powered-by');
 app.use((req, res, next) => {
   // DNS-rebinding and cross-site protection: local host names and origins only.
-  if (!hostOk(req.headers.host) || !originOk(req.headers.origin)) return res.status(403).json({ error: 'forbidden' });
+  // Built sites run in an opaque sandbox (Origin: null) and may only read their own static files.
+  const sandboxedRead = req.path.startsWith('/workspaces/') && (req.method === 'GET' || req.method === 'HEAD') && req.headers.origin === 'null';
+  if (!hostOk(req.headers.host) || (!sandboxedRead && !originOk(req.headers.origin))) {
+    if (req.path.startsWith('/workspaces/')) return res.status(403).type('text').send('forbidden');
+    return res.status(403).json({ error: 'forbidden' });
+  }
   next();
 });
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '40mb' }));
 
 const needToken = (req, res, next) => {
   const auth = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.headers['x-office-token'];
@@ -129,6 +138,44 @@ app.post('/api/hire', needToken, (req, res) => {
     res.status(400).json({ error: String(err.message || err) });
   }
 });
+
+// One agent answer (chat, crews). Screenshots arrive as data URLs.
+app.post('/api/ai', needToken, async (req, res) => {
+  if (!dispatcher.claude) return res.status(503).json({ error: 'Claude Code CLI (claude) not found on PATH' });
+  try {
+    const { system, prompt, tier, images } = req.body || {};
+    const out = await ai.run({ system: String(system || ''), prompt, tier: ['quick', 'default', 'complex'].includes(tier) ? tier : 'default', images: images || [] });
+    console.log(`[ai] ${tier || 'default'} ${out.model || ''} ${out.seconds.toFixed(1)}s${images?.length ? ` +${images.length} image(s)` : ''}`);
+    res.json(out);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: String(err.message || err) });
+  }
+});
+
+// Projects built by the Coder team: saved under workspaces/<id>/ and served
+// back in an opaque sandbox so their scripts can never reach the office API.
+const workspaces = join(root, 'workspaces');
+app.post('/api/workspaces', needToken, (req, res) => {
+  const { id, files } = req.body || {};
+  if (!/^[\w-]{1,64}$/.test(String(id)) || !files || typeof files !== 'object') return res.status(400).json({ error: 'id and files required' });
+  const dir = join(workspaces, id);
+  for (const [name, content] of Object.entries(files)) {
+    if (!/^[\w][\w./-]{0,160}$/.test(name) || name.split('/').includes('..') || typeof content !== 'string') return res.status(400).json({ error: `bad file: ${name}` });
+    const dest = join(dir, name);
+    mkdirSync(dirname(dest), { recursive: true });
+    writeFileSync(dest, content);
+  }
+  const entry = files['public/index.html'] ? 'public/index.html' : 'index.html';
+  res.json({ id, url: `workspaces/${id}/${entry}`, dir });
+});
+app.use(
+  '/workspaces',
+  (_req, res, next) => {
+    res.setHeader('Content-Security-Policy', 'sandbox allow-scripts allow-forms allow-modals allow-popups');
+    next();
+  },
+  express.static(workspaces),
+);
 
 // --------------------------------------------------------------- static ---
 const dist = join(root, 'dist');
