@@ -190,7 +190,8 @@ async function main() {
   graph.onSelect = (id) => selectItem(id, false);
 
   conn.onEvent((e) => director.handleLive(e));
-  if (!params.has('offline')) conn.start();
+  // Static builds (GitHub Pages, previews) have no office server: stay in simulation mode.
+  if (!params.has('offline') && !import.meta.env.VITE_OFFLINE) conn.start();
   director.warmStart(coarse ? 14 : 28);
   director.log({ kind: 'system', icon: '🏢', text: `${data.registry.counts.agent} agents · ${data.registry.counts.skill} skills · ${data.registry.counts.command} commands` });
 

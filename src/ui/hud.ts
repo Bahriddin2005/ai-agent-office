@@ -465,7 +465,7 @@ export class Hud {
         /* try next */
       }
     }
-    body.textContent = `${s.error}: ${it.url}`;
+    body.replaceChildren(h('p', {}, `${s.error}. `, h('a', { href: it.url, target: '_blank', rel: 'noopener noreferrer' }, `🔗 ${s.openSource}`)));
   }
 
   // ------------------------------------------------------------- tasks ----
