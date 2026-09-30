@@ -1,6 +1,6 @@
 # 🎓 Claude Academy — Claude akademiyasi
 
-203 items in this department.
+211 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -197,13 +197,21 @@
 | [containerization](../guides/pi/containerization.md) | guide | Pi | Use an isolated environment to limit the files, credentials, processes, and network services that generated commands can access or affect. |
 | [ecc-readme](../guides/ecc/ecc-readme.md) | guide | ECC | Overview of affaan-m/ECC: what it contains and how to install and use it. |
 | [extensions](../guides/pi/extensions.md) | guide | Pi | Extensions are TypeScript modules that add executable behavior to Pi. Use one when a workflow needs tools, commands, event handlers, model providers, session s… |
+| [hierarchical-agent-teams](../guides/agents-500/hierarchical-agent-teams.md) | guide | 500 Agents | Top-level supervisor delegates to specialized sub-agents (Workflow Orchestration, LangGraph) |
 | [how-pi-works](../guides/pi/how-pi-works.md) | guide | Pi | Pi coordinates model requests, tool execution, context assembly, and session storage. A session is Pi's record of a conversation, including messages, tool call… |
 | [introduction](../guides/agent-book/introduction.md) | guide | Agent Book | From August to October 2025, I delivered a series of technical lectures at the "AI Agent Bootcamp" run by Turing, the Chinese tech publisher. The goal was simp… |
 | [mcp](../guides/pi/mcp.md) | guide | Pi | Pi connects to [Model Context Protocol](https://modelcontextprotocol.io) servers over stdio or streamable HTTP and makes their tools available to the model. |
+| [multi-agent-collaboration](../guides/agents-500/multi-agent-collaboration.md) | guide | 500 Agents | Multiple specialized agents working together on complex tasks (Workflow Orchestration, LangGraph) |
+| [multi-agent-workflow-supervisor](../guides/agents-500/multi-agent-workflow-supervisor.md) | guide | 500 Agents | Supervisor agent orchestrating multiple specialized agents (Workflow Orchestration, LangGraph) |
 | [orchestration-workflow](../guides/best-practice/orchestration-workflow.md) | guide | Best Practice | This document describes the **Command → Agent (with skill) → Skill** orchestration workflow, demonstrated through a weather data fetching and SVG rendering sys… |
 | [output](../guides/best-practice/output.md) | guide | Best Practice | Weather Result |
+| [plan-and-execute-agent](../guides/agents-500/plan-and-execute-agent.md) | guide | 500 Agents | Agent generates multi-step plan then executes sequentially (Workflow Orchestration, LangGraph) |
 | [prompt-templates](../guides/pi/prompt-templates.md) | guide | Pi | Prompt templates turn Markdown files into reusable `/` commands. Use one when you want to reuse the same prompt without adding executable behavior or a larger… |
+| [recruitment-workflow](../guides/agents-500/recruitment-workflow.md) | guide | 500 Agents | Streamlines recruitment by automating hiring tasks (Recruitment, CrewAI) |
+| [reflection-agent](../guides/agents-500/reflection-agent.md) | guide | 500 Agents | Agent critiques and revises its own outputs (Workflow Orchestration, LangGraph) |
+| [reflexion-agent](../guides/agents-500/reflexion-agent.md) | guide | 500 Agents | Agent reflects on actions for iterative improvement (Workflow Orchestration, LangGraph) |
 | [sdk](../guides/pi/sdk.md) | guide | Pi | `@earendil-works/pi-coding-agent` embeds Pi in a Node.js or Bun process. It provides direct TypeScript access to the agent, sessions, tools, models, and resour… |
 | [security](../guides/pi/security.md) | guide | Pi | Treat model-generated commands and code as untrusted. Pi can read, change, and execute files with the permissions of the account that started it, and it does n… |
+| [sequential-chats-with-different-initiating-agents](../guides/agents-500/sequential-chats-with-different-initiating-agents.md) | guide | 500 Agents | Sequential task-solving with different agents initiating each chat (Workflow Automation, AutoGen) |
 | [sessions](../guides/pi/sessions.md) | guide | Pi | Pi saves a conversation as a session. The active branch of that session supplies conversation history for the next model request. Use session commands to conti… |
 | [skills](../guides/pi/skills.md) | guide | Pi | Skills give Pi specialized instructions and supporting files for a particular kind of work. Pi advertises each available skill by name and description, then lo… |

@@ -1,6 +1,6 @@
 # 💼 Sales, Finance & Ops — Savdo, moliya va operatsiyalar
 
-83 items in this department.
+94 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -87,3 +87,14 @@
 | [cs-rfp-respond](../commands/claude-skills/cs-rfp-respond.md) | command | Claude Skills | Structured RFP/RFI/RFQ response with win-theme injection and proof-point matrix. NOT free-form proposal authoring (that's business-growth/contract-and-proposal… |
 | [cs-vendor-review](../commands/claude-skills/cs-vendor-review.md) | command | Claude Skills | Score vendors on a multi-dimensional scorecard (reliability / support / security / commercial / strategic-fit), track SLA compliance, classify third-party risk… |
 | [financial-health](../commands/claude-skills/financial-health.md) | command | Claude Skills | Run financial ratio analysis, DCF valuation, budget variance analysis, and rolling forecasts. Usage: /financial-health |
+| [24-7-ai-chatbot](../guides/agents-500/24-7-ai-chatbot.md) | guide | 500 Agents | Handles customer queries around the clock (Customer Service) |
+| [agent-wallet-sdk](../guides/agents-500/agent-wallet-sdk.md) | guide | 500 Agents | Non-custodial smart contract wallet SDK for AI agents with enforced spend limits (Finance) |
+| [automated-trading-bot](../guides/agents-500/automated-trading-bot.md) | guide | 500 Agents | Automates stock trading with real-time market analysis (Finance) |
+| [customer-support-agent](../guides/agents-500/customer-support-agent.md) | guide | 500 Agents | Graph-based agent for handling customer inquiries (Customer Support, LangGraph) |
+| [finance-agent-thinking](../guides/agents-500/finance-agent-thinking.md) | guide | 500 Agents | Real-time stock insights, analyst recommendations, financial deep-dives (Finance, Agno) |
+| [financial-reasoning-agent](../guides/agents-500/financial-reasoning-agent.md) | guide | 500 Agents | Claude 3.5 Sonnet-based stock analysis with Yahoo Finance data (Finance, Agno) |
+| [lead-score-flow](../guides/agents-500/lead-score-flow.md) | guide | 500 Agents | Evaluates and scores potential leads to prioritize outreach (Sales, CrewAI) |
+| [legal-document-analysis-agent](../guides/agents-500/legal-document-analysis-agent.md) | guide | 500 Agents | Analyzes legal PDFs and provides insights using vector embeddings (Legal Tech, Agno) |
+| [legal-document-review-assistant](../guides/agents-500/legal-document-review-assistant.md) | guide | 500 Agents | Automates document review and highlights key clauses (Legal) |
+| [property-pricing-agent](../guides/agents-500/property-pricing-agent.md) | guide | 500 Agents | Analyzes market trends to determine property prices (Real Estate) |
+| [stock-analysis-tool](../guides/agents-500/stock-analysis-tool.md) | guide | 500 Agents | Provides tools for analyzing stock market data (Finance, CrewAI) |

@@ -19,6 +19,7 @@ and every entry in `public/data/registry.json` links back to its source file.
 | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | © 2025 Addy Osmani | MIT |
 | [ashishpatel26/500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) | © 2025 ashishpatel26 | MIT |
 | [earendil-works/pi](https://github.com/earendil-works/pi) | © 2025 Mario Zechner | MIT |
+| [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach) | © 2025 Agent Eyes | MIT |
 
 ## Files written by this project
 
@@ -27,6 +28,7 @@ These agents are authored here and credit the product they represent:
 - `library/agents/hermes/hermes.md` — wraps Hermes Agent's `SOUL.md` persona (MIT, Nous Research).
 - `library/agents/graphify/graphify-librarian.md` — uses the `graphify` skill (Apache-2.0, Graphify).
 - `library/agents/claude-office/office-manager.md` — inspired by Claude-Office's office-manager chat persona (MIT, W17ANT).
+- `library/agents/agent-reach/reach-scout.md` — follows Agent Reach's `SKILL.md` (MIT, Agent Eyes).
 
 The 3D office itself is original code (MIT, see `LICENSE`); it borrows the
 idea of turning Claude Code hook events into a live office from Claude-Office

@@ -2,6 +2,7 @@
 // Writes the data the office needs to run agents without the server:
 //   public/data/teams.json    task teams (coder, content, ...) with validated members and skills
 //   public/data/prompts.json  every agent's own instructions (frontmatter removed, trimmed)
+//   public/data/skills.json   every skill's instructions (trimmed), handed to agents that use them
 // Needs only library/ and registry.json, so it also runs without .sources/.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -10,6 +11,7 @@ import { TEAMS } from './lib/teams.mjs';
 const root = resolve(import.meta.dirname, '..');
 const dataDir = join(root, 'public', 'data');
 const PROMPT_CHARS = 3500;
+const SKILL_CHARS = 2000;
 
 export function buildTeams() {
   const registry = JSON.parse(readFileSync(join(dataDir, 'registry.json'), 'utf8'));
@@ -31,7 +33,16 @@ export function buildTeams() {
     prompts[it.id] = body.length > PROMPT_CHARS ? body.slice(0, PROMPT_CHARS) + '\n…' : body;
   }
   writeFileSync(join(dataDir, 'prompts.json'), JSON.stringify(prompts));
-  console.log(`✓ teams.json (${teams.length} teams), prompts.json (${Object.keys(prompts).length} agents)`);
+
+  const skills = {};
+  for (const it of registry.items) {
+    if (it.type !== 'skill') continue;
+    const raw = readFileSync(join(root, 'library', it.lib), 'utf8');
+    const body = raw.replace(/^﻿?---\r?\n[\s\S]*?\r?\n---\r?\n?/, '').replace(/\n{3,}/g, '\n\n').trim();
+    skills[it.id] = body.length > SKILL_CHARS ? body.slice(0, SKILL_CHARS) : body;
+  }
+  writeFileSync(join(dataDir, 'skills.json'), JSON.stringify(skills));
+  console.log(`✓ teams.json (${teams.length} teams), prompts.json (${Object.keys(prompts).length} agents), skills.json (${Object.keys(skills).length} skills)`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) buildTeams();

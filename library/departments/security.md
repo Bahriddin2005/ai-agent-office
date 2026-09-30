@@ -1,6 +1,6 @@
 # 🛡️ Security & Compliance — Xavfsizlik va muvofiqlik
 
-82 items in this department.
+85 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -86,3 +86,6 @@
 | [sa](../commands/pi/sa.md) | command | Pi | Update a GitHub security advisory for publication |
 | [security-scan](../commands/claude-skills/security-scan.md) | command | Claude Skills | Run the security scan gate before pushing. |
 | [security-scan](../commands/ecc/security-scan.md) | command | ECC | Run AgentShield against agent, hook, MCP, permission, and secret surfaces. |
+| [pii-sanitization-agent](../guides/agents-500/pii-sanitization-agent.md) | guide | 500 Agents | Redacts PII (emails, phones, national IDs, bank accounts, API keys) from text before it reaches an LLM; fail-closed, multilingual, on-chain proof via TrustBoos… |
+| [readme-generator-agent](../guides/agents-500/readme-generator-agent.md) | guide | 500 Agents | Generates high-quality READMEs for GitHub repos (Software Dev, Agno) |
+| [real-time-threat-detection-agent](../guides/agents-500/real-time-threat-detection-agent.md) | guide | 500 Agents | Identifies potential threats and mitigates attacks (Cybersecurity) |

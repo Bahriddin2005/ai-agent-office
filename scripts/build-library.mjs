@@ -140,6 +140,24 @@ function splitSections(text, re) {
   return out.map((c) => ({ title: c.title, text: c.lines.join('\n').trim() + '\n' }));
 }
 
+/**
+ * Rows of the Markdown tables in one section (catalogue READMEs list one use case per row):
+ * first cell is the name, then industry, description and a link to the project.
+ */
+function tableRows(text) {
+  const out = [];
+  for (const line of text.split(/\r?\n/)) {
+    if (!/^\|/.test(line) || /^\|\s*:?-{3,}/.test(line)) continue;
+    const cells = line.replace(/^\|/, '').replace(/\|\s*$/, '').split('|').map((c) => c.trim());
+    if (cells.length < 3 || /^(use case|framework|i want to)/i.test(cells[0].replace(/\*/g, ''))) continue;
+    const title = cells[0].replace(/\*\*/g, '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
+    const links = [...line.matchAll(/\]\((https?:\/\/[^)\s]+)\)/g)].map((m) => m[1]).filter((u) => !/shields\.io|badge/i.test(u));
+    if (!title) continue;
+    out.push({ title, industry: cells[1] || '', description: cells[2] || '', link: links.at(-1) || '' });
+  }
+  return out;
+}
+
 // Paths inside dot-dirs (.claude) or deeper trees lose ties against canonical ones.
 const pathRank = (rel) => (rel.includes('/.') || rel.startsWith('.') ? 1000 : 0) + rel.split('/').length;
 
@@ -166,6 +184,15 @@ for (const src of sources) {
     if (rule?.split) {
       for (const sec of splitSections(text, new RegExp(rule.split, 'u'))) {
         const anchor = slug(sec.title);
+        if (rule.rows) {
+          // One entry per use case, pointing at the project itself.
+          const framework = /use cases/i.test(sec.title) ? '' : sec.title;
+          for (const r of tableRows(sec.text)) {
+            const body = [`# ${r.title}`, '', `**${r.industry}**${framework ? ` · ${framework}` : ''}`, '', r.description, '', r.link ? `Project: ${r.link}` : '', '', `_From the “${sec.title}” list of ${src.repo}._`].join('\n');
+            docs.push({ rel: `${rel}#${anchor}`, type, rule, row: true, text: body + '\n', name: slug(r.title), heading: r.title, link: r.link, domain: r.industry, tags: ['use-case', ...(framework ? [framework] : [])], description: `${r.description} (${r.industry}${framework ? `, ${framework}` : ''})` });
+          }
+          continue;
+        }
         docs.push({ rel: `${rel}#${anchor}`, type, rule, text: sec.text, name: anchor.endsWith('use-cases') ? anchor : `${anchor}-use-cases`, heading: sec.title });
       }
       continue;
@@ -186,8 +213,9 @@ for (const src of sources) {
       const at = parts.lastIndexOf('commands');
       name = data.name || (at >= 0 ? parts.slice(at + 1).join(':') : parts.at(-1)).replace(/\.md$/i, '');
     } else name = data.name || parts.at(-1).replace(/\.md$/i, '');
+    if (rule?.prefix && !doc.name) name = `${rule.prefix}${name}`;
     name = String(name).trim();
-    const description = clean(data.description || meta.description || firstParagraph(body) || firstHeading(body) || name);
+    const description = clean(doc.description || rule?.describe?.[name] || data.description || meta.description || firstParagraph(body) || firstHeading(body) || name);
     if (type === 'agent' && !data.description && !rule) continue; // not an agent definition
     if (type === 'command' && !data.description && !firstHeading(body)) continue;
     const id = `${type}:${src.id}:${slug(name)}`;
@@ -203,14 +231,14 @@ for (const src of sources) {
       name,
       title: type === 'guide' ? doc.heading || firstHeading(body)?.replace(/\s*\{[^}]*\}\s*$/, '') || name : undefined,
       source: src.id,
-      dept: rule?.dept,
+      dept: doc.row ? undefined : rule?.dept,
       description,
       path: rel,
-      url: `https://github.com/${src.repo}/blob/${ref}/${rel.split('#')[0].split('/').map(encodeURIComponent).join('/')}${rel.includes('#') ? '#' + rel.split('#')[1] : ''}`,
+      url: doc.link || `https://github.com/${src.repo}/blob/${ref}/${rel.split('#')[0].split('/').map(encodeURIComponent).join('/')}${rel.includes('#') ? '#' + rel.split('#')[1] : ''}`,
       tools: list(data.tools || data.allowedTools || data['allowed-tools']).slice(0, 20),
       model: typeof data.model === 'string' ? data.model : undefined,
-      tags: [...list(hermes.tags), ...list(data.tags), ...list(meta.tags)].slice(0, 12),
-      domain: typeof data.domain === 'string' ? data.domain : typeof meta.industry === 'string' ? meta.industry : undefined,
+      tags: [...(doc.tags || []), ...list(hermes.tags), ...list(data.tags), ...list(meta.tags)].slice(0, 12),
+      domain: doc.domain || (typeof data.domain === 'string' ? data.domain : typeof meta.industry === 'string' ? meta.industry : undefined),
       skillRefs: list(data.skills).map((s) => s.split('/').at(-1)),
       relatedRefs: list(hermes.related_skills),
       body,

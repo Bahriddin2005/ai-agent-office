@@ -13,6 +13,7 @@ import type { Item, OfficeData } from '../data';
 import { currentLang } from '../i18n';
 import type { Router } from '../router';
 import { EngineError, extractFiles, extractHtml, parseJson, type Engine, type Tier } from './engine';
+import { SkillBook } from './skills';
 
 export type CrewKind = 'chat' | 'website' | 'project' | 'content' | 'task';
 type L = { uz: string; en: string };
@@ -49,6 +50,10 @@ export interface Step {
   seconds?: number;
   live?: string;
   output?: string;
+  /** library skills the agent was given for this step */
+  skills?: string[];
+  /** the step may search and read the web (Agent Reach skills) */
+  web?: boolean;
 }
 
 export interface ChatMsg {
@@ -196,6 +201,34 @@ const INTERVIEW_METHOD = [
 const OFFLINE_NOTE =
   'Intentional and required: when ./api is unreachable the app switches to a built-in demo database in localStorage (or memory) so the preview works without a server. Real security (answers, auth) is enforced by server.js in production. Do not report this, and never remove it.';
 
+/**
+ * What each kind of step needs from the skill library (search words). The
+ * user's request is added, so a school project's database step finds database
+ * design skills and a research task finds the Agent Reach skills.
+ */
+const SKILL_HINTS: Record<string, string> = {
+  ask: 'interview requirements product discovery clarifying questions',
+  plan: 'product discovery prd architecture plan requirements',
+  db: 'database schema designer sql',
+  backend: 'api design rest backend endpoints security',
+  frontend: 'frontend ui engineering design system responsive',
+  mcp: 'mcp server builder patterns tools',
+  bot: 'chatbot bot messaging notifications',
+  qa: 'senior qa testing browser qa',
+  recheck: 'senior qa testing code review',
+  fix: 'debugging error recovery frontend',
+  revise: 'frontend ui engineering',
+  check: 'code review qa',
+  summary: 'report summary',
+  analyze: 'social media analyzer account audit instagram',
+  strategy: 'content strategy social media content calendar',
+  posts: 'social content copywriting',
+};
+
+/** The internet scout (Agent Reach): its steps may search and read the web. */
+const SCOUT = 'agent:agent-reach:reach-scout';
+/** How much of an app QA reads in one go (a large single-file app is ~100 KB). */
+const REVIEW_CHARS = 150000;
 let seq = 0;
 const HISTORY_KEY = 'office.runs.v1';
 const HISTORY_RUNS = 8;
@@ -235,6 +268,8 @@ export class Crews {
   readonly chat: ChatMsg[] = [];
   /** Extra knowledge an agent brings to every call (Claude Academy). */
   knowledge?: (agentId: string) => string;
+  /** The library's skills, handed to agents step by step. */
+  readonly skillBook: SkillBook;
   private teamById: Map<string, Team>;
   private benchByAgent = new Map<string, Bench>();
   private waiters = new Map<string, (v: unknown) => void>();
@@ -249,6 +284,7 @@ export class Crews {
     readonly hooks: CrewHooks,
   ) {
     this.teamById = new Map(teams.map((t) => [t.id, t]));
+    this.skillBook = new SkillBook(data);
     for (const b of bench) {
       const prev = this.benchByAgent.get(b.agentId);
       if (!prev || (b.score ?? 0) > (prev.score ?? 0)) this.benchByAgent.set(b.agentId, b);
@@ -365,19 +401,22 @@ export class Crews {
     return this.data.byId.get(id)!;
   }
 
-  persona(agentId: string, extra = '') {
+  /** An agent's system prompt: its own instructions, what it learned, the skills for this task. */
+  persona(agentId: string, skills = '', web = false) {
     const it = this.item(agentId);
     const learned = this.knowledge?.(agentId) || '';
     return [
       `You are "${it.name}", an AI agent working in the AI Agent Office (a team of specialist agents).`,
       `Your role: ${it.description}`,
       '',
-      'Your own instructions (follow their spirit; you have no tools in this office, so answer directly):',
+      web
+        ? 'Your own instructions (follow their spirit). In this office you can search the web (WebSearch) and read pages (WebFetch): use them for current facts and cite the links; you have no other tools.'
+        : 'Your own instructions (follow their spirit; you have no tools in this office, so answer directly):',
       this.prompts[agentId] || '',
       learned ? `\n${learned}` : '',
+      skills ? `\n${skills}` : '',
       '',
       languageRule(),
-      extra,
     ].join('\n');
   }
 
@@ -391,6 +430,13 @@ export class Crews {
     }
     const engine = await this.engine();
     const t0 = performance.now();
+    // The skills that fit this step best: the agent follows them.
+    const kind = step.key.replace(/\d+$/, '');
+    const hint = run.kind === 'task' ? step.label.en : SKILL_HINTS[kind] || step.label.en;
+    const picked = kind === 'summary' ? [] : this.skillBook.pick(step.agentId, hint, run.prompt, 3, this.teamById.get(run.teamId)?.skills || []);
+    step.skills = picked.map((x) => x.id);
+    step.web = step.agentId === SCOUT || picked.some((x) => x.source === 'agent-reach');
+    const skillText = await this.skillBook.block(picked);
     step.status = 'run';
     this.hooks.stepStart(run, step);
     this.hooks.changed(run);
@@ -398,8 +444,9 @@ export class Crews {
       for (let attempt = 0; ; attempt++) {
         try {
           const r = await engine.ask(prompt, {
-            system: this.persona(step.agentId),
+            system: this.persona(step.agentId, skillText, step.web),
             tier,
+            web: step.web,
             images: opts.images,
             onText: (text) => {
               step.live = clip(text.replace(/\s+/g, ' ').trim(), 160);
@@ -718,6 +765,8 @@ export class Crews {
       S.ask.status = 'done';
     }
     const interview = this.interviewText(run);
+    // Real agent projects like this one (500 AI Agents catalogue), as examples for the plan.
+    const similar = project ? this.skillBook.useCases(`${run.prompt} ${interview}`, 5) : [];
 
     // 1. Plan (a product plan with MVP scope for projects).
     const planR = await this.call(run, S.plan, [
@@ -725,6 +774,7 @@ export class Crews {
       interview,
       run.planNotes?.length ? `The user reviewed your previous plan and asked for these changes (apply all):\n${run.planNotes.map((n) => `- ${n}`).join('\n')}` : '',
       run.images.length ? 'The user also attached reference image(s) of the look they want.' : '',
+      similar.length ? `Similar real AI-agent projects from the 500 AI Agents catalogue (ideas to borrow, not requirements):\n${similar.map((u) => `- ${u.title || u.name}: ${u.description} — ${u.url}`).join('\n')}` : '',
       '',
       project
         ? 'You are the architect. Produce a complete, buildable product plan: a real MVP that works end to end, plus what comes later.'
@@ -879,8 +929,8 @@ export class Crews {
       const r = await this.call(run, step, [
         `Plan:\n${planJson}`,
         '',
-        'index.html (the whole app):',
-        clip(code, 60000),
+        code.length <= REVIEW_CHARS ? 'index.html (the whole app):' : `index.html — the file is ${code.length} characters and complete; you see its first ${REVIEW_CHARS - 20000} and last 20000 characters. Do not report the middle as missing or the file as cut off:`,
+        code.length <= REVIEW_CHARS ? code : `${code.slice(0, REVIEW_CHARS - 20000)}\n/* … middle of the file omitted for review … */\n${code.slice(-20000)}`,
         '',
         'You are QA. Review the app against the plan like a careful tester reading the code: missing pages or features, broken handlers, JavaScript errors you can see, data that is never saved, layout that breaks on phones, text not in the user’s language.',
         OFFLINE_NOTE,
@@ -897,7 +947,7 @@ export class Crews {
       S.qa.status = 'error';
     }
     const toFix = (qa?.issues || []).filter((i) => i.severity === 'high' || i.severity === 'medium').slice(0, 8);
-    if (toFix.length && html.length < 90000) {
+    if (toFix.length && html.length < 160000) {
       this.end(run, S.qa, S.fix);
       try {
         const fixR = await this.callHtml(run, S.fix, [
@@ -1308,7 +1358,7 @@ export class Crews {
         `Result from ${this.item(specialist).name}:\n${clip(wR.text, 20000)}`,
         'Review it. Reply with ONLY a JSON object: {"score": 0-100, "strengths": [""], "improvements": [""]}',
         languageRule(),
-      ].join('\n'), 'quick');
+      ].join('\n'), 'default');
       review = parseJson<TaskResult['review']>(rR.text);
     } catch {
       S.review.status = 'error';

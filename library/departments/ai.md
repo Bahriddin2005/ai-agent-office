@@ -1,6 +1,6 @@
 # 🧠 AI & ML Lab — Sunʼiy intellekt laboratoriyasi
 
-108 items in this department.
+131 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -109,6 +109,29 @@
 | [learn-eval](../commands/ecc/learn-eval.md) | command | ECC | Extract reusable patterns from the session, self-evaluate quality before saving, and determine the right save location (Global vs Project). |
 | [model-route](../commands/ecc/model-route.md) | command | ECC | Recommend the best model tier for the current task based on complexity, risk, and budget. |
 | [multi-execute](../commands/ecc/multi-execute.md) | command | ECC | Execute a multi-model implementation plan while preserving Claude as the only filesystem writer. |
+| [adaptive-rag](../guides/agents-500/adaptive-rag.md) | guide | 500 Agents | Dynamic retrieval adjusting based on query complexity (Information Retrieval, LangGraph) |
+| [adaptive-rag-local](../guides/agents-500/adaptive-rag-local.md) | guide | 500 Agents | Adaptive RAG with local models for offline use (Information Retrieval, LangGraph) |
+| [agenteval-multi-agent-assessment-system](../guides/agents-500/agenteval-multi-agent-assessment-system.md) | guide | 500 Agents | Evaluating LLM-based application utility (Performance Evaluation, AutoGen) |
+| [agentic-rag](../guides/agents-500/agentic-rag.md) | guide | 500 Agents | Agent determines best retrieval strategy before generating response (Intelligent Agents, LangGraph) |
+| [agno-assist-agent](../guides/agents-500/agno-assist-agent.md) | guide | 500 Agents | GPT-4o agent for Agno framework Q&A with hybrid search (AI Framework, Agno) |
+| [auto-build-multi-agent-system-with-agentbuilder](../guides/agents-500/auto-build-multi-agent-system-with-agentbuilder.md) | guide | 500 Agents | Automatically builds multi-agent systems (AI Development, AutoGen) |
+| [chatbot-simulation-evaluation](../guides/agents-500/chatbot-simulation-evaluation.md) | guide | 500 Agents | Simulate user interactions to evaluate chatbot performance (AI / QA, LangGraph) |
 | [claude-mcp](../guides/best-practice/claude-mcp.md) | guide | Best Practice | MCP (Model Context Protocol) servers extend Claude Code with connections to external tools, databases, and APIs. This guide covers recommended servers for dail… |
+| [corrective-rag-crag](../guides/agents-500/corrective-rag-crag.md) | guide | 500 Agents | Evaluates and refines retrieved documents before generation (Information Retrieval, LangGraph) |
+| [crewai-langgraph-integration](../guides/agents-500/crewai-langgraph-integration.md) | guide | 500 Agents | Integration between CrewAI and LangGraph (AI Integration, CrewAI) |
 | [hermes-readme](../guides/hermes/hermes-readme.md) | guide | Hermes | Overview of NousResearch/hermes-agent: what it contains and how to install and use it. |
+| [information-gathering-via-prompting](../guides/agents-500/information-gathering-via-prompting.md) | guide | 500 Agents | LangGraph workflow using prompting to gather information (Research, LangGraph) |
+| [mcp-airbnb-agent](../guides/agents-500/mcp-airbnb-agent.md) | guide | 500 Agents | Search Airbnb listings with MCP and Llama 4 (Hospitality, Agno) |
+| [medisuite-ai-agent](../guides/agents-500/medisuite-ai-agent.md) | guide | 500 Agents | Automates hospital / insurance claiming workflow (Health Insurance) |
+| [multimodal-agent-with-dalle-and-gpt-4v](../guides/agents-500/multimodal-agent-with-dalle-and-gpt-4v.md) | guide | 500 Agents | Combines DALLE and GPT-4V for multimodal agent communication (Multimedia AI, AutoGen) |
+| [multimodal-agent-with-gpt-4v](../guides/agents-500/multimodal-agent-with-gpt-4v.md) | guide | 500 Agents | Leverages GPT-4V for visual and conversational interactions (Multimedia AI, AutoGen) |
+| [nextrole-ai-career-assistant](../guides/agents-500/nextrole-ai-career-assistant.md) | guide | 500 Agents | Tailors a resume to a job description and generates interview prep plus a day-of battlecard via a multi-agent system (Human Resources) |
+| [nvidia-models-integration](../guides/agents-500/nvidia-models-integration.md) | guide | 500 Agents | Integrates NVIDIA AI models into workflows (AI Integration, CrewAI) |
 | [pi-readme](../guides/pi/pi-readme.md) | guide | Pi | Overview of earendil-works/pi: what it contains and how to install and use it. |
+| [rag-group-chat](../guides/agents-500/rag-group-chat.md) | guide | 500 Agents | Enables group chat with Retrieval Augmented Generation (Collaboration, AutoGen) |
+| [self-evaluation-loop-flow](../guides/agents-500/self-evaluation-loop-flow.md) | guide | 500 Agents | Facilitates self-assessment for performance reviews (Human Resources, CrewAI) |
+| [self-rag](../guides/agents-500/self-rag.md) | guide | 500 Agents | System reflects on responses and retrieves additional info if needed (Information Retrieval, LangGraph) |
+| [self-rag-local](../guides/agents-500/self-rag-local.md) | guide | 500 Agents | Self-RAG using local models and data sources (Information Retrieval, LangGraph) |
+| [support-agent](../guides/agents-500/support-agent.md) | guide | 500 Agents | Real-time answers, explanations, and code examples for Agno framework (AI Framework Support, Agno) |
+| [track-llm-calls-and-errors-using-agentops](../guides/agents-500/track-llm-calls-and-errors-using-agentops.md) | guide | 500 Agents | Monitors LLM interactions, tool usage, and errors (Monitoring & Analytics, AutoGen) |
+| [virtual-ai-tutor](../guides/agents-500/virtual-ai-tutor.md) | guide | 500 Agents | Provides personalized education tailored to users (Education) |

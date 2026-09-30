@@ -13,6 +13,8 @@ export interface AskOptions {
   images?: Blob[];
   signal?: AbortSignal;
   onText?: (text: string) => void;
+  /** allow web search and page reading (office server only) */
+  web?: boolean;
 }
 
 export interface AskResult {
@@ -50,7 +52,7 @@ class ServerEngine implements Engine {
   constructor(private conn: Connection) {}
   async ask(prompt: string, o: AskOptions = {}): Promise<AskResult> {
     const images = o.images?.length ? await Promise.all(o.images.map(blobToDataUrl)) : [];
-    const res = await this.conn.ai({ system: o.system || '', prompt, tier: o.tier || 'default', images }, o.signal);
+    const res = await this.conn.ai({ system: o.system || '', prompt, tier: o.tier || 'default', images, web: !!o.web }, o.signal);
     o.onText?.(res.text);
     return { text: res.text, truncated: !!res.truncated };
   }

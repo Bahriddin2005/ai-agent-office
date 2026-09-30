@@ -144,8 +144,10 @@ app.post('/api/ai', needToken, async (req, res) => {
   if (!dispatcher.claude) return res.status(503).json({ error: 'Claude Code CLI (claude) not found on PATH' });
   try {
     const { system, prompt, tier, images } = req.body || {};
-    const out = await ai.run({ system: String(system || ''), prompt, tier: ['quick', 'default', 'complex'].includes(tier) ? tier : 'default', images: images || [] });
-    console.log(`[ai] ${tier || 'default'} ${out.model || ''} ${out.seconds.toFixed(1)}s${images?.length ? ` +${images.length} image(s)` : ''}`);
+    // Internet research steps may search and read the web; `"allowWeb": false` in office.config.json turns it off.
+    const web = req.body?.web === true && config.allowWeb !== false;
+    const out = await ai.run({ system: String(system || ''), prompt, tier: ['quick', 'default', 'complex'].includes(tier) ? tier : 'default', images: images || [], web });
+    console.log(`[ai] ${tier || 'default'} ${out.model || ''} ${out.seconds.toFixed(1)}s${images?.length ? ` +${images.length} image(s)` : ''}${web ? ' +web' : ''}`);
     res.json(out);
   } catch (err) {
     res.status(err.status || 500).json({ error: String(err.message || err) });

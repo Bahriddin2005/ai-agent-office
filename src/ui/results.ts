@@ -186,11 +186,13 @@ export class ResultsView {
         ['plan', T('🗓️ Kontent reja', '🗓️ Content plan')],
         ['posts', T('✍️ Postlar', '✍️ Posts')],
         ['summary', T('📝 Hisobot', '📝 Report')],
+        ['steps', T('⏳ Jarayon', '⏳ Progress')],
       ];
     return [
       ['answer', T('📄 Natija', '📄 Result')],
       ['plan', T('🧭 Reja', '🧭 Plan')],
       ['review', T('✅ Tekshiruv', '✅ Review')],
+      ['steps', T('⏳ Jarayon', '⏳ Progress')],
     ];
   }
 
@@ -276,6 +278,20 @@ export class ResultsView {
   }
 
   /** Live view of who is doing what. */
+  /** Library skills the agent used for a step (and whether it could search the web). */
+  private skillChips(s: CrewRun['steps'][number]) {
+    if (!s.skills?.length && !s.web) return null;
+    return h(
+      'div',
+      { className: 'step-skills' },
+      s.web ? h('span', { className: 'chip small web', title: T('Bu bosqichda agent internetdan qidirdi va sahifalarni o‘qidi', 'The agent could search and read the web in this step') }, '🌐 internet') : null,
+      ...(s.skills || []).map((id) => {
+        const sk = this.data.byId.get(id);
+        return h('button', { className: 'chip small', title: sk?.description || id, onclick: () => this.focusAgent(id) }, `📘 ${sk?.name || id}`);
+      }),
+    );
+  }
+
   private progress(run: CrewRun) {
     return h(
       'div',
@@ -292,6 +308,7 @@ export class ResultsView {
             'li',
             { className: s.status },
             h('div', {}, h('b', {}, `${icon} ${s.label[currentLang()]}`), h('small', {}, ` — ${it?.name || s.agentId}${s.seconds ? ` · ${s.seconds}s` : ''}`)),
+            this.skillChips(s),
             s.status === 'run' && s.live ? h('div', { className: 'live-text' }, s.live) : null,
             s.status === 'done' && s.output ? h('details', {}, h('summary', {}, T('Agent javobi', 'Agent output')), h('pre', { className: 'out' }, s.output.slice(0, 6000))) : null,
             s.status === 'error' && s.output ? h('div', { className: 'note' }, s.output) : null,

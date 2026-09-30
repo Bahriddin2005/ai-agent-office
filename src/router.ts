@@ -20,13 +20,41 @@ const UZ: Record<string, string[]> = {
   tarmoq: ['network'], strategiya: ['strategy'], rahbar: ['ceo', 'leadership'], huquq: ['legal', 'compliance'], tahlil: ['analysis', 'analytics'],
   grafik: ['graph', 'chart'], bilim: ['knowledge'], ogʻir: ['performance'], tezlik: ['performance'], sekin: ['performance'], mobil: ['mobile', 'flutter', 'swift', 'kotlin'],
   oʻyin: ['game'], oyin: ['game'], taqdimot: ['presentation', 'slides'], slayd: ['slides'], refaktor: ['refactor'], optimallashtir: ['optimize', 'performance'],
+  maktab: ['school', 'education'], oʻquvchi: ['student', 'education'], oquvchi: ['student', 'education'], oʻqituvchi: ['teacher', 'education'], oqituvchi: ['teacher', 'education'],
+  davomat: ['attendance'], baho: ['grade'], ota: ['parent'], ona: ['parent'], dars: ['lesson', 'education'], kurs: ['course', 'education'], taʼlim: ['education'], talim: ['education'],
+  doʻkon: ['shop', 'ecommerce'], dokon: ['shop', 'ecommerce'], bozor: ['market', 'ecommerce'], xarid: ['shopping', 'ecommerce'], toʻlov: ['payment'], tolov: ['payment'],
+  internet: ['web', 'search'], qidir: ['search', 'research'], qidiruv: ['search'], izla: ['search', 'research'], yangilik: ['news'], manba: ['source', 'research'],
+  xabar: ['message', 'notification'], xabarnoma: ['notification'], avtomatlashtir: ['automation', 'workflow'], avtomatlashtirish: ['automation', 'workflow'], mijoz: ['customer', 'support'],
+  sayohat: ['travel', 'trip'], kasalxona: ['hospital', 'healthcare', 'medical'], shifoxona: ['hospital', 'healthcare', 'medical'], bemor: ['patient', 'healthcare'],
+  shifokor: ['doctor', 'healthcare'], yordam: ['support', 'help'], restoran: ['restaurant', 'food'], ovqat: ['food', 'recipe'], ish: ['job', 'career'], rezyume: ['resume', 'career'],
+  tizim: ['system', 'platform'], platforma: ['platform'], animatsiya: ['animation', 'motion'], animatsion: ['animation', 'motion'], ilova: ['app', 'application'],
+  sheʼr: ['poem', 'writing'], hikoya: ['story', 'writing'], tarjimon: ['translate'], hisobchi: ['accounting', 'finance'], buxgalter: ['accounting', 'finance'],
 };
+
+/** An Uzbek word and its stems without case / plural / possessive endings (maktabimizni -> maktab). */
+const UZ_ENDINGS = ['dagi', 'ning', 'dan', 'imiz', 'ingiz', 'lar', 'ni', 'ga', 'da', 'gi', 'si', 'i'];
+function uzStems(w: string): string[] {
+  // Only used to look words up in UZ, so a wrong cut costs nothing.
+  const seen = new Set([w, w.replace(/ʼ/g, 'ʻ')]);
+  let layer = [...seen];
+  for (let i = 0; i < 3 && layer.length; i++) {
+    const next: string[] = [];
+    for (const x of layer)
+      for (const e of UZ_ENDINGS)
+        if (x.endsWith(e) && x.length - e.length >= 3 && !seen.has(x.slice(0, -e.length))) {
+          seen.add(x.slice(0, -e.length));
+          next.push(x.slice(0, -e.length));
+        }
+    layer = next;
+  }
+  return [...seen].flatMap((s) => [s, s.replace(/ʻ/g, '')]);
+}
 
 export function tokenize(text: string): string[] {
   const out: string[] = [];
-  for (let w of text.toLowerCase().replace(/['’`ʻʼ]/g, 'ʼ').split(/[^\p{L}\p{N}ʼ+#]+/u)) {
+  for (let w of text.toLowerCase().replace(/['‘’`ʻʼ]/g, 'ʼ').split(/[^\p{L}\p{N}ʼ+#]+/u)) {
     if (!w || STOP.has(w)) continue;
-    const uz = UZ[w] || UZ[w.replace(/ʼ/g, 'ʻ')] || UZ[w.replace(/(ni|ga|da|dan|ning|lar|larni|imiz|ingiz)$/, '')];
+    const uz = uzStems(w).map((x) => UZ[x]).find(Boolean);
     if (uz) {
       out.push(...uz);
       continue;

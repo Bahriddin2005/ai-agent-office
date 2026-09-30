@@ -1,6 +1,6 @@
 # ☁️ DevOps & Cloud — DevOps va bulut
 
-51 items in this department.
+52 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -55,3 +55,4 @@
 | [cl](../commands/pi/cl.md) | command | Pi | Audit changelog entries before release |
 | [pipeline](../commands/claude-skills/pipeline.md) | command | Claude Skills | Detect stack and generate CI/CD pipeline configs. Usage: /pipeline [options] |
 | [ship](../commands/agent-skills/ship.md) | command | Agent Skills | Run the pre-launch checklist via parallel fan-out to specialist personas, then synthesize a go/no-go decision |
+| [factory-process-monitoring-agent](../guides/agents-500/factory-process-monitoring-agent.md) | guide | 500 Agents | Monitors production lines and ensures quality control (Manufacturing) |

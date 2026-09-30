@@ -1,6 +1,6 @@
 # 🔬 Data & Research — Maʼlumot va tadqiqot
 
-112 items in this department.
+149 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -24,8 +24,10 @@
 | [graphify-librarian](../agents/graphify/graphify-librarian.md) | agent | Graphify | Knowledge librarian. Maps a codebase, docs or this whole office library into a Graphify knowledge graph and answers questions by traversing it instead of grepp… |
 | [news-summarizer-agent](../agents/agents-500/news-summarizer-agent.md) | agent | 500 Agents | Fetches news on any topic and produces a structured briefing with key themes |
 | [pdf-qa-agent](../agents/agents-500/pdf-qa-agent.md) | agent | 500 Agents | Loads a PDF and answers questions about its content with conversation history |
+| [reach-scout](../agents/agent-reach/reach-scout.md) | agent | Agent Reach | Internet scout. Finds and reads what the web says about a topic — search, web pages, Twitter/X, Reddit, YouTube, GitHub, LinkedIn, RSS — with the Agent Reach s… |
 | [sql-query-agent](../agents/agents-500/sql-query-agent.md) | agent | 500 Agents | Answers natural language questions about SQL databases by generating and executing queries |
 | [web-research-agent](../agents/agents-500/web-research-agent.md) | agent | 500 Agents | Searches the web for a topic and synthesizes a structured research report |
+| [agent-reach](../skills/agent-reach/agent-reach/SKILL.md) | skill | Agent Reach | MUST USE when user wants to research/search/look up/find anything on the internet — e.g. "research this topic", "do a deep dive on X", "search the web for X",… |
 | [arxiv](../skills/hermes/arxiv/SKILL.md) | skill | Hermes | Search arXiv papers by keyword, author, category, or ID. |
 | [bioinformatics](../skills/hermes/bioinformatics/SKILL.md) | skill | Hermes | Gateway to 400+ genomics and computational biology skills. |
 | [blocked-page-recovery](../skills/hermes/blocked-page-recovery/SKILL.md) | skill | Hermes | Use when a fetch fails: 403/429, paywall, WAF, bot wall. |
@@ -50,6 +52,14 @@
 | [gitnexus-explorer](../skills/hermes/gitnexus-explorer/SKILL.md) | skill | Hermes | Serve an interactive codebase knowledge graph web UI. |
 | [grants](../skills/claude-skills/grants/SKILL.md) | skill | Claude Skills | NIH grant research skill for clinical researchers. Grill-me intake (research idea + career stage + preliminary data + environment + submission posture + known… |
 | [graphify](../skills/graphify/graphify/SKILL.md) | skill | Graphify | Use for any question about a codebase, its architecture, file relationships, or project content — especially when graphify-out/ exists, where the question shou… |
+| [graphify-add-watch](../skills/graphify/graphify-add-watch/SKILL.md) | skill | Graphify | Load this when the user ran `/graphify add ` or passed `--watch`. Neither is part of the default build. |
+| [graphify-exports](../skills/graphify/graphify-exports/SKILL.md) | skill | Graphify | Load this when the user passed one of the export flags (`--wiki`, `--neo4j`, `--neo4j-push`, `--falkordb`, `--falkordb-push`, `--svg`, `--graphml`, `--mcp`), o… |
+| [graphify-extraction-spec](../skills/graphify/graphify-extraction-spec/SKILL.md) | skill | Graphify | Load this in Step 3 Part B when the corpus has at least one doc, paper, or image chunk. A pure-code corpus skips Part B and never reads this file. Each semanti… |
+| [graphify-github-and-merge](../skills/graphify/graphify-github-and-merge/SKILL.md) | skill | Graphify | Load this when the user passed one or more `https://github.com/...` URLs, or named several local subfolders to merge into one graph. |
+| [graphify-hooks](../skills/graphify/graphify-hooks/SKILL.md) | skill | Graphify | Load this when the user asked to install the post-commit hook or wire graphify into a project's CLAUDE.md. |
+| [graphify-query](../skills/graphify/graphify-query/SKILL.md) | skill | Graphify | Load this when the user asks a question against an existing graph, or runs `/graphify path` or `/graphify explain`. The core's query stub points here for the f… |
+| [graphify-transcribe](../skills/graphify/graphify-transcribe/SKILL.md) | skill | Graphify | Load this only when `detect` reported one or more `video` files. A corpus with no video never reads this. |
+| [graphify-update](../skills/graphify/graphify-update/SKILL.md) | skill | Graphify | Load this only when the user passed `--update` or `--cluster-only`. A first-time full build never reads this file. |
 | [grounded-citations](../skills/hermes/grounded-citations/SKILL.md) | skill | Hermes | Ground answers and documents in cited, verifiable sources. |
 | [ito-baskets](../skills/ecc/ito-baskets/SKILL.md) | skill | ECC | Read-only Itô basket and prediction-market data skill. Index the live basket catalog, compare a basket against user-supplied research or a watchlist, build a s… |
 | [jupyter-notebook](../skills/hermes/jupyter-notebook/SKILL.md) | skill | Hermes | Iterative Python via live Jupyter kernel (hamelnb). |
@@ -75,6 +85,13 @@
 | [pulse](../skills/claude-skills/pulse/SKILL.md) | skill | Claude Skills | Multi-source recency research skill that takes the pulse of any topic across Reddit, Hacker News, the open web, and optionally X/Twitter within a configurable… |
 | [qmd](../skills/hermes/qmd/SKILL.md) | skill | Hermes | Hybrid local search over notes, docs, and transcripts. |
 | [quarkus-patterns](../skills/ecc/quarkus-patterns/SKILL.md) | skill | ECC | Quarkus 3.x LTS architecture patterns with Camel for messaging, RESTful API design, CDI services, data access with Panache, and async processing. Use for Java… |
+| [reach-career](../skills/agent-reach/reach-career/SKILL.md) | skill | Agent Reach | Agent Reach: jobs and recruiting — LinkedIn and Boss Zhipin profiles and job listings. |
+| [reach-dev](../skills/agent-reach/reach-dev/SKILL.md) | skill | Agent Reach | Agent Reach: developer sources — GitHub repos, issues, PRs and code search through the gh CLI. |
+| [reach-finance](../skills/agent-reach/reach-finance/SKILL.md) | skill | Agent Reach | Agent Reach: market data — stock quotes and discussions (Xueqiu) for research. |
+| [reach-search](../skills/agent-reach/reach-search/SKILL.md) | skill | Agent Reach | Agent Reach: semantic web search (Exa) and search tools — find sources on any topic before reading them. |
+| [reach-social](../skills/agent-reach/reach-social/SKILL.md) | skill | Agent Reach | Agent Reach: read social media and communities — Twitter/X, Reddit, Facebook, Instagram, XiaoHongShu, Bilibili, V2EX. |
+| [reach-video](../skills/agent-reach/reach-video/SKILL.md) | skill | Agent Reach | Agent Reach: videos and podcasts — YouTube and Bilibili subtitles/transcripts, podcast transcription. |
+| [reach-web](../skills/agent-reach/reach-web/SKILL.md) | skill | Agent Reach | Agent Reach: read any web page or RSS feed as clean text (Jina Reader and fallbacks). |
 | [research](../skills/claude-skills/research/SKILL.md) | skill | Claude Skills | Default entry point for any research request — a hybrid router that classifies the question deterministically and either delegates to a specialist research ski… |
 | [research-ops](../skills/ecc/research-ops/SKILL.md) | skill | ECC | Evidence-first current-state research workflow for ECC. Use when the user wants fresh facts, comparisons, enrichment, or a recommendation built from current pu… |
 | [research-ops-skills](../skills/claude-skills/research-ops-skills/SKILL.md) | skill | Claude Skills | Use when planning, funding, scoping, or synthesizing enterprise research across workstreams — clinical study design, R&D program finance, market sizing/surveys… |
@@ -115,4 +132,24 @@
 | [wiki-lint](../commands/claude-skills/wiki-lint.md) | command | Claude Skills | Run a health check on the LLM Wiki vault — mechanical checks (orphans, broken links, stale pages, missing frontmatter, log gap, duplicates) plus semantic check… |
 | [wiki-log](../commands/claude-skills/wiki-log.md) | command | Claude Skills | Show recent entries from the LLM Wiki log (wiki/log.md). Uses the standardized |
 | [wiki-query](../commands/claude-skills/wiki-query.md) | command | Claude Skills | Query the LLM Wiki — reads index.md first, drills into 3-10 relevant pages, synthesizes an answer with inline [[wikilink]] citations, and offers to file the an… |
+| [agent-reach-cookie-export](../guides/agent-reach/agent-reach-cookie-export.md) | guide | Agent Reach | Export browser cookies to a server so Agent Reach can read login-only platforms. |
+| [agent-reach-install](../guides/agent-reach/agent-reach-install.md) | guide | Agent Reach | Install Agent Reach: one command for your agent, then `agent-reach doctor` checks every channel. |
+| [agent-reach-readme](../guides/agent-reach/agent-reach-readme.md) | guide | Agent Reach | Overview of Panniantong/Agent-Reach: what it contains and how to install and use it. |
+| [agent-reach-setup-exa](../guides/agent-reach/agent-reach-setup-exa.md) | guide | Agent Reach | Set up Exa semantic search for Agent Reach (free, via MCP, no API key). |
+| [agent-reach-setup-groq](../guides/agent-reach/agent-reach-setup-groq.md) | guide | Agent Reach | Set up Groq Whisper so Agent Reach can transcribe videos and podcasts. |
+| [agent-reach-setup-reddit](../guides/agent-reach/agent-reach-setup-reddit.md) | guide | Agent Reach | Set up Reddit access for Agent Reach. |
+| [agent-reach-setup-twitter](../guides/agent-reach/agent-reach-setup-twitter.md) | guide | Agent Reach | Set up Twitter/X access for Agent Reach (cookies or backends). |
+| [agent-reach-setup-xiaohongshu](../guides/agent-reach/agent-reach-setup-xiaohongshu.md) | guide | Agent Reach | Set up XiaoHongShu access for Agent Reach. |
+| [agent-reach-troubleshooting](../guides/agent-reach/agent-reach-troubleshooting.md) | guide | Agent Reach | Troubleshooting Agent Reach channels (Xueqiu, Twitter, Reddit, YouTube and more). |
+| [agent-reach-update](../guides/agent-reach/agent-reach-update.md) | guide | Agent Reach | Update Agent Reach to the latest version and re-check the channels. |
+| [data-visualization-by-group-chat](../guides/agents-500/data-visualization-by-group-chat.md) | guide | 500 Agents | Uses multi-agent collaboration to create data visualizations (Data Analysis, AutoGen) |
+| [deepknowledge](../guides/agents-500/deepknowledge.md) | guide | 500 Agents | Iterative search through knowledge base with deep reasoning (Research, Agno) |
+| [extraction-with-retries](../guides/agents-500/extraction-with-retries.md) | guide | 500 Agents | Retry mechanisms for robust data extraction (Data Extraction, LangGraph) |
 | [graphify-readme](../guides/graphify/graphify-readme.md) | guide | Graphify | Overview of Graphify-Labs/graphify: what it contains and how to install and use it. |
+| [meta-quest-knowledge](../guides/agents-500/meta-quest-knowledge.md) | guide | 500 Agents | Manages Meta Quest knowledge for information retrieval (Knowledge Management, CrewAI) |
+| [research-agent](../guides/agents-500/research-agent.md) | guide | 500 Agents | Deep investigations, NYT-style reports (Media & Journalism, Agno) |
+| [research-scholar-agent](../guides/agents-500/research-scholar-agent.md) | guide | 500 Agents | Advanced academic searches, publication analysis, structured reports (Education / Research, Agno) |
+| [societyofmindagent-inner-monologue](../guides/agents-500/societyofmindagent-inner-monologue.md) | guide | 500 Agents | Simulates inner-monologue for problem-solving using group chats (Cognitive Sciences, AutoGen) |
+| [sql-agent](../guides/agents-500/sql-agent.md) | guide | 500 Agents | Agent answers questions about SQL databases (Database Interaction, LangGraph) |
+| [sql-natural-language-to-sql-query](../guides/agents-500/sql-natural-language-to-sql-query.md) | guide | 500 Agents | Converts natural language inputs into SQL queries (Database Management, AutoGen) |
+| [task-solving-with-graph-transition-paths](../guides/agents-500/task-solving-with-graph-transition-paths.md) | guide | 500 Agents | Uses predefined transition paths in a graph for solving tasks (Collaboration, AutoGen) |

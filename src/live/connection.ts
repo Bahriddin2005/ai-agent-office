@@ -111,7 +111,7 @@ export class Connection {
   }
 
   /** One agent answer from the Claude CLI on the office server. */
-  ai(body: { system: string; prompt: string; tier: string; images: string[] }, signal?: AbortSignal): Promise<{ text: string; seconds: number; model?: string; truncated?: boolean }> {
+  ai(body: { system: string; prompt: string; tier: string; images: string[]; web?: boolean }, signal?: AbortSignal): Promise<{ text: string; seconds: number; model?: string; truncated?: boolean }> {
     return this.post('api/ai', body, signal);
   }
 

@@ -3,7 +3,7 @@
 Everything from the six upstream repositories, gathered into one place (Graphify-style).
 Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 
-**234 agents · 911 skills · 268 commands · 74 guides** · 5406 graph edges
+**235 agents · 927 skills · 268 commands · 191 guides** · 5696 graph edges
 
 ## Sources
 
@@ -12,14 +12,15 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | Claude Code Best Practice | [shanraisshan/claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) | MIT | 20 | 6 | 14 | 20 |
 | Claude Skills (alirezarezvani) | [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | MIT | 109 | 373 | 142 | 1 |
 | Claude Office (W17ant) | [W17ant/Claude-Office](https://github.com/W17ant/Claude-Office) | MIT | 1 | 0 | 0 | 1 |
-| Graphify | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) | Apache-2.0 | 1 | 1 | 0 | 1 |
+| Graphify | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) | Apache-2.0 | 1 | 9 | 0 | 1 |
 | Hermes Agent (Nous Research) | [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) | MIT | 1 | 211 | 0 | 1 |
 | ECC (Everything Claude Code) | [affaan-m/ECC](https://github.com/affaan-m/ECC) | MIT | 73 | 292 | 97 | 1 |
 | AI Agents for Beginners (Microsoft) | [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) | MIT | 0 | 0 | 0 | 20 |
 | AI Agent Book (Bojie Li) | [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) | Apache-2.0 | 0 | 0 | 0 | 12 |
 | Agent Skills (Addy Osmani) | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | MIT | 4 | 25 | 9 | 1 |
-| 500+ AI Agent Projects | [ashishpatel26/500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) | MIT | 21 | 0 | 0 | 5 |
+| 500+ AI Agent Projects | [ashishpatel26/500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) | MIT | 21 | 0 | 0 | 112 |
 | Pi Agent Harness (Earendil) | [earendil-works/pi](https://github.com/earendil-works/pi) | MIT | 4 | 3 | 6 | 11 |
+| Agent Reach | [Panniantong/Agent-Reach](https://github.com/Panniantong/Agent-Reach) | MIT | 1 | 8 | 0 | 10 |
 
 ## Departments
 
@@ -32,7 +33,7 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [☁️ DevOps & Cloud](departments/devops.md) — DevOps va bulut | 8 | 40 | 3 |
 | [🛡️ Security & Compliance](departments/security.md) — Xavfsizlik va muvofiqlik | 13 | 60 | 9 |
 | [🧠 AI & ML Lab](departments/ai.md) — Sunʼiy intellekt laboratoriyasi | 12 | 88 | 5 |
-| [🔬 Data & Research](departments/data.md) — Maʼlumot va tadqiqot | 22 | 67 | 22 |
+| [🔬 Data & Research](departments/data.md) — Maʼlumot va tadqiqot | 23 | 83 | 22 |
 | [🗺️ Product & Projects](departments/product.md) — Mahsulot va loyihalar | 9 | 42 | 25 |
 | [📣 Marketing & Growth](departments/marketing.md) — Marketing va o‘sish | 16 | 65 | 13 |
 | [💼 Sales, Finance & Ops](departments/business.md) — Savdo, moliya va operatsiyalar | 9 | 56 | 18 |
@@ -249,6 +250,7 @@ Barcha agentlar, skillar va buyruqlar bitta joyda jamlangan.
 | [python-reviewer](agents/ecc/python-reviewer.md) | agent | ECC | Expert Python code reviewer specializing in PEP 8 compliance, Pythonic idioms, type hints, security, and performance. Use for all Python code changes. MUST BE… |
 | [pytorch-build-resolver](agents/ecc/pytorch-build-resolver.md) | agent | ECC | PyTorch runtime, CUDA, and training error resolution specialist. Fixes tensor shape mismatches, device errors, gradient issues, DataLoader problems, and mixed… |
 | [rag-pipeline-reviewer](agents/ecc/rag-pipeline-reviewer.md) | agent | ECC | Reviews RAG (Retrieval-Augmented Generation) pipelines for retrieval quality, chunking strategy, embedding choices, and evaluation coverage. Invoke when the us… |
+| [reach-scout](agents/agent-reach/reach-scout.md) | agent | Agent Reach | Internet scout. Finds and reads what the web says about a topic — search, web pages, Twitter/X, Reddit, YouTube, GitHub, LinkedIn, RSS — with the Agent Reach s… |
 | [react-build-resolver](agents/ecc/react-build-resolver.md) | agent | ECC | Diagnose and fix React build failures across Vite, webpack, Next.js, CRA, Parcel, esbuild, and Bun. Handles JSX/TSX compile errors, hydration mismatches, serve… |
 | [react-reviewer](agents/ecc/react-reviewer.md) | agent | ECC | Expert React/JSX code reviewer specializing in hook correctness, render performance, server/client component boundaries, accessibility, and React-specific secu… |
 | [recipe-agent](agents/agents-500/recipe-agent.md) | agent | 500 Agents | Suggests recipes from available ingredients with instructions and nutrition info |

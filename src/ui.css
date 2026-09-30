@@ -257,3 +257,8 @@
 .academy-panel .toggle { font-size: 12px; color: #cfd5e2; }
 .academy-panel details { font-size: 12px; }
 .tb-btn.on { background: rgba(255, 209, 102, 0.25); border-color: #ffd166; }
+
+/* Library skills an agent used for a step */
+.step-skills { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px; }
+.step-skills .chip.web { background: rgba(38, 181, 206, 0.18); border-color: rgba(38, 181, 206, 0.5); }
+.step-skill-line { display: block; color: var(--muted); font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

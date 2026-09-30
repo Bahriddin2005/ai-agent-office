@@ -116,6 +116,14 @@ async function main() {
       }
       stepControls.set(step, director.beginTask(a, step.label[currentLang()]));
       director.log({ kind: 'task', icon: '⏳', text: `${a.name}: ${step.label[currentLang()]}`, actor: a, itemId: a.item?.id });
+      // The skill books the agent works from light up on their shelves.
+      const used = (step.skills || []).map((id) => data.byId.get(id)).filter((x): x is NonNullable<typeof x> => !!x);
+      for (const sk of used) {
+        const bi = office.bookOf.get(sk.id);
+        if (bi !== undefined) office.lightBook(bi, 14);
+      }
+      if (used.length || step.web)
+        director.log({ kind: 'task', icon: '📘', text: `${a.name} ${currentLang() === 'uz' ? 'foydalanmoqda' : 'uses'}: ${used.map((x) => x.name).join(', ')}${step.web ? ' · 🌐 internet' : ''}`, actor: a, itemId: used[0]?.id || a.item?.id });
     },
     stepEnd(run, step, next) {
       const a = cast.byItem.get(step.agentId);

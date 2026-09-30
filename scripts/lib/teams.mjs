@@ -113,13 +113,14 @@ export const TEAMS = [
       uz: 'Bozor, raqobatchilar va mavzular bo‘yicha chuqur tahlil, hisobot va xulosalar.',
       en: 'Deep research on markets, competitors and topics, with reports and conclusions.',
     },
-    keywords: 'tahlil analiz research tadqiqot bozor raqobat trend hisobot statistika solishtir',
+    keywords: 'tahlil analiz research tadqiqot bozor raqobat trend hisobot statistika solishtir internet qidir izla yangilik twitter reddit youtube github',
     members: [
       ['agent:claude-skills:cs-deep-research', { uz: 'Chuqur tadqiqot', en: 'Deep research' }],
       ['agent:claude-skills:cs-research', { uz: 'Tadqiqotchi', en: 'Researcher' }],
       ['agent:claude-skills:cs-product-analyst', { uz: 'Mahsulot tahlilchisi', en: 'Product analyst' }],
       ['agent:claude-skills:cs-dossier', { uz: 'Dossye', en: 'Dossier' }],
       ['agent:graphify:graphify-librarian', { uz: 'Bilim grafi', en: 'Knowledge graph' }],
+      ['agent:agent-reach:reach-scout', { uz: 'Internet skauti', en: 'Internet scout' }],
       ['agent:agents-500:web-research-agent', { uz: 'Veb tadqiqotchi', en: 'Web researcher' }],
       ['agent:agents-500:competitive-analysis-agent', { uz: 'Raqobat tahlili', en: 'Competitor analysis' }],
       ['agent:agents-500:data-analysis-agent', { uz: 'Data tahlilchi', en: 'Data analyst' }],
@@ -127,6 +128,7 @@ export const TEAMS = [
     skills: [
       'skill:claude-skills:deep-research', 'skill:claude-skills:market-research', 'skill:claude-skills:competitive-teardown',
       'skill:claude-skills:research-summarizer', 'skill:claude-skills:autoresearch-agent', 'skill:graphify:graphify', 'skill:ecc:market-research',
+      'skill:agent-reach:agent-reach', 'skill:agent-reach:reach-search', 'skill:agent-reach:reach-web', 'skill:agent-reach:reach-social', 'skill:graphify:graphify-query',
     ],
     test: 'O‘zbekistonda onlayn taʼlim bozorining 5 ta asosiy trendi haqida qisqa tahlil yoz. Taxminlaringni alohida belgila.',
   },

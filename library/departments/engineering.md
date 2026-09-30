@@ -1,6 +1,6 @@
 # 🛠️ Engineering Core — Muhandislik markazi
 
-250 items in this department.
+265 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -254,3 +254,18 @@
 | [test](../commands/agent-skills/test.md) | command | Agent Skills | Run TDD workflow — write failing tests, implement, verify. For bugs, use the Prove-It pattern. |
 | [test-coverage](../commands/ecc/test-coverage.md) | command | ECC | Analyze coverage, identify gaps, and generate missing tests toward the target threshold. |
 | [wr](../commands/pi/wr.md) | command | Pi | Finish the current task end-to-end with changelog, commit, and push |
+| [citadel](../guides/agents-500/citadel.md) | guide | 500 Agents | Orchestrates Claude Code agent fleets with lifecycle hooks, skills, campaign management, and postmortem-driven architecture (Software Development) |
+| [code-generation-and-q-a-with-qdrant-based-retrieval](../guides/agents-500/code-generation-and-q-a-with-qdrant-based-retrieval.md) | guide | 500 Agents | Utilizes Qdrant for enhanced retrieval-augmented agent performance (Software Development, AutoGen) |
+| [code-generation-and-q-a-with-retrieval-augmented-agents](../guides/agents-500/code-generation-and-q-a-with-retrieval-augmented-agents.md) | guide | 500 Agents | Generates code and answers questions using retrieval-augmented methods (Software Development, AutoGen) |
+| [energy-demand-forecasting-agent](../guides/agents-500/energy-demand-forecasting-agent.md) | guide | 500 Agents | Predicts energy usage to optimize grid management (Energy) |
+| [group-chat-with-custom-speaker-selection](../guides/agents-500/group-chat-with-custom-speaker-selection.md) | guide | 500 Agents | Implements a custom function for speaker selection (Collaboration, AutoGen) |
+| [match-profile-to-positions](../guides/agents-500/match-profile-to-positions.md) | guide | 500 Agents | Matches candidate profiles to suitable job positions (Recruitment, CrewAI) |
+| [movie-recommendation-agent](../guides/agents-500/movie-recommendation-agent.md) | guide | 500 Agents | Personalized movie recommendations using Exa and GPT-4o (Entertainment, Agno) |
+| [optiguide-supply-chain-with-nested-chats](../guides/agents-500/optiguide-supply-chain-with-nested-chats.md) | guide | 500 Agents | Solves supply chain optimization using nested chats (Supply Chain, AutoGen) |
+| [recipe-creator](../guides/agents-500/recipe-creator.md) | guide | 500 Agents | Personalized recipes based on ingredients and preferences (Food & Culinary, Agno) |
+| [recruitment-recommendation-agent](../guides/agents-500/recruitment-recommendation-agent.md) | guide | 500 Agents | Suggests best-fit candidates for job openings (Human Resources) |
+| [study-partner](../guides/agents-500/study-partner.md) | guide | 500 Agents | Finds resources, answers questions, creates study plans (Education, Agno) |
+| [surprise-trip-planner](../guides/agents-500/surprise-trip-planner.md) | guide | 500 Agents | Plans surprise trips based on user preferences (Travel, CrewAI) |
+| [trip-planner](../guides/agents-500/trip-planner.md) | guide | 500 Agents | Assists in planning trips with itineraries (Travel, CrewAI) |
+| [use-provided-tools-as-functions](../guides/agents-500/use-provided-tools-as-functions.md) | guide | 500 Agents | Demonstrates how to use pre-provided tools as callable functions (Tool Integration, AutoGen) |
+| [vibe-hacking-agent](../guides/agents-500/vibe-hacking-agent.md) | guide | 500 Agents | Autonomous Multi-Agent Based Red Team Testing Service (Cybersecurity) |

@@ -1,7 +1,7 @@
 # 🏢 AI Agent Office
 
 **Claude Code agentlari, skillari va buyruqlari yashaydigan va ishlaydigan 3D ofis.**
-O‘n bitta ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Graphify uslubidagi bilim grafiga bog‘langan va Three.js'da jonli **ofis kampusi** sifatida ko‘rsatiladi: har bir yo‘nalish uchun alohida bino, ichida esa haqiqiy odamlarga o‘xshagan xodimlar — direktordan farroshgacha.
+O‘n ikkita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Graphify uslubidagi bilim grafiga bog‘langan va Three.js'da jonli **ofis kampusi** sifatida ko‘rsatiladi: har bir yo‘nalish uchun alohida bino, ichida esa haqiqiy odamlarga o‘xshagan xodimlar — direktordan farroshgacha.
 
 > 🇬🇧 English version: [below](#-english).
 
@@ -10,12 +10,12 @@ O‘n bitta ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Gra
 | | |
 |---|---|
 | **7** bino | Boshqaruv · AI va texnologiya · Savdo · Marketing va media · Moliya · Ofis xizmatlari · 🎓 **Claude Akademiyasi** |
-| **234** agent | har biri o‘z binosida, o‘z bo‘limi stolida o‘tiradi; lavozimiga mos kiyingan |
-| **911** skill | bo‘lim javonlaridagi kitoblar (1 skill = 1 kitob) |
+| **235** agent | har biri o‘z binosida, o‘z bo‘limi stolida o‘tiradi; lavozimiga mos kiyingan |
+| **927** skill | bo‘lim javonlaridagi kitoblar (1 skill = 1 kitob) — agentlar ularni **ishda haqiqatan ishlatadi** |
 | **268** buyruq (slash command) | javonlardagi papkalar |
-| **74** qo‘llanma | Claude Code best-practice, Microsoft “AI Agents for Beginners” darslari, “AI Agent Book” boblari, pi hujjatlari, 500 AI agent loyihalari |
+| **191** qo‘llanma | Claude Code best-practice, Microsoft “AI Agents for Beginners” darslari, “AI Agent Book” boblari, pi va Agent Reach hujjatlari, **112 ta tayyor AI agent loyihasi** (500 AI Agents katalogidan, har biri alohida) |
 | **14** bo‘lim | Rahbariyatdan Claude akademiyasigacha |
-| **5 406** bog‘lanish | agent → skill, agent → agent, buyruq → agent … (EXTRACTED / INFERRED) |
+| **5 696** bog‘lanish | agent → skill, agent → agent, buyruq → agent … (EXTRACTED / INFERRED) |
 
 ## Nima qila oladi
 
@@ -28,6 +28,8 @@ O‘n bitta ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Gra
   - 🌐 **“O‘quvchilardan test oladigan veb-sayt qilib ber”** — **Coder jamoasi** boshidan oxirigacha quradi: `planner` mukammal reja tuzadi → `database-reviewer` SQLite bazasi va demo maʼlumotlar → `cs-backend-engineer` Express API → `cs-frontend-engineer` to‘liq ishlaydigan sayt → `tdd-guide` test qiladi (jiddiy xato bo‘lsa frontend tuzatadi) → `office-manager` hisobot beradi. Tayyor bo‘lishi bilan sayt **darhol ochiladi**: jonli ko‘rinish (kompyuter/telefon), reja, baza, backend, frontend kodi, QA natijasi va `.zip` yuklab olish.
   - ✍️ **📎 Instagram/Telegram skrinshotlari + “akkauntni tahlil qil, uslubini mening kontentimga qo‘lla”** — **Kontent jamoasi**: `cs-content-creator` skrinshotlarni ko‘rib tahlil qiladi (auditoriya, ohang, ranglar palitrasi, kontent ustunlari, kuchli/zaif tomonlar) → `content-strategist` sizga moslab strategiya va **14 kunlik kontent reja** → `cs-growth-strategist` **5 ta tayyor post** → hisobot. Reja `.csv`, hisobot `.md` bo‘lib yuklanadi.
   - ⚡ **Boshqa har qanday vazifa** — eng mos jamoa: yetakchi reja tuzadi, mutaxassis bajaradi, boshqa agent tekshiradi.
+- **Agentlar skillarni ishlatadi.** Har bir bosqichda ofis kutubxonadagi 927 ta skilldan eng moslarini tanlaydi (agentning o‘z skillari va jamoasi skillari birinchi) va ularning ko‘rsatmalarini agentga vazifa bilan birga beradi: masalan, maktab loyihasining bazasi uchun `database-migrations` va `sql-database-assistant`, MCP server uchun `mcp-server-builder`, test uchun `senior-qa`, internetdan qidirish uchun **Agent Reach**. Qaysi skill ishlatilgani “⏳ Jarayon”da 📘 belgisi bilan ko‘rinadi, 3D’da o‘sha kitoblar javonda yonadi. Katta loyiha rejasiga 500 AI Agents katalogidan o‘xshash tayyor loyihalar misol sifatida qo‘shiladi (maktab → Virtual AI Tutor, Study Partner).
+- **Internet (Agent Reach).** Yangi agent `reach-scout` va Agent Reach skillari (qidiruv, veb-sahifalar, Twitter/X, Reddit, YouTube, GitHub, LinkedIn, RSS): “internetdan qidir…” desangiz, kompyuteringizdagi server orqali agent haqiqatan qidiradi va sahifalarni o‘qiydi (faqat o‘qish: WebSearch/WebFetch), javobda manbalar havolasi bilan. `office.config.json` da `"allowWeb": false` — o‘chirish.
 - **Vazifa darhol bajariladi va brauzerda ochiladi.** “3D animatsiyali marketplace dizaynini qilib ber” kabi so‘rovlar endi **Coder jamoasiga** boradi: avval 2–4 ta aniqlashtiruvchi savol (variantlar bilan, “o‘zingiz hal qiling” ham mumkin), keyin reja, baza, backend va frontend. Birinchi versiya tayyor bo‘lishi bilan **ofis ichida ochiladi** (test davom etayotgan paytda ham), “↗ Brauzerda ochish” esa uni alohida oynada ko‘rsatadi. Xato bo‘lsa — tushunarli o‘zbekcha izoh va “🔁 Qayta urinish” (tugagan bosqichlar qayta bajarilmaydi). Sahifani yangilasangiz ham oxirgi 8 ta ish va chat saqlanib qoladi.
 - **Belgilab tuzattirish.** Tayyor saytda “🎯 Element tanlash” bilan tugma/matnni bosing yoki “▭ Hudud chizish” bilan joyni chizib belgilang, har bir belgiga nima qilish kerakligini yozing (yoki umumiy izoh yozing) va **“🛠️ Tuzatib ber → v2”** ni bosing. Frontend agent aynan shu joylarni o‘zgartiradi, code-reviewer har bir talab bajarilganini tekshiradi. Saytdagi JavaScript xatolari avtomatik ushlanib, tuzatishga qo‘shiladi. Versiyalar (v1, v2, …) saqlanadi — istalganiga qaytish mumkin. “💻 Kod” bo‘limida barcha fayllar, “⏳ Jarayon”da har bir agent nima qilgani ko‘rinadi.
 - **Katta loyihalar noldan (🏗️ Katta loyiha).** “Maktabni avtomatlashtirish kerak” desangiz, `cs-product-manager` xuddi Claude kabi 4–6 ta savol beradi (kimlar uchun, qaysi qismlar: veb-ilova, admin panel, Telegram bot, MCP server, eng muhim MVP natijasi…), `architect` to‘liq MVP rejasini tuzadi va **sizning tasdiqingizni** so‘raydi (o‘zgartirish kiritishingiz mumkin). Keyin jamoa quradi: SQLite baza → Express API → veb-ilova → **MCP server** (AI yordamchilar tizimdan foydalanishi uchun, `hermes`) → **Telegram bot** → QA → tuzatish → hisobot. Hammasi `.zip` bo‘lib yuklanadi, README bilan.
@@ -64,8 +66,12 @@ O‘n bitta ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Gra
 | ![Belgilash](docs/images/revise-marked.jpg) | ![v2](docs/images/revise-v2.jpg) |
 | 🏗️ “Maktabimizni avtomatlashtirish kerak…” — agentlar Claude kabi savol beradi (taxminlari oldindan belgilangan) | 📋 MVP reja: veb-ilova, API, MCP server, Telegram bot — tasdiqlang yoki o‘zgartiring |
 | ![Savollar](docs/images/project-questions.jpg) | ![Reja](docs/images/project-approval.jpg) |
-| 🎮 Bossni boshqarish: yo‘li to‘q sariq nuqtalar bilan ko‘rinadi | 🎓 Claude Akademiyasi: Claude dars beradi, ekranda konspekt |
-| ![Boss yo‘li](docs/images/boss-route.jpg) | ![Akademiya](docs/images/academy-class.jpg) |
+| ✅ Tayyor “MaktabPlus”: veb-ilova, API, SQLite baza, MCP server va Telegram bot (13 fayl, .zip) | 📘 Agentlar skillarni ishlatadi: har bosqichda qaysi skill va 🌐 internet ishlatilgani |
+| ![MaktabPlus](docs/images/project-result.jpg) | ![Skillar](docs/images/skills-used.jpg) |
+| 🎮 Bossni boshqarish: yo‘li to‘q sariq nuqtalar bilan ko‘rinadi | 🧐 Boss agent stoli oldida ishini tekshirmoqda |
+| ![Boss yo‘li](docs/images/boss-route.jpg) | ![Boss tekshiruvi](docs/images/boss-visit.jpg) |
+| 🎓 Claude Akademiyasi: o‘quvchilar old qatorda, Claude minbarda, ekranda Claude yozgan qoidalar | |
+| ![Akademiya](docs/images/academy-class.jpg) | |
 
 ## Tez boshlash
 
@@ -140,7 +146,7 @@ Agent o‘zi e’lon qilgan skillari bilan birga o‘rnatiladi. `.sources/` mavj
 ### Kutubxonani yangilash
 
 ```bash
-npm run sync            # 11 ta repozitoriyni .sources/ ga klonlaydi yoki yangilaydi (kattalari sparse)
+npm run sync            # 12 ta repozitoriyni .sources/ ga klonlaydi yoki yangilaydi (kattalari sparse)
 npm run build:library   # library/, public/data/registry.json va graph.json ni qayta quradi
 ```
 
@@ -151,7 +157,7 @@ To‘liq Graphify grafini ham qurish mumkin: `uv tool install graphifyy && graph
 | Bino / Building | Ichidagi bo‘limlar | Agentlar | Skillar | Buyruqlar |
 |---|---|---|---|---|
 | 🏛️ **Boshqaruv** — Management | Rahbariyat, Mahsulot va loyihalar | 28 | 100 | 27 |
-| 🤖 **AI va texnologiya** — AI & Technology | Muhandislik, dasturlash tillari, frontend, DevOps, xavfsizlik, AI, data | 131 | 530 | 126 |
+| 🤖 **AI va texnologiya** — AI & Technology | Muhandislik, dasturlash tillari, frontend, DevOps, xavfsizlik, AI, data | 132 | 546 | 126 |
 | 🤝 **Savdo** — Sales | savdo/CRM agentlari (marketing, biznes, rahbariyatdan) | 12 | 50 | 18 |
 | 📣 **Marketing va media** — Marketing & Media | Marketing va o‘sish, Ijodiy studiya | 15 | 108 | 12 |
 | 💰 **Moliya** — Finance | CFO, moliya, hisob-kitob agentlari | 3 | 10 | 1 |
@@ -171,7 +177,7 @@ Agent qaysi binoda ishlashi bo‘limidan va nomidan aniqlanadi (`buildingOf` —
 | ☁️ **DevOps & Cloud** — DevOps va bulut | 8 | 40 | 3 |
 | 🛡️ **Security & Compliance** — Xavfsizlik va muvofiqlik | 13 | 60 | 9 |
 | 🧠 **AI & ML Lab** — Sunʼiy intellekt laboratoriyasi | 12 | 88 | 5 |
-| 🔬 **Data & Research** — Maʼlumot va tadqiqot | 22 | 67 | 22 |
+| 🔬 **Data & Research** — Maʼlumot va tadqiqot | 23 | 83 | 22 |
 | 🗺️ **Product & Projects** — Mahsulot va loyihalar | 9 | 42 | 25 |
 | 📣 **Marketing & Growth** — Marketing va o‘sish | 16 | 65 | 13 |
 | 💼 **Sales, Finance & Ops** — Savdo, moliya va operatsiyalar | 9 | 56 | 18 |
@@ -188,14 +194,15 @@ Markaziy maydonda: **Claude** (bosh koordinator, qabulxonada), **office-manager*
 | [Claude Code Best Practice](https://github.com/shanraisshan/claude-code-best-practice) | MIT | 20 | 6 | 14 | 20 | Claude akademiyasi: best-practice, workflow, namuna agentlar |
 | [Claude Skills](https://github.com/alirezarezvani/claude-skills) | MIT | 109 | 373 | 142 | 1 | Eng katta skill va persona kutubxonasi: muhandislik, mahsulot, marketing, C-level, compliance, moliya |
 | [Claude Office](https://github.com/W17ant/Claude-Office) | MIT | 1 | 0 | 0 | 1 | Asl g‘oya: Claude Code hook → server → jonli ofis; office-manager persona |
-| [Graphify](https://github.com/Graphify-Labs/graphify) | Apache-2.0 | 1 | 1 | 0 | 1 | Hamma narsani bitta bilim grafiga jamlash; graphify-librarian |
+| [Graphify](https://github.com/Graphify-Labs/graphify) | Apache-2.0 | 1 | 9 | 0 | 1 | Hamma narsani bitta bilim grafiga jamlash; graphify-librarian va graf qurish, so‘rash, yangilash, eksport skillari |
 | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | MIT | 1 | 211 | 0 | 1 | O‘z-o‘zini yaxshilaydigan agent va katta skill katalogi |
 | [ECC](https://github.com/affaan-m/ECC) | MIT | 73 | 292 | 97 | 1 | Til bo‘yicha reviewerlar, build resolverlar, buyruqlar va yuzlab skillar |
 | [AI Agents for Beginners](https://github.com/microsoft/ai-agents-for-beginners) | MIT | 0 | 0 | 0 | 20 | Microsoft’ning AI agentlar kursi (darslar) — Claude Akademiyasi kutubxonasida |
 | [AI Agent Book](https://github.com/bojieli/ai-agent-book) | Apache-2.0 | 0 | 0 | 0 | 12 | AI agentlar haqidagi kitob boblari — Claude Akademiyasi kutubxonasida |
 | [Agent Skills](https://github.com/addyosmani/agent-skills) | MIT | 4 | 25 | 9 | 1 | Muhandislik skillari (TDD, xavfsizlik, reja, debugging, performance); test-engineer, security-auditor, web-performance-auditor agentlari |
-| [500 AI Agents Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) | MIT | 21 | 0 | 0 | 5 | Tayyor agentlar (yordam xizmati, rezyume tahlili, veb-tadqiqot, email, uchrashuv qaydlari…) va sohalar bo‘yicha foydalanish holatlari (CrewAI, AutoGen, Agno, LangGraph) |
+| [500 AI Agents Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) | MIT | 21 | 0 | 0 | 112 | 21 ta ishlaydigan agent (yordam xizmati, rezyume tahlili, veb-tadqiqot, email, uchrashuv qaydlari…) va katalogdagi har bir loyiha alohida (soha, framework: CrewAI, AutoGen, Agno, LangGraph, havola) |
 | [pi](https://github.com/earendil-works/pi) | MIT | 4 | 3 | 6 | 11 | pi coding agent: subagentlar (scout, planner, reviewer, worker), prompt buyruqlari, skillar va hujjatlar |
+| [Agent Reach](https://github.com/Panniantong/Agent-Reach) | MIT | 1 | 8 | 0 | 10 | Agentlarga internet: qidiruv, veb, Twitter/X, Reddit, YouTube, GitHub, LinkedIn, RSS (16 platforma); `reach-scout` agenti |
 
 Har bir fayl o‘z muallifi va litsenziyasini saqlaydi — qarang: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) va `library/LICENSES/`.
 
@@ -206,14 +213,14 @@ Claude Code ──hook (office-hook.mjs)──▶ server :3334 ──WebSocket�
                                            │  ▲
                             claude -p ◀────┘  └── vazifa / ishga olish (UI)
                                            │
-                     library/ + registry.json + graph.json  ◀── build-library.mjs ◀── .sources/ (11 repo)
+                     library/ + registry.json + graph.json  ◀── build-library.mjs ◀── .sources/ (12 repo)
 ```
 
 | Papka | Mazmuni |
 |---|---|
 | `src/world/` | Sahna: kampus rejasi va binolar ro‘yxati (`layout.ts`), binolar, maydon, bog‘lar (`campus.ts`), mebel va javonlar (`office.ts`), odam modeli, kiyimlar, lavozimlar va harakatlar (`human.ts`), instanced olomon (`people.ts`), portret (`avatar.ts`), effektlar, yorliqlar |
 | `src/sim/` | Agentlar holat mashinasi (`actors.ts`), rejissyor: avto-hayot + jonli hodisalar (`director.ts`), Claude Akademiyasi darslari (`academy.ts`), Boss tekshiruvlari va boshqaruvi (`boss.ts`) |
-| `src/ai/` | AI qayerdan keladi (`engine.ts`), jamoalar: suhbat, sayt, katta loyiha, kontent, vazifa, tuzatish versiyalari (`crews.ts`), Boss imtihoni va dars konspekti (`exam.ts`) |
+| `src/ai/` | AI qayerdan keladi (`engine.ts`), jamoalar: suhbat, sayt, katta loyiha, kontent, vazifa, tuzatish versiyalari (`crews.ts`), har bosqich uchun skill tanlash (`skills.ts`), Boss imtihoni va dars konspekti (`exam.ts`) |
 | `src/ui/` | Panellar (`hud.ts`), natija oynasi: sayt ko‘rinishi, belgilash, versiyalar, kod (`results.ts`), bilim grafi (`graphView.ts`), markdown |
 | `src/router.ts` | Vazifani eng mos agentga yo‘naltirish (TF‑IDF, o‘zbekcha sinonimlar bilan) |
 | `server/` | Express + WebSocket: hooklar, vazifalar (`dispatch.mjs`), ishga olish |
@@ -229,17 +236,19 @@ Claude Code ──hook (office-hook.mjs)──▶ server :3334 ──WebSocket�
 
 - Server faqat `127.0.0.1` da tinglaydi; `Host` va `Origin` sarlavhalari tekshiriladi (DNS rebinding va boshqa saytlardan so‘rovlar bloklanadi).
 - Hooklar va UI `~/.ai-agent-office/token` (0600) dagi token bilan autentifikatsiya qilinadi.
-- Agent chaqiruvlari bo‘sh vaqtinchalik papkada, asboblarsiz ishlaydi (skrinshot uchun faqat o‘qish); yaratilgan saytlar `workspaces/` dan CSP sandbox bilan beriladi, ofis ichidagi ko‘rinish esa `sandbox` iframe'da.
+- Agent chaqiruvlari bo‘sh vaqtinchalik papkada, asboblarsiz ishlaydi (skrinshot uchun faqat Read, internet tadqiqoti uchun faqat WebSearch/WebFetch); yaratilgan saytlar `workspaces/` dan CSP sandbox bilan beriladi, ofis ichidagi ko‘rinish esa `sandbox` iframe'da.
 
 ---
 
 ## 🇬🇧 English
 
-**A 3D office where Claude Code agents, skills and commands live and work.** Everything from eleven open-source repos — [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [claude-skills](https://github.com/alirezarezvani/claude-skills), [Claude-Office](https://github.com/W17ant/Claude-Office), [graphify](https://github.com/Graphify-Labs/graphify), [hermes-agent](https://github.com/NousResearch/hermes-agent), [ECC](https://github.com/affaan-m/ECC), [ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners), [ai-agent-book](https://github.com/bojieli/ai-agent-book), [agent-skills](https://github.com/addyosmani/agent-skills), [500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects) and [pi](https://github.com/earendil-works/pi) — is gathered into `library/`, linked into a Graphify-style knowledge graph and rendered as a living Three.js office.
+**A 3D office where Claude Code agents, skills and commands live and work.** Everything from twelve open-source repos — [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [claude-skills](https://github.com/alirezarezvani/claude-skills), [Claude-Office](https://github.com/W17ant/Claude-Office), [graphify](https://github.com/Graphify-Labs/graphify), [hermes-agent](https://github.com/NousResearch/hermes-agent), [ECC](https://github.com/affaan-m/ECC), [ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners), [ai-agent-book](https://github.com/bojieli/ai-agent-book), [agent-skills](https://github.com/addyosmani/agent-skills), [500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects), [pi](https://github.com/earendil-works/pi) and [Agent-Reach](https://github.com/Panniantong/Agent-Reach) — is gathered into `library/`, linked into a Graphify-style knowledge graph and rendered as a living Three.js office.
 
 - **A campus of seven buildings**, one per line of work plus Claude Academy, in one architectural family: 🏛️ Management (stone piers, flag, helipad), 🤖 AI & Technology (LED bands, solar roof, dish, AI hologram), 🤝 Sales (billboard, awning), 📣 Marketing & Media (live LED screen, colour fins), 💰 Finance (colonnade and pediment), ☕ Office Services (roof garden, café) — around a plaza with a fountain and the Graphify Core, gardens, lamps and a gated entrance. From afar you see whole buildings; zoom in and roofs and upper floors fade away to show the work inside (🏗️ shows every interior at once).
 - **People who look like people:** realistic proportions, faces, hair (including hijab and doppi), beards, knees and elbows, and clothes by job — director in a suit and tie, assistant with a tablet, developer in a hoodie with headphones, accountant in a sweater with a folder, cleaner with an apron and a mop, guard in uniform. 12+ roles from director to cleaner; cleaners mop the plaza and offices and a guard patrols the gate.
-- **234 agents** sit at desks in their building by department; **911 skills** and **268 commands** are books on each building's shelves; **74 guides** include Microsoft's AI Agents for Beginners lessons and the AI Agent Book chapters.
+- **235 agents** sit at desks in their building by department; **927 skills** and **268 commands** are books on each building's shelves; **191 guides** include Microsoft's AI Agents for Beginners lessons, the AI Agent Book chapters and 112 agent projects from the 500 AI Agents catalogue, one entry each.
+- **Agents use the skills:** every crew step gets the best-matching skills from the library (the agent's and its team's own first) with their instructions — e.g. `database-migrations` and `sql-database-assistant` for a school database, `mcp-server-builder` for the MCP server, `senior-qa` for testing, Agent Reach for internet research. Used skills show as 📘 chips in Progress and light up on the shelves. Project plans get similar real projects from the 500 AI Agents catalogue as examples.
+- **Internet (Agent Reach):** the `reach-scout` agent and the Agent Reach skills; on the local server such steps really search and read the web (read-only WebSearch/WebFetch) and cite their sources. `"allowWeb": false` in `office.config.json` turns it off.
 - **Ambient life:** agents fetch skill books, work, consult colleagues they are linked to in the graph, grab coffee and query the central **Graphify Core**.
 - **Live mode:** `npm run hooks:install` wires Claude Code hooks to the office. Your prompts, Claude's tool calls, subagents (matched to their desks, or arriving as visitors) and skills (glowing books) show up in real time.
 - **Talk and give work (English or Uzbek):** “hi everyone” gets in-character replies from several agents; “build me a quiz website” sends the **Coder team** through plan → SQLite database → Express backend → complete frontend → QA (and a fix pass) → report, then opens the finished site with its plan, code and a .zip; screenshots of an Instagram/Telegram account plus “analyse and apply the style to my content” sends the **Content team** through analysis → strategy and 14-day plan → 5 ready posts. Any other task goes to the best team: the lead plans, a specialist delivers, a colleague reviews.
@@ -253,7 +262,7 @@ Claude Code ──hook (office-hook.mjs)──▶ server :3334 ──WebSocket�
 - **Teams and a real benchmark:** 11 task teams; `npm run benchmark` gave every member its team's task, timed it and had a judge model score it (52 runs). The Teams tab marks 🏆 best and ⚡ fastest agents.
 - **Portraits:** click anyone for the same person in high detail — a rotatable face (blinking, talking) and full body, with their role and building.
 - **Hire:** install any agent/skill/command into `.claude/` from the inspector or with `npm run hire -- <id>`.
-- **Knowledge graph:** 1,512 nodes / 5,406 edges with EXTRACTED vs INFERRED edges, communities by department and "god nodes".
+- **Knowledge graph:** 1,647 nodes / 5,696 edges with EXTRACTED vs INFERRED edges, communities by department and "god nodes".
 
 ```bash
 npm install

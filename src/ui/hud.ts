@@ -1082,7 +1082,8 @@ export class Hud {
               .map((s) => {
                 const it = this.data.byId.get(s.agentId);
                 const icon = { wait: '○', run: '⏳', done: '✅', error: '⚠️', skip: '–' }[s.status];
-                return h('li', { className: s.status }, h('span', {}, `${icon} ${s.label[currentLang()]}`), h('small', {}, ` ${it?.name || ''}${s.seconds ? ` · ${s.seconds}s` : ''}`), s.status === 'run' && s.live ? h('div', { className: 'live-text' }, s.live) : null);
+                const used = (s.skills || []).map((id) => this.data.byId.get(id)?.name).filter(Boolean);
+                return h('li', { className: s.status }, h('span', {}, `${icon} ${s.label[currentLang()]}`), h('small', {}, ` ${it?.name || ''}${s.seconds ? ` · ${s.seconds}s` : ''}`), used.length || s.web ? h('small', { className: 'step-skill-line', title: used.join(', ') }, ` ${s.web ? '🌐 ' : ''}${used.length ? `📘 ${used.join(', ')}` : ''}`) : null, s.status === 'run' && s.live ? h('div', { className: 'live-text' }, s.live) : null);
               }),
           ),
           run.status === 'waiting' ? h('button', { className: 'btn primary small', onclick: () => this.showPanelTab('chat') }, T('❓ Savolga javob bering', '❓ Answer the question')) : null,

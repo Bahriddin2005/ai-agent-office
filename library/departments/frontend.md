@@ -1,6 +1,6 @@
 # 🎨 Frontend & Design — Frontend va dizayn
 
-95 items in this department.
+98 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -99,3 +99,6 @@
 | [slo-design](../commands/claude-skills/slo-design.md) | command | Claude Skills | Interactive wizard to design an SLO with SLI, target, error budget, and burn-rate alerts |
 | [vue-review](../commands/ecc/vue-review.md) | command | ECC | Comprehensive Vue.js code review for Composition API correctness, reactivity, composable patterns, template security, accessibility, and Vue-specific performan… |
 | [webperf](../commands/agent-skills/webperf.md) | command | Agent Skills | Run a web performance audit via the web-performance-auditor persona |
+| [landing-page-generator](../guides/agents-500/landing-page-generator.md) | guide | 500 Agents | Automates creation of landing pages for websites (Web Development, CrewAI) |
+| [markdown-validator](../guides/agents-500/markdown-validator.md) | guide | 500 Agents | Validates Markdown files for proper formatting (Documentation, CrewAI) |
+| [web-search-solve-tasks-requiring-web-info](../guides/agents-500/web-search-solve-tasks-requiring-web-info.md) | guide | 500 Agents | Searches the web to gather information for completing tasks (Information Retrieval, AutoGen) |

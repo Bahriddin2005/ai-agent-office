@@ -17,7 +17,7 @@
   "graphify": {
     "repo": "Graphify-Labs/graphify",
     "branch": "v8",
-    "commit": "d6eaa8aae8df155874ebb1044302c055c286342a"
+    "commit": "1cd9a36c0c57a661d2d2234bc3207e887e1ba104"
   },
   "hermes": {
     "repo": "NousResearch/hermes-agent",
@@ -53,5 +53,10 @@
     "repo": "earendil-works/pi",
     "branch": "main",
     "commit": "5257d0d5f3ab7d42550804f32c67a77b49f485d4"
+  },
+  "agent-reach": {
+    "repo": "Panniantong/Agent-Reach",
+    "branch": "main",
+    "commit": "a19a171fa980a0785849596492e0af4db800c82f"
   }
 }

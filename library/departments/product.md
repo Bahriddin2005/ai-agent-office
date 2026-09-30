@@ -1,6 +1,6 @@
 # 🗺️ Product & Projects — Mahsulot va loyihalar
 
-81 items in this department.
+82 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -80,8 +80,9 @@
 | [sprint-health](../commands/claude-skills/sprint-health.md) | command | Claude Skills | Sprint health scoring and velocity analysis for agile teams. Usage: /sprint-health [options] |
 | [sprint-plan](../commands/claude-skills/sprint-plan.md) | command | Claude Skills | Capacity-gated sprint planning — runs capacity math, carry-over check, and a definition-of-ready gate before committing scope. Usage: /sprint-plan [capacity] |
 | [user-story](../commands/claude-skills/user-story.md) | command | Claude Skills | Generate user stories with acceptance criteria and sprint planning. Usage: /user-story [options] |
-| [agno-use-cases](../guides/agents-500/agno-use-cases.md) | guide | 500 Agents | Lightweight, fast agent framework. Best for single-agent tools and rapid prototyping. |
-| [autogen-use-cases](../guides/agents-500/autogen-use-cases.md) | guide | 500 Agents | Microsoft's framework for code generation, execution, and multi-agent research. |
-| [crewai-use-cases](../guides/agents-500/crewai-use-cases.md) | guide | 500 Agents | Role-based multi-agent framework. Great for business automation. |
-| [industry-use-cases](../guides/agents-500/industry-use-cases.md) | guide | 500 Agents | industry-use-cases |
-| [langgraph-use-cases](../guides/agents-500/langgraph-use-cases.md) | guide | 500 Agents | State-machine framework for complex, stateful agent workflows and RAG pipelines. |
+| [job-posting-generator](../guides/agents-500/job-posting-generator.md) | guide | 500 Agents | Creates job postings by analyzing job requirements (Recruitment, CrewAI) |
+| [logistics-optimization-agent](../guides/agents-500/logistics-optimization-agent.md) | guide | 500 Agents | Plans efficient delivery routes and manages inventory (Supply Chain) |
+| [product-recommendation-agent](../guides/agents-500/product-recommendation-agent.md) | guide | 500 Agents | Suggests products based on user preferences and history (Retail) |
+| [self-driving-delivery-agent](../guides/agents-500/self-driving-delivery-agent.md) | guide | 500 Agents | Optimizes routes and autonomously delivers packages (Transportation) |
+| [shopping-partner-agent](../guides/agents-500/shopping-partner-agent.md) | guide | 500 Agents | Product recommender based on preferences from Amazon, Flipkart (E-commerce, Agno) |
+| [starter-template](../guides/agents-500/starter-template.md) | guide | 500 Agents | Starter template for new CrewAI projects (Development, CrewAI) |

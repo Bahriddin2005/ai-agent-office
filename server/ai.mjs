@@ -1,6 +1,7 @@
 // One agent answer through the Claude Code CLI: the agent's instructions as
-// the system prompt, no tools (or only Read, to look at uploaded screenshots),
-// run from an empty folder so no project CLAUDE.md leaks in.
+// the system prompt, no tools (or only Read, to look at uploaded screenshots;
+// WebSearch/WebFetch for internet research steps), run from an empty folder so
+// no project CLAUDE.md leaks in.
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -39,7 +40,7 @@ export class AiRunner {
   }
 
   /** @returns {Promise<{text: string, seconds: number, model?: string}>} */
-  async run({ system = '', prompt, tier = 'default', images = [] }) {
+  async run({ system = '', prompt, tier = 'default', images = [], web = false }) {
     if (typeof prompt !== 'string' || !prompt.trim()) throw Object.assign(new Error('prompt required'), { status: 400 });
     if (prompt.length > 400_000 || String(system).length > 100_000) throw Object.assign(new Error('prompt too large'), { status: 413 });
     if (!Array.isArray(images) || images.length > MAX_IMAGES) throw Object.assign(new Error(`at most ${MAX_IMAGES} images`), { status: 400 });
@@ -62,12 +63,11 @@ export class AiRunner {
       // Chat should come back in seconds: no extended thinking on the quick tier,
       // and a bounded budget elsewhere so a crew step never thinks for minutes.
       const thinking = this.thinking[tier] ?? this.thinking.default;
-      if (paths.length) {
-        fullPrompt += `\n\nThe images are saved as files. Open every one with the Read tool before answering:\n${paths.map((p) => `- ${p}`).join('\n')}`;
-        args.push('--tools', 'Read', '--allowedTools', 'Read', '--max-turns', '10');
-      } else {
-        args.push('--tools', '');
-      }
+      // Read-only tools only: Read for screenshots, web search and fetch for research.
+      const tools = [...(paths.length ? ['Read'] : []), ...(web ? ['WebSearch', 'WebFetch'] : [])];
+      if (paths.length) fullPrompt += `\n\nThe images are saved as files. Open every one with the Read tool before answering:\n${paths.map((p) => `- ${p}`).join('\n')}`;
+      if (tools.length) args.push('--tools', tools.join(','), '--allowedTools', tools.join(','), '--max-turns', web ? '16' : '10');
+      else args.push('--tools', '');
       return await this.spawn(['-p', fullPrompt, ...args], dir, { MAX_THINKING_TOKENS: String(thinking) });
     } finally {
       rmSync(dir, { recursive: true, force: true });

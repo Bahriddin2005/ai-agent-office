@@ -1,6 +1,6 @@
 # 📣 Marketing & Growth — Marketing va o‘sish
 
-94 items in this department.
+98 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -98,3 +98,7 @@
 | [marketing-campaign](../commands/ecc/marketing-campaign.md) | command | ECC | Plan and execute a full marketing campaign. Accepts a product brief and returns positioning, landing page copy, email sequence, social posts, ad variants, vide… |
 | [prp-pr](../commands/ecc/prp-pr.md) | command | ECC | Alias of /pr for the PRP workflow series. Use when creating a pull request mid-PRP workflow; otherwise use /pr. |
 | [seo-auditor](../commands/claude-skills/seo-auditor.md) | command | Claude Skills | Scan and optimize documentation files for SEO. Audits README.md files and docs/ pages for meta tags, headings, keywords, readability, duplicate content, and br… |
+| [content-personalization-agent](../guides/agents-500/content-personalization-agent.md) | guide | 500 Agents | Recommends personalized media based on preferences (Entertainment) |
+| [instagram-post-generator](../guides/agents-500/instagram-post-generator.md) | guide | 500 Agents | Generates and schedules Instagram posts automatically (Social Media, CrewAI) |
+| [marketing-strategy-generator](../guides/agents-500/marketing-strategy-generator.md) | guide | 500 Agents | Develops marketing strategies by analyzing market trends (Marketing, CrewAI) |
+| [youtube-agent](../guides/agents-500/youtube-agent.md) | guide | 500 Agents | Analyzes YouTube videos: summaries, timestamps, themes (Media & Content, Agno) |

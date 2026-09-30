@@ -39,7 +39,21 @@
       "short": "Graphify",
       "license": "Apache-2.0",
       "color": "#2ec4b6",
-      "role": "Knowledge graph: every agent, skill and command gathered into one navigable graph"
+      "role": "Knowledge graph: every agent, skill and command gathered into one navigable graph; skills to build, query, update and export graphs",
+      "scan": [
+        {
+          "match": "^graphify/skill\\.md$",
+          "type": "skill",
+          "dept": "data"
+        },
+        {
+          "match": "^graphify/skills/claude/references/[^/]+\\.md$",
+          "type": "skill",
+          "nameFrom": "file",
+          "prefix": "graphify-",
+          "dept": "data"
+        }
+      ]
     },
     {
       "id": "hermes",
@@ -125,7 +139,7 @@
       "short": "500 Agents",
       "license": "MIT",
       "color": "#6c5ce7",
-      "role": "Runnable agent projects (web research, code review, SQL, email, support…) and 500+ industry use cases grouped by framework",
+      "role": "21 runnable agents (web research, code review, SQL, email, support…) and a catalogue of industry use cases by framework (CrewAI, AutoGen, Agno, LangGraph), one entry per project",
       "scan": [
         {
           "match": "^agents/\\d\\d-[^/]+/README\\.md$",
@@ -137,7 +151,8 @@
           "match": "^README\\.md$",
           "type": "guide",
           "dept": "product",
-          "split": "^#{2,3} +(?:🏭 +)?(Industry Use Cases|CrewAI|AutoGen|Agno|LangGraph)\\s*$"
+          "split": "^#{2,3} +(?:🏭 +)?(Industry Use Cases|CrewAI|AutoGen|Agno|LangGraph)\\s*$",
+          "rows": true
         }
       ],
       "sparse": [
@@ -182,6 +197,73 @@
         "/.pi/",
         "/packages/coding-agent/examples/extensions/subagent/",
         "/packages/coding-agent/docs/"
+      ]
+    },
+    {
+      "id": "agent-reach",
+      "repo": "Panniantong/Agent-Reach",
+      "branch": "main",
+      "label": "Agent Reach",
+      "short": "Agent Reach",
+      "license": "MIT",
+      "color": "#e17055",
+      "role": "Internet access for agents: search and read the web, Twitter/X, Reddit, YouTube, GitHub, LinkedIn, RSS and more (16 platforms)",
+      "scan": [
+        {
+          "match": "^agent_reach/skill/SKILL_en\\.md$",
+          "type": "skill",
+          "dept": "data"
+        },
+        {
+          "match": "^agent_reach/skill/references/[^/]+\\.md$",
+          "type": "skill",
+          "nameFrom": "file",
+          "prefix": "reach-",
+          "dept": "data",
+          "describe": {
+            "reach-search": "Agent Reach: semantic web search (Exa) and search tools — find sources on any topic before reading them.",
+            "reach-social": "Agent Reach: read social media and communities — Twitter/X, Reddit, Facebook, Instagram, XiaoHongShu, Bilibili, V2EX.",
+            "reach-video": "Agent Reach: videos and podcasts — YouTube and Bilibili subtitles/transcripts, podcast transcription.",
+            "reach-web": "Agent Reach: read any web page or RSS feed as clean text (Jina Reader and fallbacks).",
+            "reach-dev": "Agent Reach: developer sources — GitHub repos, issues, PRs and code search through the gh CLI.",
+            "reach-career": "Agent Reach: jobs and recruiting — LinkedIn and Boss Zhipin profiles and job listings.",
+            "reach-finance": "Agent Reach: market data — stock quotes and discussions (Xueqiu) for research."
+          }
+        },
+        {
+          "match": "^agent_reach/guides/setup-[^/]+\\.md$",
+          "type": "guide",
+          "nameFrom": "file",
+          "prefix": "agent-reach-",
+          "dept": "data",
+          "describe": {
+            "agent-reach-setup-exa": "Set up Exa semantic search for Agent Reach (free, via MCP, no API key).",
+            "agent-reach-setup-groq": "Set up Groq Whisper so Agent Reach can transcribe videos and podcasts.",
+            "agent-reach-setup-reddit": "Set up Reddit access for Agent Reach.",
+            "agent-reach-setup-twitter": "Set up Twitter/X access for Agent Reach (cookies or backends).",
+            "agent-reach-setup-xiaohongshu": "Set up XiaoHongShu access for Agent Reach."
+          }
+        },
+        {
+          "match": "^docs/(install|update|cookie-export|troubleshooting)\\.md$",
+          "type": "guide",
+          "nameFrom": "file",
+          "prefix": "agent-reach-",
+          "dept": "data",
+          "describe": {
+            "agent-reach-troubleshooting": "Troubleshooting Agent Reach channels (Xueqiu, Twitter, Reddit, YouTube and more).",
+            "agent-reach-install": "Install Agent Reach: one command for your agent, then `agent-reach doctor` checks every channel.",
+            "agent-reach-update": "Update Agent Reach to the latest version and re-check the channels.",
+            "agent-reach-cookie-export": "Export browser cookies to a server so Agent Reach can read login-only platforms."
+          }
+        }
+      ],
+      "sparse": [
+        "/LICENSE",
+        "/README.md",
+        "/agent_reach/skill/",
+        "/agent_reach/guides/",
+        "/docs/*.md"
       ]
     }
   ]

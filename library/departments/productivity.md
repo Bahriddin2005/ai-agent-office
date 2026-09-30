@@ -1,6 +1,6 @@
 # ⚡ Productivity Hub — Samaradorlik markazi
 
-104 items in this department.
+123 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -107,4 +107,23 @@
 | [saas-health](../commands/claude-skills/saas-health.md) | command | Claude Skills | Calculate SaaS health metrics (ARR, MRR, churn, CAC, LTV, NRR) and benchmark against industry standards. Usage: /saas-health [options] |
 | [skill-health](../commands/ecc/skill-health.md) | command | ECC | Show skill portfolio health dashboard with charts and analytics |
 | [tc](../commands/claude-skills/tc.md) | command | Claude Skills | Track technical changes with structured records, a state machine, and session handoff. Usage: /tc [args] |
+| [agent-memory-guard](../guides/agents-500/agent-memory-guard.md) | guide | 500 Agents | Detects and blocks memory poisoning attacks (OWASP ASI06) in AI agent memory stores (Cybersecurity) |
+| [ai-health-assistant](../guides/agents-500/ai-health-assistant.md) | guide | 500 Agents | Diagnoses and monitors diseases using patient data (Healthcare) |
+| [async-sequential-task-solving](../guides/agents-500/async-sequential-task-solving.md) | guide | 500 Agents | Handles asynchronous task-solving in a sequence of chats (Workflow Automation, AutoGen) |
+| [automated-task-solving-with-code-gen-execution-debugging](../guides/agents-500/automated-task-solving-with-code-gen-execution-debugging.md) | guide | 500 Agents | Demonstrates automated task-solving by generating, executing, and debugging code (Software Development, AutoGen) |
 | [claude-memory](../guides/best-practice/claude-memory.md) | guide | Best Practice | Persistent context via CLAUDE.md files — how to write them and how they load in monorepos. |
+| [code-assistant-with-langgraph](../guides/agents-500/code-assistant-with-langgraph.md) | guide | 500 Agents | Resilient code assistant with error checking and iterative refinement (Software Development, LangGraph) |
+| [complex-task-solving-by-group-chat-6-members](../guides/agents-500/complex-task-solving-by-group-chat-6-members.md) | guide | 500 Agents | Solves complex tasks collaboratively with a larger group (Collaboration, AutoGen) |
+| [e-commerce-personal-shopper-agent](../guides/agents-500/e-commerce-personal-shopper-agent.md) | guide | 500 Agents | Helps customers find products they'll love (E-commerce) |
+| [email-auto-responder-flow](../guides/agents-500/email-auto-responder-flow.md) | guide | 500 Agents | Automates email responses based on predefined criteria (Communication, CrewAI) |
+| [group-chat-3-members-1-manager](../guides/agents-500/group-chat-3-members-1-manager.md) | guide | 500 Agents | Demonstrates group task-solving via multi-agent collaboration (Collaboration, AutoGen) |
+| [hia-health-insights-agent](../guides/agents-500/hia-health-insights-agent.md) | guide | 500 Agents | Analyses medical reports and provides health insights (Healthcare) |
+| [lina-egyptian-medical-chatbot](../guides/agents-500/lina-egyptian-medical-chatbot.md) | guide | 500 Agents | Egyptian medical assistant chatbot (Healthcare) |
+| [meeting-assistant-flow](../guides/agents-500/meeting-assistant-flow.md) | guide | 500 Agents | Organizes meetings, scheduling and agenda preparation (Productivity, CrewAI) |
+| [prep-for-a-meeting](../guides/agents-500/prep-for-a-meeting.md) | guide | 500 Agents | Prepares meeting materials and sets agendas (Productivity, CrewAI) |
+| [sequence-of-nested-chats](../guides/agents-500/sequence-of-nested-chats.md) | guide | 500 Agents | Demonstrates sequential task-solving using nested chats (Problem Solving, AutoGen) |
+| [sequential-task-solving-single-initiating-agent](../guides/agents-500/sequential-task-solving-single-initiating-agent.md) | guide | 500 Agents | Automates sequential task-solving with a single initiating agent (Workflow Automation, AutoGen) |
+| [smart-farming-assistant](../guides/agents-500/smart-farming-assistant.md) | guide | 500 Agents | Provides insights on crop health and yield predictions (Agriculture) |
+| [solving-complex-tasks-with-nested-chats](../guides/agents-500/solving-complex-tasks-with-nested-chats.md) | guide | 500 Agents | Uses nested chats to solve hierarchical and complex problems (Problem Solving, AutoGen) |
+| [task-solving-with-coding-planning-agents](../guides/agents-500/task-solving-with-coding-planning-agents.md) | guide | 500 Agents | Combines coding and planning agents for solving tasks (Planning & Dev, AutoGen) |
+| [virtual-travel-assistant](../guides/agents-500/virtual-travel-assistant.md) | guide | 500 Agents | Plans travel itineraries based on preferences (Hospitality) |

@@ -1,6 +1,6 @@
 # 🎬 Creative Studio — Ijodiy studiya
 
-46 items in this department.
+55 items in this department.
 
 | Name | Type | Source | What it does |
 |---|---|---|---|
@@ -50,3 +50,12 @@
 | [tldraw-offline](../skills/hermes/tldraw-offline/SKILL.md) | skill | Hermes | Drive and script tldraw offline canvases with an agent. |
 | [video-editing](../skills/ecc/video-editing/SKILL.md) | skill | ECC | AI-assisted video editing workflows for cutting, structuring, and augmenting real footage. Covers the full pipeline from raw capture through FFmpeg, Remotion,… |
 | [visa-doc-translate](../skills/ecc/visa-doc-translate/SKILL.md) | skill | ECC | Translate visa document images (bank deposit, employment, income, and retirement certificates; HEIC, PNG, or JPG) into English via OCR and produce a bilingual… |
+| [agent-chat-with-whisper](../guides/agents-500/agent-chat-with-whisper.md) | guide | 500 Agents | AI agent for transcription and translation using Whisper (Audio Processing, AutoGen) |
+| [ai-game-companion-agent](../guides/agents-500/ai-game-companion-agent.md) | guide | 500 Agents | Enhances player experience with real-time assistance (Gaming) |
+| [book-recommendation-agent](../guides/agents-500/book-recommendation-agent.md) | guide | 500 Agents | Personalized book suggestions using literary data and reader preferences (Publishing & Media, Agno) |
+| [conversational-chess-with-nested-chats](../guides/agents-500/conversational-chess-with-nested-chats.md) | guide | 500 Agents | Uses nested chats for playing conversational chess with tools (Gaming, AutoGen) |
+| [game-builder-crew](../guides/agents-500/game-builder-crew.md) | guide | 500 Agents | Assists in game development by automating aspects of creation (Game Development, CrewAI) |
+| [media-trend-analysis-agent](../guides/agents-500/media-trend-analysis-agent.md) | guide | 500 Agents | Analyzes emerging trends and influencers from digital platforms (Media & News, Agno) |
+| [multimodal-agent-with-llava](../guides/agents-500/multimodal-agent-with-llava.md) | guide | 500 Agents | Uses Llava for multimodal agent conversations (Image Processing, AutoGen) |
+| [screenplay-writer](../guides/agents-500/screenplay-writer.md) | guide | 500 Agents | Aids in writing screenplays with templates and guidance (Creative Writing, CrewAI) |
+| [write-a-book-with-flows](../guides/agents-500/write-a-book-with-flows.md) | guide | 500 Agents | Assists authors with structured writing workflows (Creative Writing, CrewAI) |
