@@ -247,7 +247,8 @@ export class Academy {
       }
       dept = [...avg.entries()].sort((p, q) => p[1].reduce((s, v) => s + v, 0) / p[1].length - q[1].reduce((s, v) => s + v, 0) / q[1].length)[0][0];
     }
-    const seatsFree = [...a.seats];
+    // Front rows (next to the lectern and the screen) fill first.
+    const seatsFree = [...a.seats].reverse();
     const size = Math.min(12, seatsFree.length);
     const queued = this.queue.map((q) => this.cast.byItem.get(q.id)).filter((x): x is Actor => !!x && free(x));
     const students: Actor[] = [...queued.slice(0, size)];
