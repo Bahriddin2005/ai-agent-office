@@ -431,9 +431,10 @@ export class Crews {
     const engine = await this.engine();
     const t0 = performance.now();
     // The skills that fit this step best: the agent follows them.
+    // Crews with fixed stages search by what the stage does; a general task by the request itself.
     const kind = step.key.replace(/\d+$/, '');
-    const hint = run.kind === 'task' ? step.label.en : SKILL_HINTS[kind] || step.label.en;
-    const picked = kind === 'summary' ? [] : this.skillBook.pick(step.agentId, hint, run.prompt, 3, this.teamById.get(run.teamId)?.skills || []);
+    const [focus, context] = run.kind === 'task' ? [run.prompt, ''] : [SKILL_HINTS[kind] || step.label.en, run.prompt];
+    const picked = kind === 'summary' ? [] : this.skillBook.pick(step.agentId, focus, context, 3, this.teamById.get(run.teamId)?.skills || []);
     step.skills = picked.map((x) => x.id);
     step.web = step.agentId === SCOUT || picked.some((x) => x.source === 'agent-reach');
     const skillText = await this.skillBook.block(picked);

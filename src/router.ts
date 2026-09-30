@@ -27,6 +27,7 @@ const UZ: Record<string, string[]> = {
   xabar: ['message', 'notification'], xabarnoma: ['notification'], avtomatlashtir: ['automation', 'workflow'], avtomatlashtirish: ['automation', 'workflow'], mijoz: ['customer', 'support'],
   sayohat: ['travel', 'trip'], kasalxona: ['hospital', 'healthcare', 'medical'], shifoxona: ['hospital', 'healthcare', 'medical'], bemor: ['patient', 'healthcare'],
   shifokor: ['doctor', 'healthcare'], yordam: ['support', 'help'], restoran: ['restaurant', 'food'], ovqat: ['food', 'recipe'], ish: ['job', 'career'], rezyume: ['resume', 'career'],
+  kontent: ['content'], post: ['post', 'social'], kunlik: ['daily', 'calendar'], obuna: ['subscription', 'pricing'], onlayn: ['online'], instagram: ['instagram', 'social'],
   tizim: ['system', 'platform'], platforma: ['platform'], animatsiya: ['animation', 'motion'], animatsion: ['animation', 'motion'], ilova: ['app', 'application'],
   sheʼr: ['poem', 'writing'], hikoya: ['story', 'writing'], tarjimon: ['translate'], hisobchi: ['accounting', 'finance'], buxgalter: ['accounting', 'finance'],
 };
@@ -56,15 +57,17 @@ export function tokenize(text: string): string[] {
     if (!w || STOP.has(w)) continue;
     const uz = uzStems(w).map((x) => UZ[x]).find(Boolean);
     if (uz) {
-      out.push(...uz);
+      // Same stemming as the English text they are matched against.
+      out.push(...uz.map(stem));
       continue;
     }
-    w = w.replace(/ʼ/g, '');
-    if (w.length > 4) w = w.replace(/(ing|ers|er|ed|es|s)$/, '');
+    w = stem(w.replace(/ʼ/g, ''));
     if (w.length > 1) out.push(w);
   }
   return out;
 }
+
+const stem = (w: string) => (w.length > 4 ? w.replace(/(ing|ers|er|ed|es|s)$/, '') : w);
 
 export interface Route {
   item: Item;
