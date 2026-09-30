@@ -7,7 +7,7 @@ import { currentLang, t, toggleLang } from '../i18n';
 import type { Connection, Status } from '../live/connection';
 import type { Actor, Cast } from '../sim/actors';
 import type { Director, FeedEntry } from '../sim/director';
-import type { CrewKind, CrewRun, Crews, Pending, Question } from '../ai/crews';
+import type { CrewKind, CrewRun, Crews, Pending, Question, SendMode } from '../ai/crews';
 import type { Engine } from '../ai/engine';
 import { compact, h } from './dom';
 import type { GraphView } from './graphView';
@@ -64,7 +64,7 @@ export class Hud {
   private graphSearch = '';
   private hiredIds = new Set<string>();
   private panel: Panel = 'chat';
-  private mode: CrewKind | 'auto' = 'auto';
+  private mode: SendMode | 'auto' = 'auto';
   private attachments: File[] = [];
   private el: Record<string, HTMLElement> = {};
   private portrait = new Portrait(250);
@@ -698,8 +698,9 @@ export class Hud {
   }
 
   private renderModes() {
-    const modes: [CrewKind | 'auto', string][] = [
+    const modes: [SendMode | 'auto', string][] = [
       ['auto', `🤖 ${T('Avto', 'Auto')}`],
+      ['code', `💻 ${T('Dasturchilar (Claude Code)', 'Coders (Claude Code)')}`],
       ['chat', `💬 ${T('Suhbat', 'Chat')}`],
       ['website', `🌐 ${T('Veb-sayt', 'Website')}`],
       ['project', `🏗️ ${T('Katta loyiha', 'Big project')}`],
@@ -711,9 +712,13 @@ export class Hud {
 
   renderRoutes() {
     const text = (this.el.taskInput as HTMLTextAreaElement)?.value || '';
-    const kind = this.mode === 'auto' ? (text.trim() || this.attachments.length ? this.crews.classify(text, this.attachments) : null) : this.mode;
+    const kind = this.mode === 'auto' ? (text.trim() || this.attachments.length ? this.crews.classify(text, this.attachments) : null) : this.mode === 'code' ? null : this.mode;
     const kids: Node[] = [];
-    if (this.pinnedAgent) {
+    const project = this.api.engine()?.code ? this.crews.codeProject() : undefined;
+    const coder = this.crews.team('coder');
+    if (!this.pinnedAgent && (this.mode === 'code' || (this.mode === 'auto' && project && text.trim() && this.crews.followsProject(text)))) {
+      kids.push(h('span', { className: 'chip route active', style: { '--c': coder.color } }, project ? `💻 → ${coder.emoji} Claude Code: “${project.title.slice(0, 40)}”` : `💻 → ${coder.emoji} ${coder.name[currentLang()]} (Claude Code)`));
+    } else if (this.pinnedAgent) {
       kids.push(h('span', { className: 'chip route active' }, `📌 ${this.pinnedAgent.name}`, h('button', { className: 'x small', 'aria-label': 'unpin', onclick: () => { this.pinnedAgent = null; this.renderRoutes(); } }, '✕')));
     } else if (kind) {
       const team = kind === 'website' || kind === 'project' ? this.crews.team('coder') : kind === 'content' ? this.crews.team('content') : kind === 'chat' ? this.crews.team('office') : this.crews.teamFor(text);

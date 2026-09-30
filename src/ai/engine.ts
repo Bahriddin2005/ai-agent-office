@@ -2,7 +2,7 @@
 //  - "server": the local office server runs the Claude Code CLI (npm run dev)
 //  - "claude": inside claude.ai the page asks Claude through the `sample` capability
 //  - "none":   neither is available; crews fall back to a clearly marked simulation
-import type { Connection } from '../live/connection';
+import type { CodeEvent, CodeRequest, CodeResult, Connection } from '../live/connection';
 
 export type Tier = 'quick' | 'default' | 'complex';
 
@@ -26,6 +26,8 @@ export interface Engine {
   kind: 'server' | 'claude' | 'none';
   images: boolean;
   ask(prompt: string, opts?: AskOptions): Promise<AskResult>;
+  /** A Claude Code session of the Coder team (office server with the Claude CLI only). */
+  code?(req: CodeRequest, onEvent: (e: CodeEvent) => void, signal?: AbortSignal): Promise<CodeResult>;
 }
 
 export class EngineError extends Error {
@@ -49,7 +51,10 @@ const blobToDataUrl = (b: Blob) =>
 class ServerEngine implements Engine {
   kind = 'server' as const;
   images = true;
-  constructor(private conn: Connection) {}
+  code?: Engine['code'];
+  constructor(private conn: Connection) {
+    if (conn.health?.code) this.code = (req, onEvent, signal) => conn.code(req, onEvent, signal);
+  }
   async ask(prompt: string, o: AskOptions = {}): Promise<AskResult> {
     const images = o.images?.length ? await Promise.all(o.images.map(blobToDataUrl)) : [];
     const res = await this.conn.ai({ system: o.system || '', prompt, tier: o.tier || 'default', images, web: !!o.web }, o.signal);

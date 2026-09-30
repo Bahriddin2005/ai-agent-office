@@ -14,8 +14,11 @@ import { currentLang } from '../i18n';
 import type { Router } from '../router';
 import { EngineError, extractFiles, extractHtml, parseJson, type Engine, type Tier } from './engine';
 import { SkillBook } from './skills';
+import type { CodeEvent } from '../live/connection';
 
 export type CrewKind = 'chat' | 'website' | 'project' | 'content' | 'task';
+/** How a message can be sent: a crew, or 💻 straight to the Coder team in Claude Code. */
+export type SendMode = CrewKind | 'code';
 type L = { uz: string; en: string };
 
 export interface Team {
@@ -156,6 +159,8 @@ export interface CrewRun {
   /** finished step outputs: a retry skips them */
   cache: Record<string, string>;
   pinned?: string;
+  /** built by the Coder team in Claude Code: questions and changes go back to its project folder */
+  code?: boolean;
 }
 
 export interface CrewHooks {
@@ -168,6 +173,8 @@ export interface CrewHooks {
   preview?(run: CrewRun): void;
   /** the crew needs the user (questions or plan approval) */
   ask?(run: CrewRun): void;
+  /** an agent opened a library skill (Claude Code sessions) */
+  skillUsed?(run: CrewRun, step: Step, skillId: string): void;
   saveWorkspace?(id: string, files: Record<string, string>): Promise<{ url: string; dir: string } | null>;
 }
 
@@ -225,6 +232,13 @@ const SKILL_HINTS: Record<string, string> = {
   posts: 'social content copywriting',
 };
 
+/** Leads the Coder team in Claude Code sessions (the rest of the team are its subagents). */
+const CODE_LEAD = 'agent:claude-skills:cs-fullstack-engineer';
+/** Names as Claude Code knows subagents and skills. */
+const slugName = (s: string) => String(s).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'agent';
+/** The project folder of a run on the office server. */
+const codeDir = (run: CrewRun) => run.id;
+
 /** The internet scout (Agent Reach): its steps may search and read the web. */
 const SCOUT = 'agent:agent-reach:reach-scout';
 /** How much of an app QA reads in one go (a large single-file app is ~100 KB). */
@@ -270,6 +284,8 @@ export class Crews {
   knowledge?: (agentId: string) => string;
   /** The library's skills, handed to agents step by step. */
   readonly skillBook: SkillBook;
+  /** The run open in the results view (messages about a Claude Code project go there). */
+  focusRun?: () => CrewRun | undefined;
   private teamById: Map<string, Team>;
   private benchByAgent = new Map<string, Bench>();
   private waiters = new Map<string, (v: unknown) => void>();
@@ -556,12 +572,27 @@ export class Crews {
   }
 
   // --------------------------------------------------------------- entry --
-  async send(text: string, images: Blob[] = [], forced?: CrewKind, pinnedAgent?: string) {
+  async send(text: string, images: Blob[] = [], mode?: SendMode, pinnedAgent?: string) {
     const clean = text.trim();
     if (!clean && !images.length) return;
+    const engine = await this.engine();
+    // 💻 mode, or a Claude Code project open in the office: the Coder team answers every message
+    // from that project (a question gets an answer, a request changes the files).
+    if (engine.code && !pinnedAgent && !images.length && (mode === 'code' || (!mode && this.followsProject(clean)))) {
+      const target = this.codeProject();
+      if (target && (target.status === 'running' || target.status === 'waiting')) {
+        this.say('user', clean);
+        this.say(CODE_LEAD, lang() === 'uz' ? `⏳ Jamoa hozir “${target.title}” ustida ishlayapti. Tugashi bilan yozing — shu loyihada davom etamiz.` : `⏳ The team is still working on “${target.title}”. Write again when it is done and we continue in that project.`, { runId: target.id });
+        return;
+      }
+      if (target) {
+        await this.followUp(target.id, clean);
+        return;
+      }
+    }
+    const forced: CrewKind | undefined = mode === 'code' ? (this.classify(clean, images) === 'project' ? 'project' : 'website') : mode;
     const imageUrls = images.map((b) => URL.createObjectURL(b));
     this.say('user', clean || '🖼️', { images: imageUrls });
-    const engine = await this.engine();
     const kind = forced || (pinnedAgent ? 'task' : this.classify(clean, images));
     if (engine.kind === 'none') return this.offline(kind, clean);
     if (kind === 'chat') return this.runChat(clean);
@@ -818,6 +849,8 @@ export class Crews {
     const answers = Object.values(run.answers || {}).join(' ');
     const wantMcp = project && (deliverables.has('mcp') || /\bmcp\b/i.test(`${run.prompt} ${answers}`));
     const wantBot = project && (deliverables.has('bot') || /\bbot|telegram bot/i.test(`${run.prompt} ${answers}`));
+    // With the office server's Claude CLI, the team builds it in Claude Code.
+    if (engine.code) return this.runCodeBuild(run, { plan, planJson, interview, project, wantMcp, wantBot, before: [S.ask, S.plan, ...(project ? [S.approve] : [])], reporter: A.report });
     const extras = [...(wantMcp ? [S.mcp] : []), ...(wantBot ? [S.bot] : [])];
     run.steps = [...base, ...extras, ...tail];
     this.hooks.changed(run);
@@ -926,21 +959,7 @@ export class Crews {
 
     // 4. QA -> fix -> re-check. The offline demo database is a requirement of the
     // preview, so QA must not report it and the fix must never remove it.
-    const review = async (step: Step, code: string) => {
-      const r = await this.call(run, step, [
-        `Plan:\n${planJson}`,
-        '',
-        code.length <= REVIEW_CHARS ? 'index.html (the whole app):' : `index.html — the file is ${code.length} characters and complete; you see its first ${REVIEW_CHARS - 20000} and last 20000 characters. Do not report the middle as missing or the file as cut off:`,
-        code.length <= REVIEW_CHARS ? code : `${code.slice(0, REVIEW_CHARS - 20000)}\n/* … middle of the file omitted for review … */\n${code.slice(-20000)}`,
-        '',
-        'You are QA. Review the app against the plan like a careful tester reading the code: missing pages or features, broken handlers, JavaScript errors you can see, data that is never saved, layout that breaks on phones, text not in the user’s language.',
-        OFFLINE_NOTE,
-        'Reply with ONLY a JSON object: {"score": 0-100, "checks": [{"name": "", "ok": true, "note": ""}], "issues": [{"severity": "high|medium|low", "note": ""}], "summary": ""}',
-        'Use "high" only for a broken core feature or a missing required page.',
-        languageRule(),
-      ].join('\n'), 'default');
-      return parseJson<NonNullable<WebsiteResult['qa']>>(r.text);
-    };
+    const review = (step: Step, code: string) => this.qaReview(run, step, planJson, code);
     let qa: WebsiteResult['qa'];
     try {
       qa = await review(S.qa, html);
@@ -1049,6 +1068,34 @@ export class Crews {
       `Plan:\n${planJson}`,
       '',
       `You are the frontend engineer. Build the complete ${project ? 'web app (every role’s screens, including the admin panel)' : 'web app'} as ONE self-contained HTML file.`,
+      ...this.frontendRules(project),
+      languageRule(),
+      'Reply with ONLY the file:',
+      'FILE: public/index.html',
+      '```html\n<!doctype html>\n...\n```',
+    ].join('\n');
+  }
+
+  /** QA reads the app like a careful tester and scores it. */
+  private async qaReview(run: CrewRun, step: Step, planJson: string, code: string) {
+    const r = await this.call(run, step, [
+      `Plan:\n${planJson}`,
+      '',
+      code.length <= REVIEW_CHARS ? 'index.html (the whole app):' : `index.html — the file is ${code.length} characters and complete; you see its first ${REVIEW_CHARS - 20000} and last 20000 characters. Do not report the middle as missing or the file as cut off:`,
+      code.length <= REVIEW_CHARS ? code : `${code.slice(0, REVIEW_CHARS - 20000)}\n/* … middle of the file omitted for review … */\n${code.slice(-20000)}`,
+      '',
+      'You are QA. Review the app against the plan like a careful tester reading the code: missing pages or features, broken handlers, JavaScript errors you can see, data that is never saved, layout that breaks on phones, text not in the user’s language.',
+      OFFLINE_NOTE,
+      'Reply with ONLY a JSON object: {"score": 0-100, "checks": [{"name": "", "ok": true, "note": ""}], "issues": [{"severity": "high|medium|low", "note": ""}], "summary": ""}',
+      'Use "high" only for a broken core feature or a missing required page.',
+      languageRule(),
+    ].join('\n'), 'default');
+    return parseJson<NonNullable<WebsiteResult['qa']>>(r.text);
+  }
+
+  /** What public/index.html must be (the office previews it in a sandbox with no server). */
+  private frontendRules(project: boolean) {
+    return [
       'Hard requirements:',
       '- Everything inline: CSS in <style>, JavaScript in <script>. No remote images, fonts or requests to other sites. Use emoji, CSS, gradients and inline SVG for visuals.',
       '- The ONLY allowed external scripts, and only when the request needs them: 3D → https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js (global THREE), rich animation → https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js (global gsap). If a library fails to load, the page must still work (CSS fallback). For “3D”, “animatsion” or “interaktiv” requests really use them: a live 3D scene or 3D product cards, smooth scroll/hover animations, micro-interactions.',
@@ -1058,11 +1105,7 @@ export class Crews {
       '- Hash-based navigation between views; responsive from 360px phones to desktop; labelled form fields; visible focus; a clean, modern, distinctive look with one consistent palette.',
       '- Show real feedback: empty states, success and error messages, results screens.',
       `- Keep the file compact so it can be written quickly: roughly ${project ? '700-1200' : '500-900'} lines, concise CSS, no code comments, no repeated markup (render lists from data).`,
-      languageRule(),
-      'Reply with ONLY the file:',
-      'FILE: public/index.html',
-      '```html\n<!doctype html>\n...\n```',
-    ].join('\n');
+    ];
   }
 
   private websiteReadme(plan: Record<string, unknown>, qa: WebsiteResult['qa'], dbNote: string, fileNames: string[]) {
@@ -1132,6 +1175,414 @@ export class Crews {
     ].join('\n');
   }
 
+  // ------------------------------------------------------- Claude Code --
+  // With the office server and its Claude CLI, the Coder team works in a real
+  // Claude Code session in the project's own folder: the lead delegates to the
+  // team (installed as subagents), uses the library skills that fit (installed
+  // as Claude Code skills) and writes the files. Revisions, questions and
+  // commands about the project go to the same folder later.
+
+  /** The team for a Claude Code session: the Coder team (and Hermes for MCP servers) as subagents. */
+  private codeTeam(project: boolean, wantMcp: boolean) {
+    const ids = this.team('coder').members.map((m) => m.id).filter((id) => id !== CODE_LEAD);
+    if (project && wantMcp) ids.push('agent:hermes:hermes');
+    return ids.map((id) => {
+      const it = this.item(id);
+      const learned = this.knowledge?.(id) || '';
+      return {
+        id,
+        name: slugName(it.name),
+        description: `${it.description}`.slice(0, 380),
+        prompt: [
+          `You are "${it.name}", a specialist of the AI Agent Office Coder team, working in this project folder with Claude Code.`,
+          this.prompts[id] || it.description,
+          learned ? `\n${learned}` : '',
+          '',
+          'Office rules: write only inside this project folder; finish your files completely (no placeholders or TODOs); use the skills in .claude/skills that fit your part; report back in a few lines what you wrote.',
+          languageRule(),
+        ].join('\n'),
+      };
+    });
+  }
+
+  /** Library skills for the whole job: the best ones for each part plus the Coder team's own. */
+  private codeSkills(run: CrewRun, parts: string[]) {
+    const out = new Set<string>();
+    for (const part of parts) for (const s of this.skillBook.pick(CODE_LEAD, SKILL_HINTS[part] || part, run.prompt, 3, this.team('coder').skills)) out.add(s.id);
+    for (const id of this.team('coder').skills) out.add(id);
+    return [...out].slice(0, 14);
+  }
+
+  private codeSystem() {
+    const it = this.item(CODE_LEAD);
+    const learned = this.knowledge?.(CODE_LEAD) || '';
+    return [
+      `You are "${it.name}", the lead of the AI Agent Office Coder team. Your role: ${it.description}`,
+      'You work in Claude Code in this project folder. Your team is installed as subagents (.claude/agents) and the office library’s skills for this job as skills (.claude/skills): delegate, use the skills that fit, and check the result yourself.',
+      'Your own instructions (follow their spirit):',
+      this.prompts[CODE_LEAD] || '',
+      learned ? `\n${learned}` : '',
+      '',
+      languageRule(),
+    ].join('\n');
+  }
+
+  /**
+   * One Claude Code session for a step. The team's subagents appear as their
+   * own steps while they work; skills and written files show up live, and the
+   * first index.html opens in the office right away.
+   */
+  private async codeSession(run: CrewRun, step: Step, mode: 'build' | 'work' | 'ask', prompt: string, opts: { project?: boolean; wantMcp?: boolean; parts?: string[]; rules?: string } = {}) {
+    const key = `${step.key}:code`;
+    if (run.cache[key] !== undefined) {
+      step.status = 'done';
+      this.hooks.changed(run);
+      return JSON.parse(run.cache[key]) as { text: string; files: Record<string, string>; partial?: boolean };
+    }
+    const engine = await this.engine();
+    if (!engine.code) throw new EngineError('no_engine', 'Claude Code is not available');
+    const uz = lang() === 'uz';
+    const team = this.codeTeam(!!opts.project, !!opts.wantMcp);
+    const skills = this.codeSkills(run, opts.parts || ['frontend']);
+    const bySlug = new Map(team.map((a) => [a.name, a.id]));
+    const skillBySlug = new Map(skills.map((id) => [slugName(this.item(id)?.name || id), id]));
+    const subs = new Map<string, Step>();
+    let subN = run.steps.filter((s) => s.key.startsWith('sub')).length;
+    const t0 = performance.now();
+    step.status = 'run';
+    step.skills = [];
+    step.live = uz ? 'Claude Code ishga tushmoqda…' : 'Starting Claude Code…';
+    this.hooks.stepStart(run, step);
+    this.hooks.changed(run);
+    const owner = (parent?: string | null) => (parent && subs.get(parent)) || step;
+    const onEvent = (e: CodeEvent) => {
+      const at = owner(e.parent);
+      switch (e.type) {
+        case 'setup':
+          step.live = uz ? `🧩 ${(e.agents as string[]).length} ta jamoadosh subagent, 📘 ${(e.skills as string[]).length} ta skill o‘rnatildi` : `🧩 ${(e.agents as string[]).length} teammates as subagents, 📘 ${(e.skills as string[]).length} skills installed`;
+          break;
+        case 'agent': {
+          const sub: Step = {
+            key: `sub${++subN}`,
+            agentId: bySlug.get(String(e.name)) || CODE_LEAD,
+            label: { uz: `↳ ${String(e.description || e.name)}`, en: `↳ ${String(e.description || e.name)}` },
+            status: 'run',
+            skills: [],
+          };
+          subs.set(String(e.id), sub);
+          run.steps.splice(run.steps.indexOf(step) + subs.size, 0, sub);
+          (sub as Step & { t0?: number }).t0 = performance.now();
+          this.hooks.stepStart(run, sub);
+          break;
+        }
+        case 'agent-progress': {
+          const sub = subs.get(String(e.id));
+          if (sub && e.text) sub.live = `⚙️ ${String(e.text)}`;
+          break;
+        }
+        case 'agent-done': {
+          const sub = subs.get(String(e.id));
+          if (!sub) break;
+          if (e.summary) sub.output = String(e.summary);
+          sub.status = e.error ? 'error' : 'done';
+          sub.seconds = Math.round((performance.now() - ((sub as Step & { t0?: number }).t0 || t0)) / 100) / 10;
+          sub.live = undefined;
+          this.end(run, sub);
+          break;
+        }
+        case 'skill': {
+          const id = skillBySlug.get(slugName(String(e.name)));
+          if (!id) break;
+          at.skills ||= [];
+          if (!at.skills.includes(id)) at.skills.push(id);
+          if (!step.skills!.includes(id)) step.skills!.push(id);
+          this.hooks.skillUsed?.(run, at, id);
+          break;
+        }
+        case 'file': {
+          const path = String(e.path || '');
+          at.live = `✍️ ${e.op === 'Write' ? (uz ? 'yozdi' : 'wrote') : uz ? 'tahrirladi' : 'edited'}: ${path}`;
+          // The site opens as soon as its first version exists.
+          if (typeof e.content === 'string' && e.content.length > 200 && /(^|\/)index\.html$/.test(path) && run.kind !== 'chat') {
+            const html = e.content;
+            if (!run.result) {
+              run.result = { kind: 'website', project: !!opts.project, plan: {}, files: { [path]: html }, html, summary: '', notes: [], versions: [], partial: true };
+              this.hooks.preview?.(run);
+              this.say(at.agentId, uz ? `👀 ${path} yozildi — ochib qo‘ydim. Jamoa ishlashda davom etmoqda.` : `👀 ${path} is written and open. The team keeps working.`, { runId: run.id, action: { label: uz ? '🌐 Ko‘rish' : '🌐 View', runId: run.id } });
+            } else if (run.result.kind === 'website' && run.result.partial) {
+              run.result.html = html;
+              run.result.files[path] = html;
+            }
+          }
+          break;
+        }
+        case 'todo': {
+          const todos = (e.todos as { text: string; status: string }[]) || [];
+          const done = todos.filter((t) => t.status === 'completed').length;
+          const now = todos.find((t) => t.status === 'in_progress');
+          at.live = `📋 ${done}/${todos.length}${now ? ` · ${now.text}` : ''}`;
+          break;
+        }
+        case 'text':
+          at.live = clip(String(e.text || '').replace(/\s+/g, ' '), 160);
+          break;
+        case 'tool':
+          at.live = `🔎 ${String(e.name)}${e.what ? `: ${String(e.what)}` : ''}`;
+          break;
+      }
+      this.hooks.changed(run);
+    };
+    try {
+      const out = await engine.code(
+        {
+          id: codeDir(run),
+          prompt,
+          system: this.codeSystem(),
+          agents: team.map(({ name, description, prompt: p }) => ({ name, description, prompt: p })),
+          skills,
+          rules: opts.rules || '',
+          tier: 'default',
+          mode,
+        },
+        onEvent,
+      );
+      for (const sub of subs.values()) if (sub.status === 'run') sub.status = 'done';
+      step.status = 'done';
+      step.live = undefined;
+      step.output = out.text;
+      step.seconds = Math.round((performance.now() - t0) / 100) / 10;
+      run.cache[key] = JSON.stringify({ text: out.text, files: out.files, partial: out.partial });
+      return out;
+    } catch (e) {
+      step.status = 'error';
+      step.output = String((e as Error)?.message || e);
+      for (const sub of subs.values()) if (sub.status === 'run') sub.status = 'error';
+      throw e;
+    } finally {
+      this.hooks.changed(run);
+    }
+  }
+
+  /** The project rules every session of this project reads (CLAUDE.md in its folder). */
+  private codeRules(run: CrewRun, plan: Record<string, unknown>, interview: string, project: boolean, wantMcp: boolean, wantBot: boolean) {
+    return [
+      `# ${run.title}`,
+      '',
+      `Built by the AI Agent Office Coder team for this request: """${run.prompt}"""`,
+      interview,
+      '',
+      '## Files',
+      '- `public/index.html` — the whole web app in one file; the office previews it in a sandbox without a server.',
+      '- `schema.sql`, `seed.sql` — SQLite schema and realistic seed data.',
+      '- `package.json`, `server.js` — Node.js + Express + better-sqlite3: serves ./public, creates the database from schema.sql and seed.sql on first run, implements every API endpoint of the plan, validates input, JSON errors, `GET /api/health`, admin actions protected by the ADMIN_PASSWORD environment variable when there are admin roles.',
+      wantMcp ? '- `mcp-server/` (`package.json`, `index.js`, `README.md`) — Model Context Protocol server (Node.js ES modules, @modelcontextprotocol/sdk + zod, stdio) whose 4-8 tools call the REST API at API_URL (default http://localhost:3000); logs only to stderr.' : '',
+      wantBot ? '- `bot/` (`package.json`, `bot.js`, `README.md`) — Telegram bot with grammy: BOT_TOKEN, API_URL, /start menu with inline buttons, the plan’s commands, friendly errors.' : '',
+      '- `README.md` — what it is and how to run it, in the user’s language.',
+      project ? '- `docs/PLAN.md` — the approved plan.' : '',
+      '',
+      '## public/index.html',
+      ...this.frontendRules(project),
+      '',
+      '## Always',
+      '- Only read and write inside this folder. No placeholders, TODOs or “coming soon”.',
+      `- ${OFFLINE_NOTE}`,
+      `- ${languageRule()}`,
+      '',
+      '## Plan',
+      '```json',
+      JSON.stringify(plan, null, 1).slice(0, 20000),
+      '```',
+      '',
+    ].filter((l) => l !== '').join('\n');
+  }
+
+  /** Build a website or project from the approved plan in Claude Code. */
+  private async runCodeBuild(run: CrewRun, ctx: { plan: Record<string, unknown>; planJson: string; interview: string; project: boolean; wantMcp: boolean; wantBot: boolean; before: Step[]; reporter: string }) {
+    const uz = lang() === 'uz';
+    const { plan, planJson, interview, project, wantMcp, wantBot } = ctx;
+    run.code = true;
+    const S = {
+      code: this.step('code', CODE_LEAD, { uz: 'Claude Code: jamoa kod yozmoqda', en: 'Claude Code: the team writes the code' }),
+      qa: this.step('qa', 'agent:ecc:tdd-guide', { uz: 'Test va sifat nazorati', en: 'Testing & QA' }),
+      fix: this.step('fix', CODE_LEAD, { uz: 'Claude Code: tuzatish', en: 'Claude Code: fixes' }),
+      recheck: this.step('recheck', 'agent:ecc:code-reviewer', { uz: 'Qayta tekshiruv', en: 'Re-check' }),
+      summary: this.step('summary', ctx.reporter, { uz: 'Hisobot', en: 'Report' }),
+    };
+    run.steps = [...ctx.before, S.code, S.qa, S.fix, S.recheck, S.summary];
+    this.hooks.changed(run);
+    if (!run.cache['said-code']) {
+      run.cache['said-code'] = '1';
+      this.say(CODE_LEAD, uz ? '💻 Claude Code’da ishni boshladik: loyiha papkasida jamoa subagent sifatida, kutubxonadagi mos skillar esa Claude Code skillari sifatida ishlaydi. Har bir yozilgan fayl va ishlatilgan skill “⏳ Jarayon”da ko‘rinadi.' : '💻 Working in Claude Code: the team runs as subagents in the project folder and the matching library skills as Claude Code skills. Every file and skill shows up in Progress.', { runId: run.id });
+    }
+    const parts = ['frontend', 'backend', 'db', 'qa', ...(wantMcp ? ['mcp'] : []), ...(wantBot ? ['bot'] : [])];
+    const rules = this.codeRules(run, plan, interview, project, wantMcp, wantBot);
+    const who = (id: string) => slugName(this.item(id).name);
+    const out = await this.codeSession(run, S.code, 'build', [
+      `Build this ${project ? 'product' : 'website / web app'} from zero as real files in this folder. CLAUDE.md has the request, the approved plan, the file layout and the rules — read it first.`,
+      '',
+      'How to work:',
+      '1. Look at the skills in .claude/skills and use the ones that fit (Skill tool); tell your teammates which ones apply to their part.',
+      `2. Delegate with subagents, in parallel where parts are independent: ${who('agent:ecc:database-reviewer')} → schema.sql + seed.sql; ${who('agent:claude-skills:cs-backend-engineer')} → package.json + server.js; ${who('agent:claude-skills:cs-frontend-engineer')} → public/index.html (the most important file: complete, polished, working)${wantMcp ? `; ${who('agent:hermes:hermes')} → mcp-server/` : ''}${wantBot ? '; bot/ — write it yourself or give it to the backend engineer' : ''}. Give each one the exact files it owns.`,
+      '3. Make sure public/index.html is written early (the office opens it as soon as it exists), then improved.',
+      `4. When the files exist, have ${who('agent:ecc:code-reviewer')} review them (and ${who('agent:ecc:security-reviewer')} the API), then fix what they find.`,
+      `5. Write README.md${project ? ' and docs/PLAN.md' : ''}.`,
+      '6. Finish with a short report in the user’s language: what was built, the files, how to run it.',
+    ].join('\n'), { project, wantMcp, parts, rules });
+    this.end(run, S.code, S.qa);
+    const files = { ...out.files };
+    const entry = files['public/index.html'] !== undefined ? 'public/index.html' : Object.keys(files).find((f) => /(^|\/)index\.html$/.test(f)) || Object.keys(files).find((f) => f.endsWith('.html'));
+    if (!entry) throw new EngineError('no_html', uz ? 'Jamoa index.html yozmadi' : 'The team wrote no index.html');
+    let html = files[entry];
+
+    // Independent QA; the fixes go back to the same Claude Code project.
+    let qa: WebsiteResult['qa'];
+    try {
+      qa = await this.qaReview(run, S.qa, planJson, html);
+    } catch {
+      S.qa.status = 'error';
+    }
+    const toFix = (qa?.issues || []).filter((i) => i.severity === 'high' || i.severity === 'medium').slice(0, 8);
+    if (toFix.length) {
+      this.end(run, S.qa, S.fix);
+      try {
+        const fixed = await this.codeSession(run, S.fix, 'work', ['A tester reviewed the app and found these problems. Fix them in the files; keep everything else as it is.', ...toFix.map((i) => `- [${i.severity}] ${i.note}`), '', 'Then say in two lines what you fixed.'].join('\n'), { project, wantMcp, parts: ['fix', 'qa'], rules });
+        Object.assign(files, fixed.files);
+        html = files[entry] || html;
+        this.end(run, S.fix, S.recheck);
+        try {
+          const after = await this.qaReview(run, S.recheck, planJson, html);
+          qa = { ...after, summary: `${after.summary || ''}${qa?.score !== undefined ? ` (${uz ? 'tuzatishdan oldin' : 'before fixes'}: ${qa.score})` : ''}` };
+        } catch {
+          S.recheck.status = 'error';
+        }
+      } catch {
+        S.fix.status = 'error';
+        S.recheck.status = 'skip';
+      }
+      this.end(run, S.recheck, S.summary);
+    } else {
+      S.fix.status = 'skip';
+      S.recheck.status = 'skip';
+      this.end(run, S.qa, S.summary);
+    }
+    if (!files['README.md']) files['README.md'] = this.websiteReadme(plan, qa, '', Object.keys(files));
+    if (project && !files['docs/PLAN.md']) files['docs/PLAN.md'] = this.planMarkdown(plan, interview);
+
+    let summary = '';
+    try {
+      const sR = await this.call(run, S.summary, [
+        `The team finished this request in Claude Code: """${run.prompt}"""`,
+        `Their own report:\n${clip(out.text, 2500)}`,
+        `QA score: ${qa?.score ?? 'n/a'}. Issues left: ${JSON.stringify((qa?.issues || []).slice(0, 6))}`,
+        `Files: ${Object.keys(files).join(', ')}`,
+        '',
+        `Write the report for the user in ${project ? '6-10' : '4-7'} short lines: what was built, the main features, the QA result, and how to use it (the preview is open in the office; mark things on it or just type what to change or ask — the team answers from the project in Claude Code; to run it for real: npm install && npm start in the project folder). Plain text, no headings.`,
+        languageRule(),
+      ].join('\n'), 'quick');
+      summary = sR.text.trim();
+    } catch {
+      summary = out.text;
+    }
+    this.end(run, S.summary);
+    const result: WebsiteResult = {
+      kind: 'website', project, deliverables: ['web', 'api', ...(wantMcp ? ['mcp'] : []), ...(wantBot ? ['bot'] : [])],
+      plan, files, html, qa, summary, notes: out.partial ? [uz ? 'Claude Code navbatlar chegarasiga yetdi — ba’zi qismlar tugallanmagan bo‘lishi mumkin.' : 'Claude Code reached its turn limit — some parts may be unfinished.'] : [],
+      versions: [{ n: 1, html, note: uz ? 'Birinchi versiya' : 'First version', at: Date.now() }],
+    };
+    await this.saveResult(result, run.id);
+    run.result = result;
+    this.say(S.summary.agentId, summary || (uz ? '✅ Tayyor.' : '✅ Ready.'), { runId: run.id, action: { label: uz ? '🌐 Natijani ko‘rish' : '🌐 Open the result', runId: run.id } });
+  }
+
+  private async saveResult(r: WebsiteResult, id: string) {
+    if (!this.hooks.saveWorkspace) return;
+    try {
+      const saved = await this.hooks.saveWorkspace(id, r.files);
+      if (saved) {
+        r.previewUrl = saved.url;
+        r.workspaceDir = saved.dir;
+      }
+    } catch (e) {
+      r.notes.push(String((e as Error).message || e));
+    }
+  }
+
+  /**
+   * You said something about a project the team built in Claude Code: a
+   * question gets an answer from the code, a request changes the files and
+   * makes a new version. The team always answers.
+   */
+  async followUp(runId: string, text: string) {
+    const run = this.runs.find((r) => r.id === runId);
+    const r = run?.result;
+    const engine = await this.engine();
+    if (!run || !r || r.kind !== 'website' || !engine.code || run.status === 'running' || run.status === 'waiting') return false;
+    const uz = lang() === 'uz';
+    this.say('user', text, { runId });
+    const n = run.steps.filter((s) => s.key.startsWith('talk')).length + 1;
+    const step = this.step(`talk${n}`, CODE_LEAD, { uz: `Buyruq/savol ${n}`, en: `Request ${n}` });
+    run.steps.push(step);
+    run.status = 'running';
+    this.hooks.changed(run);
+    if (!r.versions.length) r.versions.push({ n: 1, html: r.html, note: uz ? 'Birinchi versiya' : 'First version', at: run.finishedAt || Date.now() });
+    try {
+      const out = await this.codeSession(run, step, 'work', [
+        `The user says about this project: """${text}"""`,
+        '',
+        'If it is a question, answer it from the code (read the files you need) and change nothing.',
+        'If it asks for changes, make them in the files (keep everything else working), then say briefly what you changed.',
+        'If it is a completely new, unrelated product, change nothing and reply with only: NEW_PROJECT',
+        'Answer in the user’s language, short and concrete.',
+      ].join('\n'), { project: !!r.project, parts: ['frontend', 'fix'] });
+      step.status = 'done';
+      if (/^\s*NEW_PROJECT\s*$/.test(out.text)) {
+        run.status = 'done';
+        this.hooks.changed(run);
+        void this.send(text, [], 'website');
+        return true;
+      }
+      const entry = Object.keys(r.files).find((f) => /(^|\/)index\.html$/.test(f)) || 'public/index.html';
+      const changed = Object.entries(out.files).some(([k, v]) => r.files[k] !== v);
+      if (changed) {
+        r.files = { ...r.files, ...out.files };
+        const html = r.files[entry] || r.html;
+        const v = r.versions.length + 1;
+        r.versions.push({ n: v, html, note: clip(text, 120), at: Date.now() });
+        r.html = html;
+        await this.saveResult(r, `${run.id}-v${v}`);
+      }
+      run.status = 'done';
+      this.say(CODE_LEAD, `${out.text.trim() || (uz ? 'Bajarildi.' : 'Done.')}${changed ? `\n\n✅ v${r.versions.length}` : ''}`, { runId, action: changed ? { label: uz ? '🌐 Ko‘rish' : '🌐 View', runId } : undefined });
+    } catch (e) {
+      run.status = 'done';
+      if (step.status === 'run') step.status = 'error';
+      this.say('system', `⚠️ ${explainError(e)}`, { runId });
+    }
+    run.finishedAt = Date.now();
+    this.save();
+    this.hooks.changed(run);
+    this.hooks.done(run);
+    return true;
+  }
+
+  /**
+   * In Auto mode a message goes to the Claude Code project when it is open in
+   * the office, or when that project was the last job and the message is a
+   * question or command (not a greeting and not a new site or content request).
+   */
+  followsProject(text: string) {
+    if (this.focusRun?.()?.code) return true;
+    const last = this.runs[0];
+    return !!last?.code && last.status === 'done' && this.classify(text, []) === 'task';
+  }
+
+  /** The Claude Code project that messages should go to (open in the office, or the latest one). */
+  codeProject(): CrewRun | undefined {
+    const open = this.focusRun?.();
+    if (open?.code && open.result?.kind === 'website') return open;
+    return this.runs.find((r) => r.code && r.result?.kind === 'website');
+  }
+
   // --------------------------------------------------------- revisions --
   /** The user marked things on the preview and said what to change: build the next version. */
   async revise(runId: string, fb: { text: string; marks: Mark[]; errors: string[] }) {
@@ -1152,27 +1603,48 @@ export class Crews {
     this.say('user', `✏️ v${n - 1} → ${what}${fb.marks.length ? ` (${fb.marks.length} ${uz ? 'ta belgi' : 'marks'})` : ''}`, { runId });
     const marks = fb.marks.map((m) => `#${m.n} ${m.kind === 'area' ? 'marked area around' : 'element'} ${m.selector || ''} <${m.tag || '?'}> text: "${clip(m.text || '', 140)}" html: ${clip(m.html || '', 320)}${m.note ? `\n   user note: ${m.note}` : ''}`);
     try {
-      const fr = await this.callHtml(run, S.fix, [
-        'The user reviewed your app in the office preview and wants changes.',
-        `User’s request: """${what}"""`,
-        marks.length ? `Places the user marked on the page (numbers match their notes):\n${marks.join('\n')}` : '',
-        fb.errors.length ? `JavaScript errors the preview reported (fix their causes):\n${fb.errors.slice(0, 10).join('\n')}` : '',
-        '',
-        'Rules: change exactly what was asked and fix the reported errors; keep everything else as it is; keep the file complete and working.',
-        `Keep the offline fallback: ${OFFLINE_NOTE}`,
-        languageRule(),
-        '',
-        'Current index.html:',
-        '```html',
-        r.html,
-        '```',
-        '',
-        'Reply with ONLY the complete updated file:',
-        'FILE: public/index.html',
-        '```html\n<!doctype html>...\n```',
-      ].join('\n'), 'default');
-      const got = extractHtml(fr.text);
-      if (!got) throw new EngineError('no_html', 'no html');
+      const engine = await this.engine();
+      let html: string;
+      if (run.code && engine.code) {
+        // The team changes the real files of its Claude Code project.
+        S.fix.agentId = CODE_LEAD;
+        const entry = Object.keys(r.files).find((f) => /(^|\/)index\.html$/.test(f)) || 'public/index.html';
+        const out = await this.codeSession(run, S.fix, 'work', [
+          'The user reviewed the app in the office preview and wants changes.',
+          `User’s request: """${what}"""`,
+          marks.length ? `Places the user marked on the page (numbers match their notes):\n${marks.join('\n')}` : '',
+          fb.errors.length ? `JavaScript errors the preview reported (fix their causes):\n${fb.errors.slice(0, 10).join('\n')}` : '',
+          '',
+          `Change exactly what was asked in the files (${entry} and whatever else it needs), fix the reported errors, keep everything else working. Then say in two lines what you changed.`,
+        ].join('\n'), { project: !!r.project, parts: ['revise', 'fix'] });
+        if (!out.files[entry]) throw new EngineError('no_html', 'no html');
+        r.files = { ...r.files, ...out.files };
+        html = out.files[entry];
+      } else {
+        const fr = await this.callHtml(run, S.fix, [
+          'The user reviewed your app in the office preview and wants changes.',
+          `User’s request: """${what}"""`,
+          marks.length ? `Places the user marked on the page (numbers match their notes):\n${marks.join('\n')}` : '',
+          fb.errors.length ? `JavaScript errors the preview reported (fix their causes):\n${fb.errors.slice(0, 10).join('\n')}` : '',
+          '',
+          'Rules: change exactly what was asked and fix the reported errors; keep everything else as it is; keep the file complete and working.',
+          `Keep the offline fallback: ${OFFLINE_NOTE}`,
+          languageRule(),
+          '',
+          'Current index.html:',
+          '```html',
+          r.html,
+          '```',
+          '',
+          'Reply with ONLY the complete updated file:',
+          'FILE: public/index.html',
+          '```html\n<!doctype html>...\n```',
+        ].join('\n'), 'default');
+        const got = extractHtml(fr.text);
+        if (!got) throw new EngineError('no_html', 'no html');
+        html = got.html;
+        r.files['public/index.html'] = html;
+      }
       this.end(run, S.fix, S.check);
       let check: Version['check'];
       try {
@@ -1181,7 +1653,7 @@ export class Crews {
           marks.length ? `Marked places:\n${marks.join('\n')}` : '',
           '',
           'New index.html:',
-          clip(got.html, 60000),
+          clip(html, 60000),
           '',
           'Check whether the new file really implements each requested change. Reply with ONLY a JSON object: {"done": [{"item": "", "ok": true}], "summary": ""}',
           languageRule(),
@@ -1191,9 +1663,8 @@ export class Crews {
         S.check.status = 'error';
       }
       this.end(run, S.check);
-      r.versions.push({ n, html: got.html, note: what, at: Date.now(), check });
-      r.html = got.html;
-      r.files['public/index.html'] = got.html;
+      r.versions.push({ n, html, note: what, at: Date.now(), check });
+      r.html = html;
       if (this.hooks.saveWorkspace) {
         try {
           const saved = await this.hooks.saveWorkspace(`${run.id}-v${n}`, r.files);

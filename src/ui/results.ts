@@ -349,6 +349,7 @@ export class ResultsView {
     box.replaceChildren(
       ...(compact([
       h('div', { className: 'fb-head' }, h('b', {}, T('✏️ Izoh va tuzatish', '✏️ Feedback & fixes')), h('small', { className: 'muted' }, T('Saytda element tanlang yoki hududni chizing, keyin nima qilish kerakligini yozing.', 'Pick elements or draw areas on the site, then say what to change.'))),
+      run.code ? h('p', { className: 'fb-code' }, T('💻 Bu loyiha Claude Code’da: jamoa fayllarni o‘zi tahrirlaydi. Savol bersangiz — koddan javob beradi. Pastdagi asosiy maydonga yozganingiz ham shu loyihaga boradi.', '💻 This project lives in Claude Code: the team edits its files. Ask a question and it answers from the code. What you type in the main box also goes to this project.')) : null,
       this.marks.length
         ? h(
             'ol',
@@ -394,6 +395,20 @@ export class ResultsView {
           },
           busy ? T('⏳ Jamoa ishlamoqda…', '⏳ The team is working…') : T(`🛠️ Tuzatib ber → v${next}`, `🛠️ Fix it → v${next}`),
         ),
+        run.code && !this.marks.length
+          ? h('button', {
+              className: 'btn', disabled: busy, title: T('Savol yoki buyruq: jamoa koddan javob beradi yoki kerak bo‘lsa fayllarni o‘zgartiradi', 'A question or a command: the team answers from the code or changes the files if needed'),
+              onclick: () => {
+                const text = (this.note || '').trim();
+                if (!text) return ta.focus();
+                void this.crews.followUp(run.id, text);
+                this.note = '';
+                this.tab = 'steps';
+                this.bodyKey = '';
+                this.render();
+              },
+            }, T('💬 So‘rash', '💬 Ask'))
+          : null,
         this.marks.length ? h('button', { className: 'btn', onclick: () => { this.marks = []; this.frame?.contentWindow?.postMessage({ __office: 'clear' }, '*'); this.renderFeedback(); } }, T('🧽 Belgilarni tozalash', '🧽 Clear marks')) : null,
       ),
       ]) as Node[]),

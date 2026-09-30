@@ -154,6 +154,14 @@ async function main() {
         hud.renderChat();
       }
     },
+    skillUsed(_run, step, id) {
+      const bi = office.bookOf.get(id);
+      if (bi !== undefined) office.lightBook(bi, 14);
+      const a = cast.byItem.get(step.agentId);
+      const sk = data.byId.get(id);
+      if (sk) director.log({ kind: 'task', icon: '📘', text: `${a?.name || step.agentId} ${currentLang() === 'uz' ? 'skillni ochdi' : 'opened the skill'}: ${sk.name}`, actor: a, itemId: id });
+      a?.say(`📘 ${sk?.name || id}`, 5);
+    },
     preview(run) {
       results.open(run, 'preview');
       hud.toast(currentLang() === 'uz' ? '👀 Birinchi versiya tayyor — ochildi. Test davom etmoqda.' : '👀 First version ready and open. Testing continues.', 6000);
@@ -209,6 +217,7 @@ async function main() {
   };
   const academy = new Academy(data, layout, cast, office, director, fx, now, makeTeacher(getEngine, deptName));
   crews.knowledge = (id) => academy.knowledge(id);
+  crews.focusRun = () => results.openRun || undefined;
   const boss = new BossAI(data, layout, cast, academy, director, crews, now, makeExam(crews, getEngine));
   const keys = new Set<string>();
   const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'shift']);

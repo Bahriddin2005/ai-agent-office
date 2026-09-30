@@ -5,6 +5,7 @@
 //  - POST /api/tasks      run a task with an office agent via the Claude CLI
 //  - POST /api/hire       install agents/skills/commands into .claude/
 //  - POST /api/ai         one agent answer (chat and multi-agent crews)
+//  - POST /api/code       the Coder team in a Claude Code session (NDJSON stream)
 //  - POST /api/workspaces save a project the Coder team built; served at /workspaces/
 //  - WS   /ws             live events for the 3D office
 //  - serves dist/ when built (npm start)
@@ -17,6 +18,7 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 import { hire, loadRegistry } from '../scripts/lib/hire.mjs';
 import { AiRunner } from './ai.mjs';
+import { CodeRunner } from './code.mjs';
 import { Dispatcher } from './dispatch.mjs';
 
 const root = resolve(import.meta.dirname, '..');
@@ -46,7 +48,8 @@ const broadcast = (msg) => {
 };
 const dispatcher = new Dispatcher({ root, projectDir, allowWrite, maxTurns: config.maxTurns || 12, model: config.model, concurrency: config.concurrency || 2, broadcast });
 const ai = new AiRunner({ concurrency: config.aiConcurrency || 3, models: config.models || {}, thinking: config.thinking || {} });
-const health = () => ({ ok: true, claude: dispatcher.claude, projectDir, version, allowWrite });
+const code = new CodeRunner({ root, lookup: (id) => reg.byId.get(id), models: config.models || {}, concurrency: config.codeConcurrency || 2 });
+const health = () => ({ ok: true, claude: dispatcher.claude, code: dispatcher.claude && config.claudeCode !== false, projectDir, version, allowWrite });
 
 const LOCAL = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
 const hostOk = (host = '') => LOCAL.has(host.replace(/:\d+$/, '')) || host === `${HOST}:${PORT}`;
@@ -152,6 +155,26 @@ app.post('/api/ai', needToken, async (req, res) => {
   } catch (err) {
     res.status(err.status || 500).json({ error: String(err.message || err) });
   }
+});
+
+// The Coder team working in Claude Code: one session in the project's own
+// folder, streamed back as NDJSON (one event per line, then the result).
+app.post('/api/code', needToken, async (req, res) => {
+  if (!dispatcher.claude || config.claudeCode === false) return res.status(503).json({ error: 'Claude Code is not available' });
+  const body = req.body || {};
+  res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  const send = (o) => res.write(JSON.stringify(o) + '\n');
+  const ctrl = new AbortController();
+  res.on('close', () => ctrl.abort());
+  try {
+    const out = await code.run({ id: body.id, prompt: body.prompt, system: body.system, agents: Array.isArray(body.agents) ? body.agents : [], skills: Array.isArray(body.skills) ? body.skills : [], rules: body.rules, tier: body.tier, mode: body.mode }, send, ctrl.signal);
+    console.log(`[code] ${body.mode || 'build'} ${body.id} ${out.seconds.toFixed(0)}s ${out.turns} turns ${Object.keys(out.files).length} files${out.denied ? ` ${out.denied} denied` : ''}`);
+    send({ type: 'done', ...out });
+  } catch (err) {
+    send({ type: 'error', status: err.status || 500, error: String(err.message || err) });
+  }
+  res.end();
 });
 
 // Projects built by the Coder team: saved under workspaces/<id>/ and served

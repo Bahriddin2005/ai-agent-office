@@ -7,9 +7,38 @@ export type Status = 'offline' | 'connecting' | 'live';
 export interface Health {
   ok: boolean;
   claude: boolean;
+  /** the Coder team can work in Claude Code sessions (/api/code) */
+  code?: boolean;
   projectDir: string;
   version: string;
   allowWrite: boolean;
+}
+
+export interface CodeRequest {
+  id: string;
+  prompt: string;
+  system: string;
+  agents: { name: string; description: string; prompt: string }[];
+  skills: string[];
+  rules: string;
+  tier: string;
+  mode: 'build' | 'work' | 'ask';
+}
+
+export interface CodeEvent {
+  type: 'setup' | 'text' | 'agent' | 'agent-progress' | 'agent-done' | 'skill' | 'file' | 'todo' | 'tool' | 'done' | 'error';
+  parent?: string | null;
+  [k: string]: unknown;
+}
+
+export interface CodeResult {
+  text: string;
+  files: Record<string, string>;
+  seconds: number;
+  turns?: number;
+  cost?: number;
+  denied?: number;
+  partial?: boolean;
 }
 
 export interface TaskEvent {
@@ -113,6 +142,46 @@ export class Connection {
   /** One agent answer from the Claude CLI on the office server. */
   ai(body: { system: string; prompt: string; tier: string; images: string[]; web?: boolean }, signal?: AbortSignal): Promise<{ text: string; seconds: number; model?: string; truncated?: boolean }> {
     return this.post('api/ai', body, signal);
+  }
+
+  /**
+   * One Claude Code session of the Coder team in the project's folder. Events
+   * (subagents, skills, files, text) arrive while it works; resolves with the result.
+   */
+  async code(body: CodeRequest, onEvent: (e: CodeEvent) => void, signal?: AbortSignal): Promise<CodeResult> {
+    const res = await fetch('api/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Office-Token': this.token },
+      body: JSON.stringify(body),
+      signal,
+    });
+    if (!res.ok || !res.body) {
+      const json = await res.json().catch(() => ({}));
+      throw new Error(json.error || `HTTP ${res.status}`);
+    }
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buf = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += value;
+      let nl;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line) continue;
+        let ev: CodeEvent;
+        try {
+          ev = JSON.parse(line);
+        } catch {
+          continue;
+        }
+        if (ev.type === 'done') return ev as unknown as CodeResult;
+        if (ev.type === 'error') throw new Error(String(ev.error || 'Claude Code failed'));
+        onEvent(ev);
+      }
+    }
+    throw new Error('Claude Code session ended without a result');
   }
 
   /** Save generated project files under workspaces/<id>/ and get a preview URL back. */
