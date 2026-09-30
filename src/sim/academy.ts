@@ -182,7 +182,9 @@ export class Academy {
           }
           s.topic = idx;
           const topic = s.topics[idx];
-          const lines = s.notes.length ? s.notes.slice(idx * 3, idx * 3 + 3) : [clip(topic.description, 160), ...this.relatedOf(topic)];
+          // Claude writes three rules per skill in topic order; the screen shows the rule without its reason.
+          const short = (l: string) => l.split(/\s+[—–-]\s+|\s*(?:Sabab|Reason|Chunki|Because)\s*:/i)[0].trim();
+          const lines = s.notes.length ? s.notes.slice(idx * 3, idx * 3 + 3).map(short) : [clip(topic.description, 160), ...this.relatedOf(topic)];
           this.office.lecture?.set(`${idx + 1}/${s.topics.length} · ${topic.name}`, lines, this.deptName(s.dept));
           this.teacher?.say(`📚 ${clip(topic.name, 34)}`, 9);
           this.teacher?.plan([{ act: 'talk', dur: 11 }], true);

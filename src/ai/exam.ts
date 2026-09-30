@@ -64,7 +64,7 @@ export function makeTeacher(engine: () => Promise<Engine>, deptName: (id: string
         `Today you teach a class of AI agents from the "${deptName(dept)}" department.`,
         `Today's skills:\n${topics.map((t) => `- ${t.name}: ${t.description}`).join('\n')}`,
         '',
-        `Write the lesson notes the agents will keep and apply in every future task: 9 short, concrete, practical rules (one per line, starting with "- "). Each rule says what to do in real work with these skills and why, or names a common mistake and how to avoid it. Generalise from the skills to the department's everyday work; no trivia about one example. In ${lang()}. No introduction.`,
+        `Write the lesson notes the agents will keep and apply in every future task: exactly 3 rules for each skill, in the order the skills are listed (${topics.length * 3} lines in total, one rule per line, starting with "- "). Each rule is at most 30 words: what to do in real work with the skill, then a short reason after "—". Generalise from the skill to the department's everyday work; no trivia about one example. In ${lang()}. No introduction, no headings.`,
       ].join('\n'),
       {
         system: ['You are Claude, the teacher at Claude Academy, where the AI agents of an office learn skills for their field. You teach clearly, practically and precisely.', languageRule()].join('\n'),
