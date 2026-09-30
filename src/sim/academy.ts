@@ -182,7 +182,7 @@ export class Academy {
           }
           s.topic = idx;
           const topic = s.topics[idx];
-          const lines = s.notes.length ? s.notes.slice(idx * 3, idx * 3 + 3).concat([clip(topic.description, 90)]) : [clip(topic.description, 90), ...this.relatedOf(topic)];
+          const lines = s.notes.length ? s.notes.slice(idx * 3, idx * 3 + 3) : [clip(topic.description, 160), ...this.relatedOf(topic)];
           this.office.lecture?.set(`${idx + 1}/${s.topics.length} · ${topic.name}`, lines, this.deptName(s.dept));
           this.teacher?.say(`📚 ${clip(topic.name, 34)}`, 9);
           this.teacher?.plan([{ act: 'talk', dur: 11 }], true);
@@ -292,7 +292,11 @@ export class Academy {
     const pool = this.skillsByDept.get(dept) || [];
     const learned = new Set(students.flatMap((s) => this.of(s.item!.id).learned));
     const linked = new Set(students.flatMap((s) => (this.data.neighbors.get(s.item!.id) || []).map((l) => l.id)));
-    const ranked = [...pool].sort((a, b) => Number(learned.has(a.id)) - Number(learned.has(b.id)) || Number(linked.has(b.id)) - Number(linked.has(a.id)) || Math.random() - 0.5);
+    // New to the class first, then skills the students' own work links to, then substantial skills
+    // (well connected, well described) over small demos, with some variety.
+    const weight = (x: Item) => (linked.has(x.id) ? 12 : 0) + Math.min(10, (this.data.neighbors.get(x.id) || []).length) + Math.min(6, x.description.length / 40) + Math.random() * 4;
+    const w = new Map(pool.map((x) => [x.id, weight(x)]));
+    const ranked = [...pool].sort((a, b) => Number(learned.has(a.id)) - Number(learned.has(b.id)) || w.get(b.id)! - w.get(a.id)!);
     const out = ranked.slice(0, 3);
     return out.length ? out : [pick([...this.skillsByDept.values()].flat())].filter(Boolean);
   }

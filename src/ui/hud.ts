@@ -762,6 +762,8 @@ export class Hud {
 
   renderChat() {
     const msgs = this.crews.chat;
+    // While the agents wait for your answers or approval, the chat grows so the cards are easy to read.
+    this.el.chatList.closest('.feed')?.classList.toggle('asking', this.crews.runs.some((r) => r.status === 'waiting'));
     if (!msgs.length) {
       this.el.chatList.replaceChildren(
         h(

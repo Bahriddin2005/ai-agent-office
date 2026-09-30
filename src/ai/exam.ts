@@ -24,7 +24,7 @@ export function makeExam(crews: Crews, engine: () => Promise<Engine>) {
     const it = crews.item(agentId);
     const q = await e.ask(
       `Agent under review: "${it.name}" — ${it.description}\nWrite ONE practical exam question (1-2 sentences): a small, realistic task from this agent's own field that shows whether it can really do its core job well. It must be answerable in a short text, without tools, files or other agents. Reply with only the question, in ${lang()}.`,
-      { system: examiner('You write fair, concrete exam questions.'), tier: 'quick' },
+      { system: examiner('You write fair, concrete exam questions in clean, natural language.'), tier: 'default' },
     );
     const question = q.text.trim().replace(/^["“]|["”]$/g, '');
     const a = await e.ask(
@@ -55,18 +55,21 @@ export function makeExam(crews: Crews, engine: () => Promise<Engine>) {
   };
 }
 
-export function makeTeacher(crews: Crews, engine: () => Promise<Engine>, deptName: (id: string) => string) {
+export function makeTeacher(engine: () => Promise<Engine>, deptName: (id: string) => string) {
   return async (dept: string, topics: Item[]): Promise<string> => {
     const e = await engine();
     if (e.kind === 'none') return '';
     const r = await e.ask(
       [
-        `You are Claude, teaching a class at Claude Academy for AI agents of the "${deptName(dept)}" department.`,
+        `Today you teach a class of AI agents from the "${deptName(dept)}" department.`,
         `Today's skills:\n${topics.map((t) => `- ${t.name}: ${t.description}`).join('\n')}`,
         '',
-        `Write the lesson notes the agents will keep and apply in every future task: 9 short, concrete, practical rules (one per line, starting with "- "), covering how to use these skills well and the most common mistakes to avoid. In ${lang()}. No introduction.`,
+        `Write the lesson notes the agents will keep and apply in every future task: 9 short, concrete, practical rules (one per line, starting with "- "). Each rule says what to do in real work with these skills and why, or names a common mistake and how to avoid it. Generalise from the skills to the department's everyday work; no trivia about one example. In ${lang()}. No introduction.`,
       ].join('\n'),
-      { system: crews.persona('agent:claude-skills:cs-claude-coach'), tier: 'quick' },
+      {
+        system: ['You are Claude, the teacher at Claude Academy, where the AI agents of an office learn skills for their field. You teach clearly, practically and precisely.', languageRule()].join('\n'),
+        tier: 'default',
+      },
     );
     return r.text.trim();
   };

@@ -91,6 +91,9 @@ export class BossAI {
   setControl(on: boolean) {
     this.control = on;
     if (on) {
+      // Taking over drops a check in progress (a real exam still reports when it ends).
+      this.busy = false;
+      this.target = null;
       this.patrol = false;
       this.status = T('Siz boshqaryapsiz', 'You are in control');
       this.boss.plan([], true);
@@ -156,7 +159,29 @@ export class BossAI {
       b.plan([...steps, { act: 'think' as const, dur: 2.5, onEnd: () => conclude(this.evaluate(a)) }], true);
       return;
     }
-    b.plan([...steps, { act: 'think' as const, dur: 3600 }], true);
+    // The exam runs while the Boss walks over; the verdict is given at the desk.
+    let atDesk = false;
+    let result: Finding | null = null;
+    const verdict = () => {
+      if (!result) return;
+      if (atDesk) {
+        const f = result;
+        result = null;
+        // Leave the step callback before re-planning.
+        setTimeout(() => {
+          b.plan([{ act: 'talk', dur: 1.5 }], true);
+          conclude(f);
+        });
+      } else if (this.control || this.target !== a) {
+        // You took over the Boss meanwhile: record the result anyway.
+        const f = result;
+        result = null;
+        this.findings.unshift(f);
+        if (f.decision === 'academy') this.academy.enroll(a.item!.id, f.issues[0] || '', 'boss');
+        this.changed();
+      }
+    };
+    b.plan([...steps, { act: 'think' as const, dur: 3600, onStart: () => { atDesk = true; verdict(); } }], true);
     this.status = `${T('Haqiqiy imtihon', 'Real exam')}: ${a.name}`;
     this.changed();
     this.exam(a.item.id)
@@ -169,13 +194,12 @@ export class BossAI {
           base.issues = ex.gaps.length ? ex.gaps : base.issues;
           base.decision = ex.score < 8 ? 'academy' : 'ok';
         }
-        b.plan([{ act: 'talk', dur: 1 }], true);
-        conclude(base);
+        result = base;
       })
       .catch(() => {
-        b.plan([{ act: 'idle', dur: 0.5 }], true);
-        conclude(this.evaluate(a));
-      });
+        result = this.evaluate(a);
+      })
+      .finally(verdict);
   }
 
   /** A quick review from what the office knows about the agent. */

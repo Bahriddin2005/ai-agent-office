@@ -311,7 +311,7 @@ export class Office {
   private buildAcademy() {
     const a = this.layout.academy;
     if (!a) return null;
-    const W = 1280;
+    const W = 1600;
     const H = Math.round((W * a.screen.h) / a.screen.w);
     const canvas = document.createElement('canvas');
     canvas.width = W;
@@ -336,6 +336,20 @@ export class Office {
     lectern.position.set(p.x + Math.sin(p.heading) * 0.75, 0, p.z + Math.cos(p.heading) * 0.75);
     lectern.rotation.y = p.heading + Math.PI;
     this.group.add(frame, screen, lectern);
+    // Sizes follow the screen height: the screen is wide and low.
+    const wrap = (text: string, max: number) => {
+      const rows: string[] = [];
+      let row = '';
+      for (const word of text.split(/\s+/).filter(Boolean)) {
+        const next = row ? `${row} ${word}` : word;
+        if (row && g.measureText(next).width > max) {
+          rows.push(row);
+          row = word;
+        } else row = next;
+      }
+      if (row) rows.push(row);
+      return rows;
+    };
     const draw = (title: string, lines: string[], sub = '') => {
       const grd = g.createLinearGradient(0, 0, W, H);
       grd.addColorStop(0, '#231612');
@@ -343,22 +357,34 @@ export class Office {
       g.fillStyle = grd;
       g.fillRect(0, 0, W, H);
       g.fillStyle = '#d97757';
-      g.fillRect(0, 0, W, 12);
+      g.fillRect(0, 0, W, Math.round(H * 0.035));
       g.textBaseline = 'top';
       g.fillStyle = '#f4c7ae';
-      g.font = `700 34px ${FONT}`;
-      g.fillText('🎓 Claude Akademiyasi', 48, 40);
+      const small = Math.round(H * 0.085);
+      g.font = `700 ${small}px ${FONT}`;
+      g.fillText('🎓 Claude Akademiyasi', 40, H * 0.07);
       if (sub) {
         g.textAlign = 'right';
-        g.fillText(sub, W - 48, 40);
+        g.fillText(sub, W - 40, H * 0.07, W * 0.45);
         g.textAlign = 'left';
       }
       g.fillStyle = '#ffffff';
-      g.font = `800 60px ${FONT}`;
-      g.fillText(title, 48, 100, W - 96);
-      g.font = `500 34px ${FONT}`;
+      g.font = `800 ${Math.round(H * 0.15)}px ${FONT}`;
+      g.fillText(title, 40, H * 0.2, W - 80);
+      g.font = `500 ${small}px ${FONT}`;
       g.fillStyle = '#f7e9e1';
-      lines.slice(0, Math.max(1, Math.floor((H - 220) / 48))).forEach((l, i) => g.fillText(`• ${l}`, 60, 196 + i * 48, W - 120));
+      const lh = H * 0.115;
+      const top = H * 0.42;
+      const room = Math.max(1, Math.floor((H * 0.97 - top) / lh));
+      const rows: { text: string; bullet: boolean }[] = [];
+      for (const l of lines) {
+        const clean = l.replace(/[`*_#]/g, '').trim();
+        if (!clean) continue;
+        wrap(clean, W - 120).forEach((text, i) => rows.push({ text, bullet: i === 0 }));
+      }
+      const shown = rows.slice(0, room);
+      if (rows.length > room && shown.length) shown[shown.length - 1].text = shown[shown.length - 1].text.replace(/\s*\S*$/, ' …');
+      shown.forEach((r, i) => g.fillText(r.bullet ? `• ${r.text}` : `  ${r.text}`, r.bullet ? 44 : 64, top + i * lh, W - 84));
       tex.needsUpdate = true;
     };
     draw('Dars jadvali', ['Har bir bo‘lim navbat bilan o‘qiydi', 'Boss tanlagan agentlar birinchi keladi', 'O‘rganilgan skillar agentning ishiga qo‘shiladi']);

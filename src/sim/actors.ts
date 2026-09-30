@@ -195,7 +195,8 @@ export class Cast {
     const spot: Spot = { x, z, heading: Math.atan2(x - a.body.x, z - a.body.z), pose: 'stand', zone: null, u: 0, v: 0, lineV: 0, lane: z >= 0 ? 4 : -4 };
     a.plan([], true);
     a.current = { go: spot, onEnd: then };
-    a.path = [[x, z]];
+    // Short hops go straight; longer walks follow the boulevard around the fountain.
+    a.path = Math.hypot(x - a.body.x, z - a.body.z) < 8 ? [[x, z]] : route(this.here(a), spot);
     a.at = spot;
     this.setActivity(a, 'walk');
     a.body.pose = 'stand';

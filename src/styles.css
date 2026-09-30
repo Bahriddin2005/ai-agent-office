@@ -117,6 +117,7 @@ a { color: #8ecbff; }
 
 /* feed + tasks */
 .feed { right: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); width: 372px; height: 32vh; display: flex; flex-direction: column; overflow: hidden; }
+.feed.asking { height: calc(100vh - 96px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); z-index: 7; }
 .ft-head { display: flex; gap: 6px; align-items: center; padding: 10px 10px 6px; }
 .ft-tab { background: none; border: 1px solid transparent; border-radius: 8px; padding: 5px 9px; font-size: 12px; color: var(--muted); }
 .ft-tab.active { color: #fff; background: rgba(255, 255, 255, 0.08); border-color: var(--panel-border); }
@@ -197,6 +198,7 @@ body.graph-mode { --bg: #070b16; }
   .dir.open { transform: none; }
   .feed { left: 6px; right: 6px; width: auto; bottom: 120px; height: 40vh; transform: translateY(calc(100% + 140px)); transition: transform 0.25s; z-index: 5; }
   .feed.open { transform: none; }
+  .feed.asking { left: 6px; right: 6px; width: auto; height: 62vh; transform: none; }
   .inspector { left: 6px; right: 6px; width: auto; top: auto; bottom: 120px; max-height: 46vh; z-index: 6; }
   .taskbar { left: 6px; right: 6px; bottom: calc(6px + env(safe-area-inset-bottom)); }
   .graph-panel { left: 6px; right: 6px; width: auto; bottom: 6px; height: 34vh; }

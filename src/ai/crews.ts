@@ -203,6 +203,8 @@ const HISTORY_CHAT = 120;
 const newId = () => `run-${Date.now().toString(36)}-${(seq++).toString(36)}`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const TRANSIENT = new Set(['rate_limited', 'overloaded', 'upstream_error', 'server_error', 'timeout', 'network', 'unavailable']);
+/** The Claude plan's usage limit: waiting a few seconds will not help. */
+const USAGE_LIMIT = /session limit|usage limit|hit your .{0,20}limit|limit reached|resets \d/i;
 
 /** A short, human explanation of an engine error in the UI language. */
 export function explainError(e: unknown): string {
@@ -217,6 +219,12 @@ export function explainError(e: unknown): string {
     invalid_json: ['Agent javobi kutilgan formatda kelmadi. “Qayta urinish”ni bosing.', 'An agent reply was not in the expected format. Press “Retry”.'],
     no_html: ['Frontend agent sayt kodini qaytarmadi. “Qayta urinish”ni bosing.', 'The frontend agent returned no site code. Press “Retry”.'],
   };
+  if (USAGE_LIMIT.test(msg)) {
+    const at = /resets? ([^.·\n]{3,40})/i.exec(msg)?.[1]?.trim();
+    return uz
+      ? `Claude foydalanish limiti tugadi${at ? ` (qayta tiklanadi: ${at})` : ''}. Limit tiklangach “Qayta urinish”ni bosing — tugagan bosqichlar saqlanadi, ish shu joydan davom etadi.`
+      : `Claude’s usage limit was reached${at ? ` (resets ${at})` : ''}. Press “Retry” once it resets — finished steps are kept and the work continues from here.`;
+  }
   const hit = map[code];
   if (hit) return uz ? hit[0] : hit[1];
   return uz ? `Xatolik: ${clip(msg, 220)}. “Qayta urinish”ni bosing — tugagan bosqichlar saqlanadi.` : `Error: ${clip(msg, 220)}. Press “Retry” — finished steps are kept.`;
@@ -406,7 +414,7 @@ export class Crews {
         } catch (e) {
           const code = e instanceof EngineError ? e.code : 'server_error';
           const limit = code === 'server_error' ? 1 : 2;
-          if (attempt >= limit || !TRANSIENT.has(code)) throw e;
+          if (attempt >= limit || !TRANSIENT.has(code) || USAGE_LIMIT.test(String((e as Error)?.message))) throw e;
           step.live = lang() === 'uz' ? `⏳ qayta urinish (${attempt + 1})…` : `⏳ retrying (${attempt + 1})…`;
           this.hooks.changed(run);
           await sleep(5000 * (attempt + 1) ** 2);

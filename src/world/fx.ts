@@ -18,6 +18,8 @@ interface Glow {
   size: number;
 }
 
+const ROUTE_DOTS = 400;
+const ROUTE_STEP = 0.9;
 const SEGMENTS = 40;
 
 export class Fx {
@@ -26,9 +28,9 @@ export class Fx {
   private glows: Glow[] = [];
   readonly ring: THREE.Mesh;
   readonly hoverRing: THREE.Mesh;
-  /** dashed line on the ground showing where someone is walking */
-  readonly route: THREE.Line;
-  private routeMarker: THREE.Mesh;
+  /** glowing dots on the ground showing where someone is walking */
+  readonly route: THREE.InstancedMesh;
+  private routeMarker: THREE.Group;
 
   constructor() {
     for (let i = 0; i < 24; i++) {
@@ -60,10 +62,16 @@ export class Fx {
     );
     this.hoverRing.visible = false;
     this.group.add(this.ring, this.hoverRing);
-    this.route = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: new THREE.Color('#ffd166').multiplyScalar(1.6), dashSize: 0.5, gapSize: 0.35, transparent: true, depthWrite: false }));
+    const routeColor = new THREE.Color('#ff9f1c');
+    this.route = new THREE.InstancedMesh(new THREE.CircleGeometry(0.21, 14).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: routeColor, transparent: true, opacity: 0.95, depthWrite: false }), ROUTE_DOTS);
     this.route.frustumCulled = false;
+    this.route.renderOrder = 2;
     this.route.visible = false;
-    this.routeMarker = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.8, 16).rotateX(Math.PI).translate(0, 0.9, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd166').multiplyScalar(1.4) }));
+    this.routeMarker = new THREE.Group();
+    this.routeMarker.add(
+      new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.0, 20).rotateX(Math.PI).translate(0, 1.1, 0), new THREE.MeshBasicMaterial({ color: routeColor })),
+      new THREE.Mesh(new THREE.RingGeometry(0.45, 0.62, 32).rotateX(-Math.PI / 2).translate(0, 0.1, 0), new THREE.MeshBasicMaterial({ color: routeColor, transparent: true, opacity: 0.9, depthWrite: false })),
+    );
     this.routeMarker.visible = false;
     this.group.add(this.route, this.routeMarker);
   }
@@ -75,16 +83,28 @@ export class Fx {
       this.routeMarker.visible = false;
       return;
     }
-    const pos = new Float32Array(points.length * 3);
-    points.forEach(([x, z], i) => pos.set([x, 0.08, z], i * 3));
-    this.route.geometry.dispose();
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    this.route.geometry = g;
-    this.route.computeLineDistances();
-    this.route.visible = true;
+    // Dots every ROUTE_STEP metres, drifting towards the goal.
+    const m = new THREE.Matrix4();
+    let n = 0;
+    let carry = ROUTE_STEP - ((time * 1.6) % ROUTE_STEP);
+    for (let i = 1; i < points.length && n < ROUTE_DOTS; i++) {
+      const [x0, z0] = points[i - 1];
+      const [x1, z1] = points[i];
+      const len = Math.hypot(x1 - x0, z1 - z0);
+      let d = carry;
+      for (; d < len && n < ROUTE_DOTS; d += ROUTE_STEP) {
+        const k = d / len;
+        m.makeTranslation(x0 + (x1 - x0) * k, 0.1, z0 + (z1 - z0) * k);
+        this.route.setMatrixAt(n++, m);
+      }
+      carry = d - len;
+    }
+    this.route.count = n;
+    this.route.instanceMatrix.needsUpdate = true;
+    this.route.visible = n > 0;
     const [lx, lz] = points[points.length - 1];
-    this.routeMarker.position.set(lx, Math.sin(time * 4) * 0.12, lz);
+    this.routeMarker.position.set(lx, Math.sin(time * 4) * 0.15, lz);
+    this.routeMarker.rotation.y = time * 1.5;
     this.routeMarker.visible = true;
   }
 

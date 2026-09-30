@@ -199,7 +199,7 @@ async function main() {
     const d = data.dept.get(id);
     return d ? `${d.name} (${d.uz})` : id;
   };
-  const academy = new Academy(data, layout, cast, office, director, fx, now, makeTeacher(crews, getEngine, deptName));
+  const academy = new Academy(data, layout, cast, office, director, fx, now, makeTeacher(getEngine, deptName));
   crews.knowledge = (id) => academy.knowledge(id);
   const boss = new BossAI(data, layout, cast, academy, director, crews, now, makeExam(crews, getEngine));
   const keys = new Set<string>();
