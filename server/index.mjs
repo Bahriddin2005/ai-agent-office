@@ -185,7 +185,8 @@ app.post('/api/workspaces', needToken, (req, res) => {
   if (!/^[\w-]{1,64}$/.test(String(id)) || !files || typeof files !== 'object') return res.status(400).json({ error: 'id and files required' });
   const dir = join(workspaces, id);
   for (const [name, content] of Object.entries(files)) {
-    if (!/^[\w][\w./-]{0,160}$/.test(name) || name.split('/').includes('..') || typeof content !== 'string') return res.status(400).json({ error: `bad file: ${name}` });
+    // Dotfiles such as .env.example or .gitignore are fine; parent paths and .claude/ are not.
+    if (!/^[\w.][\w./-]{0,160}$/.test(name) || name.split('/').some((p) => p === '..' || p === '.') || name.startsWith('.claude') || typeof content !== 'string') return res.status(400).json({ error: `bad file: ${name}` });
     const dest = join(dir, name);
     mkdirSync(dirname(dest), { recursive: true });
     writeFileSync(dest, content);
