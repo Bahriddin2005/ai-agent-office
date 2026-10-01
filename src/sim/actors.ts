@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import type { Item, OfficeData } from '../data';
 import { currentLang } from '../i18n';
-import { BUILDINGS, buildingOf, route, type Layout, type Spot } from '../world/layout';
+import { BUILDINGS, TECH_BUILDINGS, buildingOf, route, type Layout, type Spot } from '../world/layout';
 import type { Office } from '../world/office';
 import { ROLE_TITLE, lookFor, type Role } from '../world/human';
 import { Crowd, type Anim, type BodyState, type Look } from '../world/people';
@@ -21,17 +21,16 @@ export function roleOf(it: Pick<Item, 'name' | 'dept'>): Role {
   if (b === 'akademiya') return 'teacher';
   if (b === 'savdo') return 'sales';
   if (/(^|-)(ceo|cto|coo|cfo|cmo|cpo|ciso|chief|director|founder|president|vp)(-|$)|executive|head-of|board/.test(n)) return 'director';
-  if (b === 'boshqaruv') return it.dept === 'product' ? 'strategist' : 'operations';
+  if (b === 'boshqaruv') return 'operations';
+  if (b === 'mahsulot') return 'strategist';
   if (b === 'media') {
     if (it.dept === 'creative') return /(design|ui|ux|brand|visual|image|art|figma|logo|video)/.test(n) ? 'designer' : 'creator';
     return /(content|copy|social|video|writer|story|script|podcast|newsletter)/.test(n) ? 'creator' : 'marketer';
   }
-  if (b === 'tech') {
-    if (it.dept === 'data') return 'analyst';
-    if (it.dept === 'ai' && /(strateg|architect|research|advisor|prompt|evaluat)/.test(n)) return 'strategist';
-    if (/(design|ui-|ux)/.test(n)) return 'designer';
-    return 'developer';
-  }
+  if (b === 'data') return 'analyst';
+  if (b === 'ai') return /(strateg|architect|research|advisor|prompt|evaluat)/.test(n) ? 'strategist' : 'developer';
+  if (b === 'frontend') return /(design|ui|ux|brand|figma|art|visual)/.test(n) ? 'designer' : 'developer';
+  if (TECH_BUILDINGS.has(b)) return /(design|ui-|ux)/.test(n) ? 'designer' : 'developer';
   return /(design|ui|ux)/.test(n) ? 'designer' : /(analy|research|data)/.test(n) ? 'analyst' : 'assistant';
 }
 

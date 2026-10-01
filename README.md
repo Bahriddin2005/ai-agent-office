@@ -9,7 +9,7 @@ O‘n ikkita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Gr
 
 | | |
 |---|---|
-| **7** bino | Boshqaruv · AI va texnologiya · Savdo · Marketing va media · Moliya · Ofis xizmatlari · 🎓 **Claude Akademiyasi** |
+| **14** bino | Boshqaruv · Mahsulot · Moliya · Muhandislik · Dasturlash tillari · DevOps · AI laboratoriyasi · Maʼlumot va tadqiqot · Xavfsizlik · Savdo · Marketing va media · Frontend va dizayn · Ofis xizmatlari · 🎓 **Claude Akademiyasi** (3–7 qavatli) |
 | **235** agent | har biri o‘z binosida, o‘z bo‘limi stolida o‘tiradi; lavozimiga mos kiyingan |
 | **927** skill | bo‘lim javonlaridagi kitoblar (1 skill = 1 kitob) — agentlar ularni **ishda haqiqatan ishlatadi** |
 | **268** buyruq (slash command) | javonlardagi papkalar |
@@ -19,7 +19,7 @@ O‘n ikkita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Gr
 
 ## Nima qila oladi
 
-- **3D kampus.** Bitta hududda 6 ta bino, har biri o‘z vazifasiga mos: 🏛️ **Boshqaruv** (tosh ustunlar, bayroq, vertolyot maydonchasi), 🤖 **AI va texnologiya** (LED chiziqlar, quyosh panellari, antenna, AI gologrammasi), 🤝 **Savdo** (billboard, soyabon), 📣 **Marketing va media** (jonli LED ekran, rangli qanotlar), 💰 **Moliya** (kolonnada va frontón), ☕ **Ofis xizmatlari** (tomdagi bog‘, kafe). O‘rtada favvorali maydon va Graphify Core, atrofda bog‘lar, chiroqlar, skameykalar, darvoza va qo‘riqchi budkasi. Uzoqdan binolar to‘liq ko‘rinadi; yaqinlashsangiz tomi va yuqori qavatlari yo‘qolib, ichidagi ish ko‘rinadi (🏗️ tugmasi — hamma binoning ichini birdan ko‘rish).
+- **3D kampus.** Bitta hududda 14 ta bino (har bir yirik bo‘lim — alohida bino, 3–7 qavat), har biri o‘z vazifasiga mos: 🏛️ **Boshqaruv** (7 qavatli minora: tosh ustunlar, bayroq, vertolyot maydonchasi), 🗺️ **Mahsulot** va 🛡️ **Xavfsizlik** (ustunli fasad, bayroq), 🛠️ **Muhandislik markazi**, 🧩 **Dasturlash tillari**, ☁️ **DevOps** (LED chiziqlar, quyosh panellari, antenna), 🧠 **AI laboratoriyasi** (+ AI gologrammasi), 🔬 **Maʼlumot va tadqiqot** va 💰 **Moliya** (kolonnada va frontón), 🤝 **Savdo** (billboard, soyabon), 📣 **Marketing va media** va 🎨 **Frontend va dizayn** (jonli LED ekran, rangli qanotlar), ☕ **Ofis xizmatlari** (tomdagi bog‘, kafe), 🎓 **Claude Akademiyasi** (mis gumbaz). O‘rtada favvorali maydon va Graphify Core, atrofda bog‘lar, chiroqlar, skameykalar, darvoza va qo‘riqchi budkasi. Uzoqdan binolar to‘liq ko‘rinadi; yaqinlashsangiz tomi va yuqori qavatlari yo‘qolib, ichidagi ish ko‘rinadi (🏗️ tugmasi — hamma binoning ichini birdan ko‘rish).
 - **Haqiqiy odamlarga o‘xshagan xodimlar.** Har bir agent realistik proporsiyadagi odam: yuz (ko‘z, qosh, burun, lab, quloq), soch turmagi (qisqa, yon tomonga, uzun, tugun, dumcha, jingalak, kal, **hijob**, **do‘ppi**, furajka), soqol/mo‘ylov, tizzasi bukiladigan oyoqlar va tirsakli qo‘llar. Kiyim **lavozimga** qarab: direktor — kostyum va galstuk, yordamchi — blazer va planshet, dasturchi — xudi/naushnik, dizayner — golf, hisobchi — sviter va papka, savdo menejeri — kostyum va telefon, **farrosh** — ish kiyimi, fartuk va shvabra, **qo‘riqchi** — forma va furajka. Jami 12+ lavozim: direktor, yordamchi, operatsion menejer, AI strateg, savdo menejeri, marketing mutaxassisi, kontent yaratuvchi, dizayner, data tahlilchi, dasturchi, hisobchi, farrosh (+ qo‘riqchi, bosh koordinator Claude).
 - **Jonli ofis hayoti.** Agentlar javondan kerakli skill kitobini olib o‘qiydi, stolida ishlaydi, grafda bog‘langan hamkasblari bilan maslahatlashadi, qahva ichgani boradi va markazdagi **Graphify Core**'ga savol beradi; farroshlar maydon va ofislarni tozalaydi, qo‘riqchi darvozada turadi va hududni aylanib chiqadi.
 - **Jonli rejim.** Claude Code hooklari ulanganda ofis haqiqiy ishingizni ko‘rsatadi: siz yozgan so‘rov Boss ustida chiqadi, Claude (qabulxonada) asboblarni ishlatadi, Claude subagent chaqirsa — shu nomdagi agent stolida qizil belgi bilan ishlay boshlaydi, skill ishlatilsa — javondagi kitobi yonadi. Ofisda stoli yo‘q subagentlar (masalan `Explore`, `Plan`) mehmon sifatida kirib keladi.
@@ -44,21 +44,21 @@ O‘n ikkita ochiq manbali repozitoriydagi hamma narsa bitta joyga jamlangan, Gr
 - **Bitta joy.** `library/` papkasida barcha agentlar, skillar, buyruqlar va qo‘llanmalar asl holida, litsenziyalari bilan; `library/CATALOG.md` va `library/departments/*.md` — to‘liq katalog.
 - Kun/tun rejimi, o‘zbek/ingliz interfeysi, telefonda ham ishlaydi.
 
-| 🏗️ Binolar ichi: agentlar o‘z binosida ishlamoqda | 🧍 Agent portreti: yuz va butun tana, lavozim |
+| 🏙️ 14 ta bino: Muhandislik, AI laboratoriyasi, Akademiya, Boshqaruv minorasi va boshqalar | 🏗️ Binolar ichi: agentlar o‘z binosida ishlamoqda |
 |---|---|
-| ![Binolar ichi](docs/images/campus-inside.jpg) | ![Portret](docs/images/portrait.jpg) |
-| 👔 Boshqaruv binosi: kostyumdagi rahbarlar | 📣 Marketing va media: blazer, hijob, lanyard |
-| ![Boshqaruv ichida](docs/images/people-suits.jpg) | ![Marketing ichida](docs/images/people-media.jpg) |
-| 👥 Jamoalar (haqiqiy sinov baholari) va “Salom hammaga” suhbati | 🌙 Tungi kampus: derazalar va chiroqlar yonadi |
-| ![Jamoalar va chat](docs/images/teams-chat.jpg) | ![Tun](docs/images/office-night.jpg) |
-| 🌐 **“O‘quvchilardan test oladigan veb-sayt qilib ber”** — Coder jamoasi qurgan sayt ofisda darhol ochiladi | ✅ O‘sha sayt ishlaydi: kod `DEMO1` → ism → test → natija va javoblar tahlili |
-| ![Sayt natijasi](docs/images/website-result.jpg) | ![Sayt ishlaydi](docs/images/website-works.jpg) |
-| ✍️ **Instagram skrinshoti + “uslubini mening kontentimga qo‘lla”** — tahlil | ✍️ Tayyor postlar (matematika repetitori uchun) |
-| ![Kontent tahlili](docs/images/content-analysis.jpg) | ![Postlar](docs/images/content-posts.jpg) |
-| ⚡ Boshqa vazifa: “narx strategiyasi tuz” → Biznes jamoasi (reja → bajarish → tekshiruv) | 📱 Telefonda |
-| ![Vazifa natijasi](docs/images/task-result.jpg) | ![Telefon](docs/images/mobile.jpg) |
-| 🕸️ Bilim grafi | |
-| ![Graf](docs/images/knowledge-graph.jpg) | |
+| ![Kampus](docs/images/campus-angle.jpg) | ![Binolar ichi](docs/images/campus-inside.jpg) |
+| 🧍 Agent portreti: yuz va butun tana, lavozim | 👔 Boshqaruv binosi: kostyumdagi rahbarlar |
+| ![Portret](docs/images/portrait.jpg) | ![Boshqaruv ichida](docs/images/people-suits.jpg) |
+| 📣 Marketing va media: blazer, hijob, lanyard | 👥 Jamoalar (haqiqiy sinov baholari) va “Salom hammaga” suhbati |
+| ![Marketing ichida](docs/images/people-media.jpg) | ![Jamoalar va chat](docs/images/teams-chat.jpg) |
+| 🌙 Tungi kampus: derazalar va chiroqlar yonadi | 🌐 **“O‘quvchilardan test oladigan veb-sayt qilib ber”** — Coder jamoasi qurgan sayt ofisda darhol ochiladi |
+| ![Tun](docs/images/office-night.jpg) | ![Sayt natijasi](docs/images/website-result.jpg) |
+| ✅ O‘sha sayt ishlaydi: kod `DEMO1` → ism → test → natija va javoblar tahlili | ✍️ **Instagram skrinshoti + “uslubini mening kontentimga qo‘lla”** — tahlil |
+| ![Sayt ishlaydi](docs/images/website-works.jpg) | ![Kontent tahlili](docs/images/content-analysis.jpg) |
+| ✍️ Tayyor postlar (matematika repetitori uchun) | ⚡ Boshqa vazifa: “narx strategiyasi tuz” → Biznes jamoasi (reja → bajarish → tekshiruv) |
+| ![Postlar](docs/images/content-posts.jpg) | ![Vazifa natijasi](docs/images/task-result.jpg) |
+| 📱 Telefonda | 🕸️ Bilim grafi |
+| ![Telefon](docs/images/mobile.jpg) | ![Graf](docs/images/knowledge-graph.jpg) |
 
 **Yangi:** belgilab tuzattirish, katta loyihalar, Boss va Claude Akademiyasi
 
@@ -155,15 +155,24 @@ To‘liq Graphify grafini ham qurish mumkin: `uv tool install graphifyy && graph
 
 ## Kampus binolari
 
-| Bino / Building | Ichidagi bo‘limlar | Agentlar | Skillar | Buyruqlar |
-|---|---|---|---|---|
-| 🏛️ **Boshqaruv** — Management | Rahbariyat, Mahsulot va loyihalar | 28 | 100 | 27 |
-| 🤖 **AI va texnologiya** — AI & Technology | Muhandislik, dasturlash tillari, frontend, DevOps, xavfsizlik, AI, data | 132 | 546 | 126 |
-| 🤝 **Savdo** — Sales | savdo/CRM agentlari (marketing, biznes, rahbariyatdan) | 12 | 50 | 18 |
-| 📣 **Marketing va media** — Marketing & Media | Marketing va o‘sish, Ijodiy studiya | 15 | 108 | 12 |
-| 💰 **Moliya** — Finance | CFO, moliya, hisob-kitob agentlari | 3 | 10 | 1 |
-| ☕ **Ofis xizmatlari** — Office Services | Samaradorlik markazi | 16 | 66 | 21 |
-| 🎓 **Claude Akademiyasi** — Claude Academy | Claude akademiyasi (best-practice, kurslar); 24 o‘rinli auditoriya, o‘qituvchi Claude | 29 | 47 | 63 |
+| Bino / Building | Joyi | Qavat | Ichidagi bo‘limlar | Agentlar | Skillar | Buyruqlar |
+|---|---|---|---|---|---|---|
+| 🏛️ **Boshqaruv** — Management | shimoli-sharq | 7 | Rahbariyat (vertolyot maydonchasi, bayroq) | 19 | 58 | 2 |
+| 🗺️ **Mahsulot va loyihalar** — Product & Projects | shimoli-sharq | 5 | Mahsulot, loyiha boshqaruvi | 9 | 42 | 25 |
+| 💰 **Moliya** — Finance | shimoli-sharq | 4 | CFO, moliya, hisob-kitob agentlari | 3 | 10 | 1 |
+| 🛠️ **Muhandislik markazi** — Engineering Core | shimoli-g‘arb | 7 | Arxitektura, code review, test, debugging | 43 | 155 | 52 |
+| 🧩 **Dasturlash tillari** — Languages & Build | shimoli-g‘arb | 5 | Til bo‘yicha reviewer va build-resolverlar | 25 | 52 | 16 |
+| ☁️ **DevOps va bulut** — DevOps & Cloud | shimoli-g‘arb | 4 | CI/CD, bulut, infratuzilma | 8 | 40 | 3 |
+| 🧠 **AI laboratoriyasi** — AI & ML Lab | janubi-g‘arb | 6 | AI/ML (tomida AI gologrammasi) | 12 | 88 | 5 |
+| 🔬 **Maʼlumot va tadqiqot** — Data & Research | janubi-g‘arb | 5 | Data, tadqiqot, internet (Agent Reach), Graphify | 23 | 83 | 22 |
+| 🛡️ **Xavfsizlik** — Security | janubi-g‘arb | 5 | Xavfsizlik va muvofiqlik | 13 | 60 | 9 |
+| 🤝 **Savdo** — Sales | janubi-sharq | 4 | Savdo/CRM agentlari | 12 | 50 | 18 |
+| 📣 **Marketing va media** — Marketing & Media | janubi-sharq | 5 | Marketing va o‘sish, Ijodiy studiya | 15 | 108 | 12 |
+| 🎨 **Frontend va dizayn** — Frontend & Design | janubi-sharq | 4 | Frontend, UI/UX, dizayn tizimlari | 8 | 68 | 19 |
+| ☕ **Ofis xizmatlari** — Office Services | janubi-sharq | 3 | Samaradorlik markazi (tomida bog‘ va kafe) | 16 | 66 | 21 |
+| 🎓 **Claude Akademiyasi** — Claude Academy | markazda, maydon ortida | 4 | Claude akademiyasi; 24 o‘rinli auditoriya, o‘qituvchi Claude | 29 | 47 | 63 |
+
+Binolar markaziy maydon va favvoradan sharqqa va g‘arbga cho‘zilgan bulvar bo‘ylab turadi; har bir binoda kamida 5 × 3 ish stoli bor, kichik bo‘limlar ham to‘liq ofisga ega. Umumiy ko‘rinish (🎯) kampusning haqiqiy o‘lchamiga qarab kamerani joylashtiradi.
 
 Agent qaysi binoda ishlashi bo‘limidan va nomidan aniqlanadi (`buildingOf` — `src/world/layout.ts`), lavozimi va kiyimi esa `roleOf` (`src/sim/actors.ts`) va `lookFor` (`src/world/human.ts`) orqali.
 
@@ -246,7 +255,7 @@ Claude Code ──hook (office-hook.mjs)──▶ server :3334 ──WebSocket�
 
 **A 3D office where Claude Code agents, skills and commands live and work.** Everything from twelve open-source repos — [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [claude-skills](https://github.com/alirezarezvani/claude-skills), [Claude-Office](https://github.com/W17ant/Claude-Office), [graphify](https://github.com/Graphify-Labs/graphify), [hermes-agent](https://github.com/NousResearch/hermes-agent), [ECC](https://github.com/affaan-m/ECC), [ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners), [ai-agent-book](https://github.com/bojieli/ai-agent-book), [agent-skills](https://github.com/addyosmani/agent-skills), [500-AI-Agents-Projects](https://github.com/ashishpatel26/500-AI-Agents-Projects), [pi](https://github.com/earendil-works/pi) and [Agent-Reach](https://github.com/Panniantong/Agent-Reach) — is gathered into `library/`, linked into a Graphify-style knowledge graph and rendered as a living Three.js office.
 
-- **A campus of seven buildings**, one per line of work plus Claude Academy, in one architectural family: 🏛️ Management (stone piers, flag, helipad), 🤖 AI & Technology (LED bands, solar roof, dish, AI hologram), 🤝 Sales (billboard, awning), 📣 Marketing & Media (live LED screen, colour fins), 💰 Finance (colonnade and pediment), ☕ Office Services (roof garden, café) — around a plaza with a fountain and the Graphify Core, gardens, lamps and a gated entrance. From afar you see whole buildings; zoom in and roofs and upper floors fade away to show the work inside (🏗️ shows every interior at once).
+- **A campus of fourteen buildings** (3–7 storeys), one per department plus Claude Academy, in one architectural family: 🏛️ Management (stone piers, flag, helipad), 🤖 AI & Technology (LED bands, solar roof, dish, AI hologram), 🤝 Sales (billboard, awning), 📣 Marketing & Media (live LED screen, colour fins), 💰 Finance (colonnade and pediment), ☕ Office Services (roof garden, café) — around a plaza with a fountain and the Graphify Core, gardens, lamps and a gated entrance. From afar you see whole buildings; zoom in and roofs and upper floors fade away to show the work inside (🏗️ shows every interior at once).
 - **People who look like people:** realistic proportions, faces, hair (including hijab and doppi), beards, knees and elbows, and clothes by job — director in a suit and tie, assistant with a tablet, developer in a hoodie with headphones, accountant in a sweater with a folder, cleaner with an apron and a mop, guard in uniform. 12+ roles from director to cleaner; cleaners mop the plaza and offices and a guard patrols the gate.
 - **235 agents** sit at desks in their building by department; **927 skills** and **268 commands** are books on each building's shelves; **191 guides** include Microsoft's AI Agents for Beginners lessons, the AI Agent Book chapters and 112 agent projects from the 500 AI Agents catalogue, one entry each.
 - **Agents use the skills:** every crew step gets the best-matching skills from the library (the agent's and its team's own first) with their instructions — e.g. `database-migrations` and `sql-database-assistant` for a school database, `mcp-server-builder` for the MCP server, `senior-qa` for testing, Agent Reach for internet research. Used skills show as 📘 chips in Progress and light up on the shelves. Project plans get similar real projects from the 500 AI Agents catalogue as examples.

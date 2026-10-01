@@ -260,6 +260,8 @@ export class Campus {
         base.push(B(-0.9, 3.0, -1.7, -T, Y1 - 0.3, Y1, wall), B(-0.9, 3.0, -1.72, -1.66, Y1 - 0.3, Y1 - 0.12, acc));
         solid.push(C(W / 2, 0.9, 0.07, pH, pH + 7.5, '#dcdcdc', 10), C(W / 2, 0.9, 0.12, pH + 7.5, pH + 7.7, '#c9a227', 10));
         shell.add(this.flag(at(W / 2, 0.9, pH + 7.3), frontYaw));
+        // The helipad belongs to the management tower only.
+        if (def.id !== 'boshqaruv') break;
         const pad = new THREE.Mesh(
           new THREE.CircleGeometry(Math.min(W, D) * 0.26, 40).rotateX(-Math.PI / 2),
           shellMat(new THREE.MeshLambertMaterial({ map: canvasTexture(256, 256, (g) => {
@@ -288,7 +290,8 @@ export class Campus {
         const shape = new THREE.Shape([new THREE.Vector2(-(W + 0.6) / 2, 0), new THREE.Vector2((W + 0.6) / 2, 0), new THREE.Vector2(0, 1.7)]);
         const [px, pz] = z.toWorld(W / 2, 0.35);
         solid.push(part(new THREE.ExtrudeGeometry(shape, { depth: 1.1, bevelEnabled: false }).translate(0, 0, -0.55), { at: [px, pH + 0.9, pz], color: wall }));
-        const coin = part(new THREE.CylinderGeometry(0.5, 0.5, 0.12, 28).rotateX(Math.PI / 2), { at: [0, 0, 0], color: '#d4af37' });
+        // A gold coin on the finance pediment; a disc in the building's colour elsewhere.
+        const coin = part(new THREE.CylinderGeometry(0.5, 0.5, 0.12, 28).rotateX(Math.PI / 2), { at: [0, 0, 0], color: def.id === 'moliya' ? '#d4af37' : def.color });
         const [qx, qz] = z.toWorld(W / 2, -0.28);
         solid.push(coin.translate(qx, pH + 1.55, qz));
         break;
@@ -309,6 +312,12 @@ export class Campus {
         const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 8), shellMat(new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff3b3b').multiplyScalar(2.5) })));
         beacon.position.set(ax, pH + 7.1, az);
         shell.add(beacon);
+        if (!def.hologram) {
+          this.anims.push((_, time) => {
+            beacon.visible = Math.sin(time * 4) > 0;
+          });
+          break;
+        }
         const holo = new THREE.Group();
         holo.add(
           new THREE.Mesh(new THREE.IcosahedronGeometry(1.25, 1), shellMat(new THREE.MeshBasicMaterial({ color: new THREE.Color(acc).multiplyScalar(1.6), wireframe: true }))),

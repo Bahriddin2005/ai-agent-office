@@ -54,7 +54,7 @@ async function main() {
   controls.enableDamping = true;
   controls.maxPolarAngle = Math.PI * 0.47;
   controls.minDistance = 4;
-  controls.maxDistance = 260;
+  controls.maxDistance = 480;
   controls.target.set(0, 0, 0);
 
   const labelRenderer = new CSS2DRenderer();
@@ -269,10 +269,23 @@ async function main() {
     dir.normalize().multiplyScalar(Math.cos(elevation) * distance).setY(Math.sin(elevation) * distance);
     tween = { p0: camera.position.clone(), p1: target.clone().add(dir), t0: controls.target.clone(), t1: target.clone(), k: 0, dur };
   };
-  // Whole campus in view: pull back further on narrow (portrait) screens.
+  // Whole campus in view, from its real size: as far back as its width and depth need.
   const overviewPose = () => {
-    const k = Math.max(1, 1.25 / Math.max(0.5, camera.aspect));
-    return { pos: new THREE.Vector3(0, 58 * k, 80 * k), target: new THREE.Vector3(0, 0, -3) };
+    const b = layout.bounds;
+    const width = b.maxX - b.minX + 16;
+    const depth = b.maxZ - b.minZ + 16;
+    const elev = 0.62;
+    const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    // On wide screens the directory panel covers the left ~360px: fit the campus
+    // into the rest and shift the view so it is centred there.
+    const panel = innerWidth > 1100 ? 360 : 0;
+    const tanFull = tanV * Math.max(0.4, camera.aspect);
+    const tanH = tanFull * ((innerWidth - panel) / innerWidth);
+    // The near edge of the campus is closer than its centre and looks wider: keep a margin.
+    const dist = Math.max((width / 2 / tanH) * 1.18, (depth * Math.sin(elev)) / 2 / tanV + 12);
+    const cx = (b.minX + b.maxX) / 2 - (panel / innerWidth) * dist * tanFull;
+    const cz = (b.minZ + b.maxZ) / 2;
+    return { pos: new THREE.Vector3(cx, Math.sin(elev) * dist, cz + Math.cos(elev) * dist), target: new THREE.Vector3(cx, 0, cz) };
   };
   const overview = () => {
     following = null;

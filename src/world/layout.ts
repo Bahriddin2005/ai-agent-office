@@ -1,7 +1,8 @@
 // Campus plan: a central plaza (reception + Graphify core) on a boulevard that
-// runs east–west, and six department buildings — Boshqaruv, AI va
-// texnologiya, Savdo, Marketing va media, Moliya, Ofis xizmatlari — each
-// holding the desks of the departments that work there. Everything is in
+// runs east–west, Claude Academy behind the plaza, and thirteen department
+// buildings along the boulevard (management, product, finance, engineering,
+// languages, DevOps, AI lab, data, security, sales, media, design, office
+// services), each holding the desks of the departments that work there. Everything is in
 // metres; +z points towards the default camera ("south"). A character with
 // heading h faces (sin h, cos h).
 import type { Item } from '../data';
@@ -57,21 +58,37 @@ export interface BuildingDef {
   center?: boolean;
   /** free classroom seats for visiting students */
   studentSeats?: number;
+  /** the AI hologram on the roof (tech style) */
+  hologram?: boolean;
 }
 
 export const BUILDINGS: BuildingDef[] = [
-  { id: 'boshqaruv', name: { uz: 'Boshqaruv', en: 'Management' }, emoji: '🏛️', color: '#c9a227', accent: '#1f2a44', style: 'executive', floors: 4, quad: [1, -1] },
-  { id: 'moliya', name: { uz: 'Moliya', en: 'Finance' }, emoji: '💰', color: '#3f9b5a', accent: '#e9dcc0', style: 'finance', floors: 2, quad: [1, -1] },
-  { id: 'tech', name: { uz: 'AI va texnologiya', en: 'AI & Technology' }, emoji: '🤖', color: '#3d7bf2', accent: '#1b2436', style: 'tech', floors: 3, quad: [-1, -1] },
-  { id: 'savdo', name: { uz: 'Savdo', en: 'Sales' }, emoji: '🤝', color: '#f08c2e', accent: '#2a2f38', style: 'sales', floors: 2, quad: [1, 1] },
-  { id: 'media', name: { uz: 'Marketing va media', en: 'Marketing & Media' }, emoji: '📣', color: '#d45ad4', accent: '#231a2e', style: 'media', floors: 2, quad: [1, 1] },
-  { id: 'xizmat', name: { uz: 'Ofis xizmatlari', en: 'Office Services' }, emoji: '☕', color: '#1fa7a0', accent: '#f1e6d2', style: 'services', floors: 2, quad: [-1, 1] },
-  { id: 'akademiya', name: { uz: 'Claude Akademiyasi', en: 'Claude Academy' }, emoji: '🎓', color: '#d97757', accent: '#2b1d18', style: 'academy', floors: 3, quad: [1, -1], center: true, studentSeats: 24 },
+  // North-east: running the company.
+  { id: 'boshqaruv', name: { uz: 'Boshqaruv', en: 'Management' }, emoji: '🏛️', color: '#c9a227', accent: '#1f2a44', style: 'executive', floors: 7, quad: [1, -1] },
+  { id: 'mahsulot', name: { uz: 'Mahsulot va loyihalar', en: 'Product & Projects' }, emoji: '🗺️', color: '#2bb3a3', accent: '#173a3a', style: 'executive', floors: 5, quad: [1, -1] },
+  { id: 'moliya', name: { uz: 'Moliya', en: 'Finance' }, emoji: '💰', color: '#3f9b5a', accent: '#e9dcc0', style: 'finance', floors: 4, quad: [1, -1] },
+  // North-west: building software.
+  { id: 'muhandislik', name: { uz: 'Muhandislik markazi', en: 'Engineering Core' }, emoji: '🛠️', color: '#3d7bf2', accent: '#1b2436', style: 'tech', floors: 7, quad: [-1, -1] },
+  { id: 'tillar', name: { uz: 'Dasturlash tillari', en: 'Languages & Build' }, emoji: '🧩', color: '#6c5ce7', accent: '#1d1838', style: 'tech', floors: 5, quad: [-1, -1] },
+  { id: 'devops', name: { uz: 'DevOps va bulut', en: 'DevOps & Cloud' }, emoji: '☁️', color: '#0ea5e9', accent: '#0f2230', style: 'tech', floors: 4, quad: [-1, -1] },
+  // South-west: AI, data and security.
+  { id: 'ai', name: { uz: 'AI laboratoriyasi', en: 'AI & ML Lab' }, emoji: '🧠', color: '#a855f7', accent: '#1e1530', style: 'tech', floors: 6, quad: [-1, 1], hologram: true },
+  { id: 'data', name: { uz: 'Maʼlumot va tadqiqot', en: 'Data & Research' }, emoji: '🔬', color: '#2f80ed', accent: '#e8eef8', style: 'finance', floors: 5, quad: [-1, 1] },
+  { id: 'xavfsizlik', name: { uz: 'Xavfsizlik', en: 'Security' }, emoji: '🛡️', color: '#d64545', accent: '#25181b', style: 'executive', floors: 5, quad: [-1, 1] },
+  // South-east: customers, media, design and the office's own services.
+  { id: 'savdo', name: { uz: 'Savdo', en: 'Sales' }, emoji: '🤝', color: '#f08c2e', accent: '#2a2f38', style: 'sales', floors: 4, quad: [1, 1] },
+  { id: 'media', name: { uz: 'Marketing va media', en: 'Marketing & Media' }, emoji: '📣', color: '#d45ad4', accent: '#231a2e', style: 'media', floors: 5, quad: [1, 1] },
+  { id: 'frontend', name: { uz: 'Frontend va dizayn', en: 'Frontend & Design' }, emoji: '🎨', color: '#ff6b9a', accent: '#2a1822', style: 'media', floors: 4, quad: [1, 1] },
+  { id: 'xizmat', name: { uz: 'Ofis xizmatlari', en: 'Office Services' }, emoji: '☕', color: '#1fa7a0', accent: '#f1e6d2', style: 'services', floors: 3, quad: [1, 1] },
+  { id: 'akademiya', name: { uz: 'Claude Akademiyasi', en: 'Claude Academy' }, emoji: '🎓', color: '#d97757', accent: '#2b1d18', style: 'academy', floors: 4, quad: [1, -1], center: true, studentSeats: 24 },
 ];
 
+/** Buildings where software is written (developers sit there). */
+export const TECH_BUILDINGS = new Set(['muhandislik', 'tillar', 'devops', 'xavfsizlik']);
+
 const BY_DEPT: Record<string, string> = {
-  executive: 'boshqaruv', product: 'boshqaruv',
-  engineering: 'tech', languages: 'tech', frontend: 'tech', devops: 'tech', security: 'tech', ai: 'tech', data: 'tech',
+  executive: 'boshqaruv', product: 'mahsulot',
+  engineering: 'muhandislik', languages: 'tillar', frontend: 'frontend', devops: 'devops', security: 'xavfsizlik', ai: 'ai', data: 'data',
   marketing: 'media', creative: 'media',
   business: 'savdo',
   productivity: 'xizmat', academy: 'akademiya',
@@ -144,13 +161,14 @@ const GAP = 7;
 const ZA = 20;
 
 export const headingOf = (dx: number, dz: number) => Math.atan2(dx, dz);
-const colsFor = (n: number) => Math.min(14, Math.max(3, Math.ceil(Math.sqrt(n * 1.6))));
+/** Every building gets at least a 5 x 3 desk floor, so small departments still have a proper office. */
+const colsFor = (n: number) => Math.min(14, Math.max(5, Math.ceil(Math.sqrt(n * 1.6))));
 
 function makeZone(building: BuildingDef, agents: Item[], x0: number, z0 = Z0): Zone {
   const [sx, sz]: [1 | -1, 1 | -1] = building.center ? [1, -1] : building.quad;
   const n = agents.length + (building.studentSeats || 0);
   const cols = colsFor(n);
-  const rows = Math.max(2, Math.ceil(n / cols));
+  const rows = Math.max(3, Math.ceil(n / cols));
   const W = cols * COL_PITCH + 2.3;
   const vBack = ROW0 + (rows - 1) * ROW_PITCH + 1.6;
   const D = vBack + 1.4;
