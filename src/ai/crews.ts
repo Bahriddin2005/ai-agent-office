@@ -1285,6 +1285,7 @@ export class Crews {
       switch (e.type) {
         case 'setup':
           step.live = uz ? `🧩 ${(e.agents as string[]).length} ta jamoadosh subagent, 📘 ${(e.skills as string[]).length} ta skill o‘rnatildi` : `🧩 ${(e.agents as string[]).length} teammates as subagents, 📘 ${(e.skills as string[]).length} skills installed`;
+          if (e.resumed) step.live += uz ? ` · ♻️ oldingi urinishdagi ${e.resumed} ta fayldan davom etadi` : ` · ♻️ continuing from ${e.resumed} files of the earlier attempt`;
           break;
         case 'agent': {
           const sub: Step = {

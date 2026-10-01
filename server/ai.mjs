@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { isUsageLimit, limitError } from './limits.mjs';
 
 const DEFAULT_MODELS = { quick: 'haiku', default: 'sonnet', complex: 'opus' };
 const DEFAULT_THINKING = { quick: 0, default: 4000, complex: 12000 };
@@ -96,6 +97,7 @@ export class AiRunner {
         } catch {
           /* not JSON */
         }
+        if (isUsageLimit(j?.result)) return reject(limitError(j.result));
         if (!j || j.is_error || code !== 0) {
           return reject(Object.assign(new Error(j?.result || err.trim() || `claude exited with code ${code}`), { status: 502 }));
         }

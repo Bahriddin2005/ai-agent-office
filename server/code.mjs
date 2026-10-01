@@ -10,6 +10,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, relative, sep } from 'node:path';
+import { isUsageLimit, limitError } from './limits.mjs';
 
 const MODELS = { quick: 'haiku', default: 'sonnet', complex: 'opus' };
 const FENCED = ['Read(./**)', 'Glob(./**)', 'Grep(./**)'];
@@ -115,8 +116,11 @@ export class CodeRunner {
     const dir = this.dirOf(id);
     mkdirSync(dir, { recursive: true });
     const readOnly = mode === 'ask';
+    // A build that was interrupted (usage limit, closed page) left files behind: carry on from them.
+    const before = mode === 'build' ? Object.keys(this.files(dir)).length : 0;
+    if (before) prompt += `\n\nThis folder already holds ${before} file(s) from an earlier attempt that was interrupted. Read them first and finish the job from there instead of starting over.`;
     const installed = this.setup(dir, { agents, skills, rules, readOnly });
-    onEvent({ type: 'setup', agents: agents.map((a) => slug(a.name)), skills: installed });
+    onEvent({ type: 'setup', agents: agents.map((a) => slug(a.name)), skills: installed, resumed: before });
 
     await this.slot();
     const started = Date.now();
@@ -195,6 +199,8 @@ export class CodeRunner {
         p.on('close', (code) => {
           clearTimeout(timer);
           signal?.removeEventListener('abort', stop);
+          // The plan's usage limit ends the session; what was written stays on disk for the retry.
+          if (result && isUsageLimit(result.result)) return reject(limitError(result.result));
           // Out of turns still leaves real work on disk: hand it back as partial.
           const partial = !!result && /max_turns/.test(String(result.subtype || ''));
           if (!result || ((result.is_error || code !== 0) && !partial)) {

@@ -153,6 +153,7 @@ app.post('/api/ai', needToken, async (req, res) => {
     console.log(`[ai] ${tier || 'default'} ${out.model || ''} ${out.seconds.toFixed(1)}s${images?.length ? ` +${images.length} image(s)` : ''}${web ? ' +web' : ''}`);
     res.json(out);
   } catch (err) {
+    console.warn(`[ai] ${req.body?.tier || 'default'} failed (${err.status || 500}): ${String(err.message || err).slice(0, 200)}`);
     res.status(err.status || 500).json({ error: String(err.message || err) });
   }
 });
@@ -172,6 +173,7 @@ app.post('/api/code', needToken, async (req, res) => {
     console.log(`[code] ${body.mode || 'build'} ${body.id} ${out.seconds.toFixed(0)}s ${out.turns} turns ${Object.keys(out.files).length} files${out.denied ? ` ${out.denied} denied` : ''}`);
     send({ type: 'done', ...out });
   } catch (err) {
+    console.warn(`[code] ${body.mode || 'build'} ${body.id} failed (${err.status || 500}): ${String(err.message || err).slice(0, 200)}`);
     send({ type: 'error', status: err.status || 500, error: String(err.message || err) });
   }
   res.end();
