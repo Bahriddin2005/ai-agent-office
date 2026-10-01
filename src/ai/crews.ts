@@ -227,9 +227,26 @@ const SKILL_HINTS: Record<string, string> = {
   revise: 'frontend ui engineering',
   check: 'code review qa',
   summary: 'report summary',
+  security: 'security hardening audit owasp authentication',
+  performance: 'web performance core web vitals optimization',
   analyze: 'social media analyzer account audit instagram',
   strategy: 'content strategy social media content calendar',
   posts: 'social content copywriting',
+};
+
+/** The part of a Claude Code job each teammate owns (its skills come from that part). */
+const PART_OF: Record<string, string> = {
+  'agent:ecc:database-reviewer': 'db',
+  'agent:claude-skills:cs-backend-engineer': 'backend',
+  'agent:claude-skills:cs-frontend-engineer': 'frontend',
+  'agent:hermes:hermes': 'mcp',
+  'agent:ecc:code-reviewer': 'qa',
+  'agent:ecc:tdd-guide': 'qa',
+  'agent:agent-skills:test-engineer': 'qa',
+  'agent:ecc:security-reviewer': 'security',
+  'agent:agent-skills:web-performance-auditor': 'performance',
+  'agent:ecc:architect': 'plan',
+  'agent:ecc:planner': 'plan',
 };
 
 /** Leads the Coder team in Claude Code sessions (the rest of the team are its subagents). */
@@ -1031,7 +1048,7 @@ export class Crews {
         `QA score: ${qa?.score ?? 'n/a'}. Issues left: ${JSON.stringify((qa?.issues || []).slice(0, 6))}`,
         `Files: ${Object.keys(files).join(', ')}`,
         '',
-        `Write the report for the user in ${project ? '6-10' : '4-7'} short lines: what was built, the main features, the QA result, and how to use it (the preview is open in the office and can be marked up to request changes; to run the real backend: npm install && npm start in the project folder${wantMcp ? '; the MCP server: cd mcp-server && npm install, then add it to Claude' : ''}${wantBot ? '; the bot: cd bot && npm install && BOT_TOKEN=... npm start' : ''}). Plain text, no headings.`,
+        `Write the report for the user in ${project ? '6-10' : '4-7'} short lines: what was built, the main features, which library skills the team used, the QA result, and how to use it (the preview is open in the office and can be marked up to request changes; to run the real backend: npm install && npm start in the project folder${wantMcp ? '; the MCP server: cd mcp-server && npm install, then add it to Claude' : ''}${wantBot ? '; the bot: cd bot && npm install && BOT_TOKEN=... npm start' : ''}). Plain text, no headings.`,
         languageRule(),
       ].join('\n'), 'quick');
       summary = sR.text.trim();
@@ -1182,35 +1199,42 @@ export class Crews {
   // as Claude Code skills) and writes the files. Revisions, questions and
   // commands about the project go to the same folder later.
 
-  /** The team for a Claude Code session: the Coder team (and Hermes for MCP servers) as subagents. */
-  private codeTeam(project: boolean, wantMcp: boolean) {
+  /**
+   * Which library skills each part of the job uses: the best matches for the
+   * part (database, API, UI, MCP server, review…) and the request.
+   */
+  private codeSkillPlan(run: CrewRun, parts: string[]) {
+    const byPart = new Map<string, Item[]>();
+    for (const part of new Set(parts)) byPart.set(part, this.skillBook.pick(CODE_LEAD, SKILL_HINTS[part] || part, run.prompt, 3, this.team('coder').skills));
+    const all = new Set<string>();
+    for (const list of byPart.values()) for (const it of list) all.add(it.id);
+    return { byPart, skills: [...all].slice(0, 16) };
+  }
+
+  /** The team for a Claude Code session: the Coder team (and Hermes for MCP servers) as subagents, each with the skills of its part. */
+  private codeTeam(project: boolean, wantMcp: boolean, byPart: Map<string, Item[]>) {
     const ids = this.team('coder').members.map((m) => m.id).filter((id) => id !== CODE_LEAD);
     if (project && wantMcp) ids.push('agent:hermes:hermes');
     return ids.map((id) => {
       const it = this.item(id);
       const learned = this.knowledge?.(id) || '';
+      const mine = (byPart.get(PART_OF[id] || '') || []).map((x) => slugName(x.name));
       return {
         id,
         name: slugName(it.name),
+        skills: mine,
         description: `${it.description}`.slice(0, 380),
         prompt: [
           `You are "${it.name}", a specialist of the AI Agent Office Coder team, working in this project folder with Claude Code.`,
           this.prompts[id] || it.description,
           learned ? `\n${learned}` : '',
           '',
-          'Office rules: write only inside this project folder; finish your files completely (no placeholders or TODOs); use the skills in .claude/skills that fit your part; report back in a few lines what you wrote.',
+          mine.length ? `Skills for your part, from the office library: ${mine.join(', ')}. Before you write or review anything, open each of them with the Skill tool and follow what applies; say which ones you used in your report.` : '',
+          'Office rules: write only inside this project folder; finish your files completely (no placeholders or TODOs); report back in a few lines what you wrote.',
           languageRule(),
         ].join('\n'),
       };
     });
-  }
-
-  /** Library skills for the whole job: the best ones for each part plus the Coder team's own. */
-  private codeSkills(run: CrewRun, parts: string[]) {
-    const out = new Set<string>();
-    for (const part of parts) for (const s of this.skillBook.pick(CODE_LEAD, SKILL_HINTS[part] || part, run.prompt, 3, this.team('coder').skills)) out.add(s.id);
-    for (const id of this.team('coder').skills) out.add(id);
-    return [...out].slice(0, 14);
   }
 
   private codeSystem() {
@@ -1242,8 +1266,9 @@ export class Crews {
     const engine = await this.engine();
     if (!engine.code) throw new EngineError('no_engine', 'Claude Code is not available');
     const uz = lang() === 'uz';
-    const team = this.codeTeam(!!opts.project, !!opts.wantMcp);
-    const skills = this.codeSkills(run, opts.parts || ['frontend']);
+    const plan = this.codeSkillPlan(run, opts.parts || ['frontend']);
+    const team = this.codeTeam(!!opts.project, !!opts.wantMcp, plan.byPart);
+    const skills = plan.skills;
     const bySlug = new Map(team.map((a) => [a.name, a.id]));
     const skillBySlug = new Map(skills.map((id) => [slugName(this.item(id)?.name || id), id]));
     const subs = new Map<string, Step>();
@@ -1333,10 +1358,17 @@ export class Crews {
       this.hooks.changed(run);
     };
     try {
+      // Name the skills: who opens which (an installed skill nobody opens teaches nothing).
+      const named = (ids: Item[]) => ids.map((x) => slugName(x.name));
+      const forLead = [...new Set((opts.parts || []).flatMap((p) => named(plan.byPart.get(p) || [])))];
+      const used = run.cache['skills-used'] ? `\nSkills the team opened earlier in this project: ${run.cache['skills-used']}.` : '';
+      const skillNote = mode === 'build'
+        ? `\n\nYour team and the office library skills each one opens with the Skill tool before working (it is in their instructions too):\n${team.filter((a) => a.skills.length).map((a) => `- ${a.name}: ${a.skills.join(', ')}`).join('\n')}\nRemind every teammate to open its skills first. For your own final check open: ${named([...(plan.byPart.get('qa') || [])]).join(', ') || 'none'}.`
+        : `\n\nOffice library skills for this request (open the ones that apply with the Skill tool before you change or answer anything): ${forLead.join(', ') || 'none'}.${used}`;
       const out = await engine.code(
         {
           id: codeDir(run),
-          prompt,
+          prompt: prompt + skillNote,
           system: this.codeSystem(),
           agents: team.map(({ name, description, prompt: p }) => ({ name, description, prompt: p })),
           skills,
@@ -1352,6 +1384,10 @@ export class Crews {
       step.output = out.text;
       step.seconds = Math.round((performance.now() - t0) / 100) / 10;
       run.cache[key] = JSON.stringify({ text: out.text, files: out.files, partial: out.partial });
+      // Remember which skills were opened, for later questions about the project.
+      const opened = new Set((run.cache['skills-used'] || '').split(', ').filter(Boolean));
+      for (const st of [step, ...subs.values()]) for (const id of st.skills || []) opened.add(slugName(this.item(id)?.name || id));
+      if (opened.size) run.cache['skills-used'] = [...opened].join(', ');
       return out;
     } catch (e) {
       step.status = 'error';
@@ -1414,7 +1450,7 @@ export class Crews {
       run.cache['said-code'] = '1';
       this.say(CODE_LEAD, uz ? '💻 Claude Code’da ishni boshladik: loyiha papkasida jamoa subagent sifatida, kutubxonadagi mos skillar esa Claude Code skillari sifatida ishlaydi. Har bir yozilgan fayl va ishlatilgan skill “⏳ Jarayon”da ko‘rinadi.' : '💻 Working in Claude Code: the team runs as subagents in the project folder and the matching library skills as Claude Code skills. Every file and skill shows up in Progress.', { runId: run.id });
     }
-    const parts = ['frontend', 'backend', 'db', 'qa', ...(wantMcp ? ['mcp'] : []), ...(wantBot ? ['bot'] : [])];
+    const parts = ['frontend', 'backend', 'db', 'qa', 'security', 'performance', ...(wantMcp ? ['mcp'] : []), ...(wantBot ? ['bot'] : [])];
     const rules = this.codeRules(run, plan, interview, project, wantMcp, wantBot);
     const who = (id: string) => slugName(this.item(id).name);
     const out = await this.codeSession(run, S.code, 'build', [
@@ -1473,6 +1509,7 @@ export class Crews {
       const sR = await this.call(run, S.summary, [
         `The team finished this request in Claude Code: """${run.prompt}"""`,
         `Their own report:\n${clip(out.text, 2500)}`,
+        run.cache['skills-used'] ? `Office library skills the team opened: ${run.cache['skills-used']}` : 'The team opened no library skills.',
         `QA score: ${qa?.score ?? 'n/a'}. Issues left: ${JSON.stringify((qa?.issues || []).slice(0, 6))}`,
         `Files: ${Object.keys(files).join(', ')}`,
         '',
